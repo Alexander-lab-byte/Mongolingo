@@ -24,6 +24,27 @@ const WORDS = [
   { en: "Coffee", mn: "Кофе", say: "kofe" },
 ];
 
+/* Ribbon: different everyday words from the hero, so nothing repeats on screen. */
+const RIBBON = [
+  { mn: "Тийм", en: "Yes" },
+  { mn: "Үгүй", en: "No" },
+  { mn: "Уучлаарай", en: "Sorry" },
+  { mn: "Ойлгохгүй байна", en: "I don’t understand" },
+  { mn: "Хаана вэ?", en: "Where is it?" },
+  { mn: "Тусламж!", en: "Help!" },
+  { mn: "Ус", en: "Water" },
+  { mn: "Талх", en: "Bread" },
+  { mn: "Мөнгө", en: "Money" },
+  { mn: "Зах", en: "Market" },
+  { mn: "Автобус", en: "Bus" },
+  { mn: "Эмнэлэг", en: "Hospital" },
+  { mn: "Бие засах газар", en: "Toilet" },
+  { mn: "Зүүн", en: "Left" },
+  { mn: "Баруун", en: "Right" },
+  { mn: "Хүйтэн", en: "Cold" },
+  { mn: "Баяртай", en: "Goodbye" },
+];
+
 const TILES = [
   { c: "Р", s: "r", note: "not P!", x: "2%", y: "8%", r: -10, d: 0 },
   { c: "Н", s: "n", note: "not H!", x: "76%", y: "4%", r: 8, d: 0.7 },
@@ -326,10 +347,10 @@ export function HeroBlast() {
 
       {/* tilted ribbon */}
       <div className="relative -mx-6 mb-10 -rotate-[1.6deg] bg-blend py-4 shadow-[0_24px_40px_-28px_rgba(59,39,22,0.7)]" aria-hidden>
-        <div className="marquee-fast flex w-max whitespace-nowrap font-display text-2xl font-bold sm:text-3xl">
+        <div className="marquee-slow flex w-max whitespace-nowrap font-display text-2xl font-bold sm:text-3xl">
           {[0, 1].map((k) => (
             <span key={k} className="flex">
-              {WORDS.concat(WORDS).map((w, j) => (
+              {RIBBON.map((w, j) => (
                 <span key={j} className="flex items-center gap-3 px-6">
                   {w.mn}
                   <span className="font-sans text-base font-medium opacity-75 sm:text-lg">{w.en}</span>
