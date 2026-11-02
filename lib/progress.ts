@@ -78,7 +78,7 @@ export async function saveProgress(userId: string, p: Progress) {
   writeLocal(userId, p);
   const sb = getSupabase();
   if (!sb) return;
-  await sb.from("progress").upsert({
+  const { error } = await sb.from("progress").upsert({
     user_id: userId,
     display_name: p.displayName,
     completed_lessons: p.completed,
@@ -88,6 +88,7 @@ export async function saveProgress(userId: string, p: Progress) {
     review_due: p.reviewDue,
     updated_at: new Date().toISOString(),
   });
+  if (error) console.error("Could not save progress:", error.message);
 }
 
 /** Returns new progress after finishing a lesson (new or review). */

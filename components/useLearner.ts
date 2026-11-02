@@ -11,33 +11,42 @@ export function useLearner() {
   const router = useRouter();
   const [progress, setProgress] = useState<Progress | null>(null);
 
+  // Supabase hands out a new user object on every auth event (even on tab focus),
+  // so depend on these strings: progress must only reload when the person changes.
+  const userId = user?.id;
+  const name = (user?.user_metadata?.display_name as string) || user?.email?.split("@")[0] || "friend";
+
   useEffect(() => {
     if (loading) return;
-    if (!user) {
+    if (!userId) {
       router.replace("/login");
       return;
     }
-    const name = (user.user_metadata?.display_name as string) || user.email?.split("@")[0] || "friend";
-    loadProgress(user.id, name).then((p) => {
+    let stale = false;
+    loadProgress(userId, name).then((p) => {
+      if (stale) return;
       // Carry over the free demo: they already met 5 friendly letters (endowed progress).
       let next = p;
       try {
         if (localStorage.getItem(DEMO_KEY) && !p.completed.includes("friends")) {
           next = { ...p, xp: p.xp + 5 };
           localStorage.removeItem(DEMO_KEY);
-          saveProgress(user.id, next);
+          saveProgress(userId, next);
         }
       } catch {}
       setProgress(next);
     });
-  }, [user, loading, router]);
+    return () => {
+      stale = true;
+    };
+  }, [userId, name, loading, router]);
 
   const update = useCallback(
     async (p: Progress) => {
       setProgress(p);
-      if (user) await saveProgress(user.id, p);
+      if (userId) await saveProgress(userId, p);
     },
-    [user],
+    [userId],
   );
 
   return { user, progress: progress ?? (loading || !user ? null : EMPTY), ready: !!progress, update };

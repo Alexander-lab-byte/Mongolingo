@@ -110,7 +110,7 @@ function Caption({ i, progress }: { i: number; progress: MotionValue<number> }) 
           <a href="#try" className="btn btn-sun">
             ▶ Try a free lesson
           </a>
-          <Link href="/login" className="btn btn-ghost">
+          <Link href="/login?mode=signup" className="btn btn-ghost">
             Sign up free
           </Link>
         </div>
@@ -278,7 +278,7 @@ function StaticStory() {
         <a href="#try" className="btn btn-sun">
           ▶ Try a free lesson
         </a>
-        <Link href="/login" className="btn btn-ghost">
+        <Link href="/login?mode=signup" className="btn btn-ghost">
           Sign up free
         </Link>
       </div>

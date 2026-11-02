@@ -23,14 +23,17 @@ export function TryDemo() {
   const [step, setStep] = useState(0); // 0 known letters, 1 new letters, 2 quiz, 3 done
   const [flipped, setFlipped] = useState<string[]>([]);
   const [qi, setQi] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
 
   const totalSteps = 3;
-  const progress = step === 3 ? 1 : (step + (step === 2 ? qi / QUESTIONS.length : 0)) / totalSteps;
+  const progress = (Math.min(step, 2) + (step >= 2 ? correctAnswers / QUESTIONS.length : 0)) / totalSteps;
   const q = QUESTIONS[qi];
 
   function next() {
     if (step === 2) {
+      if (picked == null) return;
+      if (picked === q.answer) setCorrectAnswers((count) => count + 1);
       if (qi < QUESTIONS.length - 1) {
         setQi(qi + 1);
         setPicked(null);
@@ -155,7 +158,7 @@ export function TryDemo() {
                     key={o}
                     label={o}
                     big={o.length === 1}
-                    state={picked == null ? "idle" : o === q.answer ? "right" : o === picked ? "wrong" : "dim"}
+                    state={picked == null ? "idle" : o !== picked ? "dim" : o === q.answer ? "right" : "wrong"}
                     onClick={() => picked == null && setPicked(o)}
                   />
                 ))}
@@ -163,7 +166,7 @@ export function TryDemo() {
               {picked != null && (
                 <Feedback
                   ok={picked === q.answer}
-                  text={picked === q.answer ? `Yes! ${q.why}` : `Good try! The answer is ${q.answer}. ${q.why}`}
+                  text={picked === q.answer ? `Yes! ${q.why}` : "That’s incorrect."}
                   onNext={next}
                   nextLabel={qi < QUESTIONS.length - 1 ? "Next question →" : "See my result →"}
                 />
@@ -196,6 +199,7 @@ export function TryDemo() {
                     setStep(0);
                     setFlipped([]);
                     setQi(0);
+                    setCorrectAnswers(0);
                     setPicked(null);
                   }}
                 >
