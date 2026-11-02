@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AlertCircle, Mail } from "lucide-react";
+import { AlertCircle, Mail, PlayCircle } from "lucide-react";
 import { Logo, TextSizeControl } from "@/components/Nav";
 import { useAuth } from "@/components/Providers";
 import { getSupabase } from "@/lib/supabase";
+import { startGuest } from "@/lib/progress";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -64,10 +64,10 @@ export default function LoginPage() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
-      <aside className="relative hidden overflow-hidden bg-gradient-to-b from-white to-sky-soft p-12 lg:flex lg:flex-col lg:justify-between">
+      <aside className="relative hidden overflow-hidden bg-gradient-to-b from-white to-sky-soft p-12 pb-56 lg:flex lg:flex-col lg:justify-between">
         <Logo />
         <div className="relative z-10">
-          <p className="font-display text-[7rem] font-extrabold leading-none text-cobalt">Сайн уу</p>
+          <p className="font-display whitespace-nowrap text-[clamp(3.5rem,6vw,5.5rem)] font-extrabold leading-none text-cobalt">Сайн уу</p>
           <p className="mt-4 text-2xl text-ink-soft">means hello.</p>
         </div>
         <svg viewBox="0 0 600 200" className="absolute inset-x-0 bottom-0 w-full" aria-hidden>
@@ -170,11 +170,22 @@ export default function LoginPage() {
               {busy ? "Please wait…" : isSignup ? "Create my account" : "Log in"}
             </button>
           </form>
-          <p className="mt-8 text-center text-lg">
-            <Link href="/#try" className="font-semibold text-cobalt underline underline-offset-4">
-              Try a free lesson first
-            </Link>
-          </p>
+          <div className="mt-8 flex items-center gap-4 text-ink-soft" aria-hidden>
+            <span className="h-px flex-1 bg-line" />
+            or
+            <span className="h-px flex-1 bg-line" />
+          </div>
+          <button
+            type="button"
+            className="btn btn-line mt-6 w-full text-lg text-ink"
+            onClick={() => {
+              startGuest();
+              router.push("/learn");
+            }}
+          >
+            <PlayCircle size={22} aria-hidden /> See a demo
+          </button>
+          <p className="mt-3 text-center text-ink-soft">Look around the lessons. No account needed.</p>
         </main>
       </div>
     </div>

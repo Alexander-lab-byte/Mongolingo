@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CalendarClock, Check, Flame, Languages, Lock, MessageCircle, Play, Star } from "lucide-react";
 import { Logo, TextSizeControl } from "@/components/Nav";
 import { useAuth } from "@/components/Providers";
 import { useLearner } from "@/components/useLearner";
 import { LESSONS, TOTAL_LETTERS, lettersLearned } from "@/lib/lessons";
-import { dueReviews } from "@/lib/progress";
+import { dueReviews, endGuest } from "@/lib/progress";
 import { Loading } from "@/components/Loading";
 
 export default function LearnHome() {
-  const { progress, ready } = useLearner();
+  const { progress, ready, guest } = useLearner();
   const { signOut } = useAuth();
+  const router = useRouter();
 
   if (!ready || !progress) return <Loading />;
 
@@ -28,12 +30,32 @@ export default function LearnHome() {
           <Logo />
           <div className="flex items-center gap-2">
             <TextSizeControl />
-            <button type="button" className="btn btn-line px-4 text-ink" onClick={signOut}>
-              Log out
+            <button
+              type="button"
+              className="btn btn-line px-4 text-ink"
+              onClick={() => {
+                if (guest) {
+                  endGuest();
+                  router.push("/login");
+                } else signOut();
+              }}
+            >
+              {guest ? "Exit demo" : "Log out"}
             </button>
           </div>
         </div>
       </header>
+
+      {guest && (
+        <div className="bg-gold-soft px-4 py-3 sm:px-6">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
+            <p className="font-semibold">Demo mode. Your progress stays on this device only.</p>
+            <Link href="/login?mode=signup" onClick={endGuest} className="btn btn-primary min-h-11 px-5 text-base">
+              Create free account
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Hero strip */}
       <section className="bg-gradient-to-b from-white to-sky-soft px-4 pb-24 pt-8 sm:px-6">

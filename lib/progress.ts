@@ -55,7 +55,7 @@ function writeLocal(userId: string, p: Progress) {
 
 export async function loadProgress(userId: string, fallbackName: string): Promise<Progress> {
   const local = readLocal(userId);
-  const sb = getSupabase();
+  const sb = userId === GUEST_ID ? null : getSupabase();
   if (sb) {
     const { data, error } = await sb.from("progress").select("*").eq("user_id", userId).maybeSingle();
     if (!error && data) {
@@ -76,7 +76,7 @@ export async function loadProgress(userId: string, fallbackName: string): Promis
 
 export async function saveProgress(userId: string, p: Progress) {
   writeLocal(userId, p);
-  const sb = getSupabase();
+  const sb = userId === GUEST_ID ? null : getSupabase();
   if (!sb) return;
   await sb.from("progress").upsert({
     user_id: userId,
@@ -121,3 +121,41 @@ export function dueReviews(p: Progress) {
 
 // Demo (try-before-signup) progress is kept in the browser until the person makes an account.
 export const DEMO_KEY = "mongolingo_demo_done";
+
+// Guest demo: explore the full learning area without an account. Saved only in this browser.
+export const GUEST_ID = "guest";
+const GUEST_KEY = "mongolingo_guest";
+
+export function isGuest() {
+  try {
+    return localStorage.getItem(GUEST_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Starts a guest demo with sample progress, so every part of the app has something to show. */
+export function startGuest() {
+  try {
+    localStorage.setItem(GUEST_KEY, "1");
+    if (!localStorage.getItem(`mongolingo_progress_${GUEST_ID}`)) {
+      const t = today();
+      const sample: Progress = {
+        displayName: "Guest",
+        completed: ["friends"],
+        xp: 15,
+        streak: 1,
+        lastActive: t,
+        reviewDue: { friends: { due: t, step: 0 } },
+      };
+      localStorage.setItem(`mongolingo_progress_${GUEST_ID}`, JSON.stringify(sample));
+    }
+  } catch {}
+}
+
+export function endGuest() {
+  try {
+    localStorage.removeItem(GUEST_KEY);
+    localStorage.removeItem(`mongolingo_progress_${GUEST_ID}`);
+  } catch {}
+}
