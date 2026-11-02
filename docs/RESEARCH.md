@@ -39,13 +39,13 @@ Every choice below is backed by a published study or an official standard. We al
 
 ## Colors: warm, calm and easy on the eyes
 
-The palette, "Warm sand + calm blue", follows three groups of studies:
+The palette, "Warm sand + saddle brown", uses **no blue anywhere**. It follows three groups of studies:
 
 | Finding | Study | What we did |
 |---|---|---|
 | **Warm backgrounds are read faster.** Peach, orange and yellow gave the fastest reading. Blue‑grey, blue and green were slowest. This held for readers with and without dyslexia (341 people). | Rello & Bigham (2017), *Good Background Colors for Readers*, ASSETS | Cream background `#fbf5ec`; peach `#fbe9da` for highlight areas; no cool blue‑grey backgrounds. |
 | **Saturated, bright colors raise arousal** (stress, alertness); low‑saturation colors are the calmest. Brighter colors and **medium** saturation feel most pleasant. | Wilms & Oberfeld (2018), *Psychological Research* 82; Valdez & Mehrabian (1994), *J. Exp. Psychology: General* 123 | Big areas are soft and low‑saturation. Strong color is kept small (buttons, progress, signs). |
-| **Aging eyes:** the lens yellows, blues and greens get confused, pastels blur together, and glare from bright surfaces hurts. | Aging‑eye research (summary: Sherwin‑Williams, *Color and the Aging Eye*) | No pure white (warm white `#fffdf9`); meaning carried by light/dark contrast + icons + words, never by hue alone. |
+| **Aging eyes:** the lens yellows, blues and greens get confused, pastels blur together, and glare from bright surfaces hurts. | Aging‑eye research (summary: Sherwin‑Williams, *Color and the Aging Eye*) | No pure white (warm white `#fffdf9`); no blue at all, since it's the hue aging eyes lose first; meaning carried by light/dark contrast + icons + words, never by hue alone. |
 
 | Name | Hex | Used for |
 |---|---|---|
@@ -54,7 +54,8 @@ The palette, "Warm sand + calm blue", follows three groups of studies:
 | Peach | `#fbe9da` | highlight areas, icon tiles |
 | Charcoal | `#2a2420` | text (14:1 on cream) |
 | Warm grey | `#5c5249` | secondary text (7:1 on cream) |
-| Calm blue | `#2f5da8` | buttons and links only (white text 6.4:1) |
+| Saddle brown | `#7a4b2a` | buttons and links only (white text 7.2:1, AAA) |
+| Caramel | `#d9a066` | progress bar gradient |
 | Saffron | `#e8b04b` | stars, goal, taxi |
 | Green / Red | `#276b43` / `#b3403a` | right / wrong, always with an icon and words |
 

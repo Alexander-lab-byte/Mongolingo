@@ -66,7 +66,7 @@ export default function Home() {
 
         <section className="relative overflow-hidden bg-white px-4 py-28">
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none overflow-hidden" aria-hidden>
-            <div className="marquee flex w-max gap-16 whitespace-nowrap font-display text-[9rem] font-extrabold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(47,93,168,0.16)]">
+            <div className="marquee flex w-max gap-16 whitespace-nowrap font-display text-[9rem] font-extrabold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(122,75,42,0.16)]">
               <span>Сайн байна уу  Баярлалаа  Хэд вэ  Уучлаарай  Баяртай</span>
               <span>Сайн байна уу  Баярлалаа  Хэд вэ  Уучлаарай  Баяртай</span>
             </div>

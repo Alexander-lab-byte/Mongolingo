@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
 /*
-  Mongolingo — "Warm sand + calm blue"
+  Mongolingo — "Warm sand + saddle brown" (no blue anywhere)
   Research behind the palette (see docs/RESEARCH.md):
   - Warm backgrounds (peach, cream, yellow) are read faster than cool ones (Rello & Bigham, 2017, n=341).
   - Saturated, bright colors raise arousal; low-saturation colors are calmest (Wilms & Oberfeld, 2018).
     So big areas are soft and warm; strong color is kept small (buttons, progress).
+  - No blue: blue is the hue aging eyes lose first (yellowing lens), and cool backgrounds read slowest.
   - Aging eyes: yellowing lens, glare from pure white, blue/green confusion. So no pure white,
     and meaning is carried by light/dark contrast + icons, never by hue alone.
   Every text pair passes WCAG 2.2 AA; body text pairs are 7:1 or more.
@@ -14,9 +15,9 @@
   --color-white: #fffdf9; /* warm white: less glare than #fff */
   --color-night: #2a2420; /* warm charcoal */
   --color-night-2: #3a322c;
-  --color-cobalt: #2f5da8; /* calm deep blue — buttons only */
-  --color-cobalt-dark: #244a87;
-  --color-sky: #7fa7d6;
+  --color-cobalt: #7a4b2a; /* saddle brown — buttons and links only (name kept for code history) */
+  --color-cobalt-dark: #623b20;
+  --color-sky: #d9a066; /* caramel */
   --color-sky-soft: #fbe9da; /* peach — highlight areas */
   --color-coral: #e9935a; /* apricot */
   --color-coral-ink: #9c3f22;
@@ -134,7 +135,7 @@ p { text-wrap: pretty; }
   transition: border-color 0.15s ease;
 }
 .input:hover { border-color: #cdbfa9; }
-.input:focus { outline: none; border-color: var(--color-cobalt); box-shadow: 0 0 0 4px rgba(47, 93, 168, 0.18); }
+.input:focus { outline: none; border-color: var(--color-cobalt); box-shadow: 0 0 0 4px rgba(122, 75, 42, 0.2); }
 
 @keyframes pop {
   0% { transform: scale(0.92); opacity: 0; }
