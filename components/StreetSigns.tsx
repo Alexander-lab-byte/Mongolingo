@@ -3,7 +3,7 @@
 function Sign({ children, en, note }: { children: React.ReactNode; en: string; note: string }) {
   return (
     <figure className="flex flex-col">
-      <div className="flex min-h-48 items-center justify-center rounded-3xl bg-paper p-6">{children}</div>
+      <div className="flex min-h-48 items-center justify-center rounded-3xl bg-white/70 p-6">{children}</div>
       <figcaption className="mt-4">
         <span className="block font-display text-xl font-bold">{en}</span>
         <span className="text-ink-soft">{note}</span>
@@ -14,7 +14,7 @@ function Sign({ children, en, note }: { children: React.ReactNode; en: string; n
 
 export function StreetSigns() {
   return (
-    <section className="bg-white px-4 py-24" aria-labelledby="signs">
+    <section className="bg-gradient-to-b from-paper via-beige to-paper px-4 py-24" aria-labelledby="signs">
       <div className="mx-auto max-w-6xl">
         <h2 id="signs" className="max-w-2xl text-4xl font-bold sm:text-5xl">
           Read the signs around you.
@@ -33,7 +33,7 @@ export function StreetSigns() {
 
           <Sign en="Shop" note="delgüür">
             <div className="w-full max-w-xs overflow-hidden rounded-lg shadow-lg">
-              <div className="bg-cobalt px-4 py-3 text-center font-display text-3xl font-extrabold text-white">ДЭЛГҮҮР</div>
+              <div className="bg-wood-dark px-4 py-3 text-center font-display text-3xl font-extrabold text-white">ДЭЛГҮҮР</div>
               <div className="h-5" style={{ background: "repeating-linear-gradient(90deg,#a9c2a6 0 22px,#fffbf4 22px 44px)" }} />
             </div>
           </Sign>
@@ -77,7 +77,7 @@ export function StreetSigns() {
 
           <Sign en="Taxi" note="taksi">
             <div className="inline-flex flex-col items-center">
-              <div className="rounded-t-2xl bg-gold px-7 pb-2 pt-3">
+              <div className="rounded-t-2xl bg-honey px-7 pb-2 pt-3">
                 <span className="font-display text-4xl font-extrabold text-night">ТАКСИ</span>
               </div>
               <div className="h-4 w-full rounded-b-md" style={{ background: "repeating-linear-gradient(90deg,#3b2716 0 14px,#fffbf4 14px 28px)" }} />

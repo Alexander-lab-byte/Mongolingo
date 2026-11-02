@@ -25,7 +25,7 @@ export default function Home() {
       <main>
         <SteppeScene />
 
-        <section className="bg-white px-4 py-20" aria-labelledby="need-now">
+        <section className="bg-gradient-to-b from-paper to-sage-mist px-4 py-20" aria-labelledby="need-now">
           <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_1.3fr] lg:items-start">
             <div>
               <h2 id="need-now" className="text-4xl font-bold sm:text-5xl">
@@ -46,7 +46,7 @@ export default function Home() {
         <AlphabetBoard />
         <StreetSigns />
 
-        <section className="bg-paper px-4 py-24" aria-labelledby="method">
+        <section className="bg-gradient-to-b from-paper to-sky-soft px-4 py-24" aria-labelledby="method">
           <div className="mx-auto max-w-6xl">
             <h2 id="method" className="text-4xl font-bold sm:text-5xl">
               How every lesson works.
@@ -64,7 +64,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden bg-white px-4 py-28">
+        <section className="relative overflow-hidden bg-gradient-to-b from-sky-soft to-paper px-4 py-28">
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none overflow-hidden" aria-hidden>
             <div className="marquee flex w-max gap-16 whitespace-nowrap font-display text-[9rem] font-extrabold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(86,58,31,0.14)]">
               <span>Сайн байна уу  Баярлалаа  Хэд вэ  Уучлаарай  Баяртай</span>
@@ -85,7 +85,7 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="border-t border-line bg-white px-4 py-8">
+      <footer className="border-t border-line bg-paper px-4 py-8">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
           <Logo />
           <p className="text-ink-soft">Made in Ulaanbaatar</p>

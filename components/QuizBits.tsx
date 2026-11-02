@@ -68,7 +68,7 @@ export function Feedback({
     <div
       role="status"
       className={`pop mt-5 flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between ${
-        ok ? "bg-ok-soft" : "bg-gold-soft"
+        ok ? "bg-ok-soft" : "bg-beige"
       }`}
     >
       <div className="flex gap-3">
@@ -87,7 +87,7 @@ export function Feedback({
   );
 }
 
-const SPARK_COLORS = ["#563a1f", "#6e8f6e", "#a9c2a6", "#f2cf6a", "#2f6b3f"];
+const SPARK_COLORS = ["#4d6a4d", "#a47e58", "#a9c2a6", "#d9b878", "#2f6b3f"];
 
 export function Confetti() {
   return (

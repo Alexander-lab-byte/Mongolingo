@@ -121,7 +121,7 @@ function Rail({ p }: { p: MotionValue<number> }) {
 function RailDot({ label, i, p }: { label: string; i: number; p: MotionValue<number> }) {
   const at = RANGES[i + 1][0];
   const on = useTransform(p, [at - 0.02, at], [0, 1]);
-  const bg = useTransform(on, [0, 1], ["rgba(59,39,22,0.18)", "#563a1f"]);
+  const bg = useTransform(on, [0, 1], ["rgba(59,39,22,0.18)", "#4d6a4d"]);
   const color = useTransform(on, [0, 1], ["rgba(59,39,22,0.5)", "#3b2716"]);
   return (
     <div className="relative flex items-center gap-3">
@@ -137,8 +137,8 @@ function Bubble({ x, y, w, text, p, at, fill, color }: { x: number; y: number; w
   const scale = useTransform(p, [at, at + 0.04, 0.8, 0.84], [0, 1, 1, 0]);
   return (
     <motion.g style={{ scale, transformBox: "fill-box", originX: 0.5, originY: 1 }}>
-      <rect x={x} y={y} width={w} height="56" rx="28" fill={fill} stroke="#563a1f" strokeWidth="3" />
-      <path d={`M${x + w / 2 - 12} ${y + 54} L${x + w / 2} ${y + 74} L${x + w / 2 + 12} ${y + 54}`} fill={fill} stroke="#563a1f" strokeWidth="3" strokeLinejoin="round" />
+      <rect x={x} y={y} width={w} height="56" rx="28" fill={fill} stroke="#4d6a4d" strokeWidth="3" />
+      <path d={`M${x + w / 2 - 12} ${y + 54} L${x + w / 2} ${y + 74} L${x + w / 2 + 12} ${y + 54}`} fill={fill} stroke="#4d6a4d" strokeWidth="3" strokeLinejoin="round" />
       <rect x={x + w / 2 - 14} y={y + 50} width="28" height="6" fill={fill} />
       <text x={x + w / 2} y={y + 37} textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="700" fontSize="24" fill={color}>
         {text}
@@ -195,9 +195,9 @@ function Scene({ p }: { p: MotionValue<number> }) {
           <stop offset="1" stopColor="#f5e1bd" />
         </linearGradient>
         <linearGradient id="g-day" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f3dcc0" />
-          <stop offset="0.6" stopColor="#f8ecdc" />
-          <stop offset="1" stopColor="#f7eedf" />
+          <stop offset="0" stopColor="#e6e8d6" />
+          <stop offset="0.6" stopColor="#f1eee3" />
+          <stop offset="1" stopColor="#f6efe4" />
         </linearGradient>
         <radialGradient id="g-sun">
           <stop offset="0" stopColor="#fff4dc" />
@@ -295,13 +295,13 @@ function Scene({ p }: { p: MotionValue<number> }) {
               style={{ pathLength: outline, opacity: outlineShow }}
             />
             <motion.g style={{ opacity: fill }}>
-              <rect x={b.x - 8} y={b.top - 14} width={b.w + 16} height="16" rx="3" fill={i === 1 ? "#2f6b3f" : i === 2 ? "#a9c2a6" : "#563a1f"} />
+              <rect x={b.x - 8} y={b.top - 14} width={b.w + 16} height="16" rx="3" fill={i === 1 ? "#2e6b3a" : i === 2 ? "#a9bfa3" : "#7a5a3c"} />
               {win.list.map((w, j) => (
                 <rect key={j} x={w.x} y={w.y} width={win.w} height="36" rx="4" fill="#efe4d6" />
               ))}
             </motion.g>
             <motion.g style={{ opacity: lit }}>
-              {win.list.map((w, j) => (j % 2 === 0 ? <rect key={j} x={w.x} y={w.y} width={win.w} height="36" rx="4" fill="#f1cf7a" /> : null))}
+              {win.list.map((w, j) => (j % 2 === 0 ? <rect key={j} x={w.x} y={w.y} width={win.w} height="36" rx="4" fill="#ead39b" /> : null))}
             </motion.g>
           </g>
         );
@@ -319,7 +319,7 @@ function Scene({ p }: { p: MotionValue<number> }) {
 
       {/* Signs light up */}
       <Sign p={p} at={0.37}>
-        <rect x="485" y="612" width="180" height="48" rx="8" fill="#563a1f" />
+        <rect x="485" y="612" width="180" height="48" rx="8" fill="#7a5a3c" />
         <text x="575" y="645" textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="24" fill="#fff">
           ДЭЛГҮҮР
         </text>
@@ -332,7 +332,7 @@ function Scene({ p }: { p: MotionValue<number> }) {
         </text>
       </Sign>
       <Sign p={p} at={0.45}>
-        <rect x="975" y="592" width="140" height="46" rx="8" fill="#f2cf6a" />
+        <rect x="975" y="592" width="140" height="46" rx="8" fill="#d9b878" />
         <text x="1045" y="624" textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="24" fill="#3b2716">
           КАФЕ
         </text>
@@ -341,12 +341,12 @@ function Scene({ p }: { p: MotionValue<number> }) {
       {/* Taxi drives in */}
       <g transform={`translate(0 ${GROUND + 2})`}>
         <motion.g style={{ x: taxiX }}>
-          <path d="M45 40 L72 8 H160 L192 40 Z" fill="#f2cf6a" />
+          <path d="M45 40 L72 8 H160 L192 40 Z" fill="#d9b878" />
           <path d="M60 38 L80 14 H112 V38 Z M120 38 V14 H154 L176 38 Z" fill="#f3e9dc" />
-          <rect x="0" y="38" width="236" height="52" rx="16" fill="#f2cf6a" />
+          <rect x="0" y="38" width="236" height="52" rx="16" fill="#d9b878" />
           <rect x="0" y="60" width="236" height="8" fill="url(#p-checker)" />
           <rect x="86" y="-14" width="66" height="22" rx="5" fill="#3b2716" />
-          <text x="119" y="2" textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="12" fill="#f2cf6a">
+          <text x="119" y="2" textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="12" fill="#d9b878">
             ТАКСИ
           </text>
           <circle cx="56" cy="90" r="20" fill="#3b2716" />
@@ -358,7 +358,7 @@ function Scene({ p }: { p: MotionValue<number> }) {
 
       {/* People talk */}
       <Bubble p={p} at={0.6} x={560} y={366} w={140} text="Хэд вэ?" fill="#fffbf4" color="#3b2716" />
-      <Bubble p={p} at={0.64} x={705} y={286} w={250} text="Сайн байна уу?" fill="#563a1f" color="#fffbf4" />
+      <Bubble p={p} at={0.64} x={705} y={286} w={250} text="Сайн байна уу?" fill="#4d6a4d" color="#fffbf4" />
       <Bubble p={p} at={0.68} x={955} y={390} w={190} text="Баярлалаа!" fill="#fffbf4" color="#3b2716" />
     </svg>
   );

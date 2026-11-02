@@ -115,7 +115,7 @@ function Session({
             </div>
           </div>
         ) : done ? (
-          <div className="mt-6 rounded-[28px] bg-cobalt px-6 py-12 text-center text-white">
+          <div className="bg-blend mt-6 rounded-[28px] px-6 py-12 text-center">
             <Star size={56} className="pop mx-auto text-gold" fill="currentColor" aria-hidden />
             <h2 className="mt-4 text-3xl font-bold sm:text-4xl">{todayN >= goal ? "Daily goal done!" : "Session done!"}</h2>
             <p className="mt-3 text-xl text-white/90">

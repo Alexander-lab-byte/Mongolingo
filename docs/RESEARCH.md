@@ -39,7 +39,7 @@ Every choice below is backed by a published study or an official standard. We al
 
 ## Colors: warm, calm and easy on the eyes
 
-The palette, "Brown, sage & cream", uses **no blue anywhere**. It follows three groups of studies:
+The palette, "Sage, wood & cream", uses **no blue anywhere**. It follows three groups of studies:
 
 | Finding | Study | What we did |
 |---|---|---|
@@ -49,18 +49,20 @@ The palette, "Brown, sage & cream", uses **no blue anywhere**. It follows three 
 
 | Name | Hex | Used for |
 |---|---|---|
-| Cream | `#f7eedf` | page background |
-| Card white | `#fffbf4` | cards and panels |
-| Light sage | `#e8efe3` | calm highlight areas (translator result, icon tiles) |
-| Mid sage | `#a9c2a6` | "tricky twin" letters, café awning, hills |
-| Sage | `#6e8f6e` | icons, progress, decoration (never text: 3.5:1) |
-| Deep brown | `#3b2716` | text (12:1 on cream) |
-| Soft brown | `#6a5440` | secondary text (6:1 on cream) |
-| Brown | `#563a1f` | buttons and links (cream text 10:1) |
-| Soft yellow | `#f2cf6a` | stars, goal, taxi, café sign |
-| Green / Red | `#2f6b3f` / `#a43f33` | right / wrong, always with an icon and words |
+| Cream | `#f6efe4` | page background |
+| Beige | `#efe5d3` | soft areas, section blends |
+| Sage mist / light sage | `#eef1e6` / `#e4ebdd` | calm highlight areas, section blends |
+| Mid sage | `#a9bfa3` | "tricky twin" letters, café awning, hills |
+| Deep sage | `#4d6a4d` | buttons (white text 5.9:1) |
+| Light / dark wood | `#d8c3a3` / `#7a5a3c` | secondary buttons, letter tiles, shop sign (white on dark wood 6.1:1) |
+| Brown | `#3a2a1c` | text only (12:1 on cream) |
+| Soft brown | `#66574a` | secondary text (6:1 on cream) |
+| Honey | `#d9b878` | taxi and café signs only — no yellow backgrounds |
+| Green / Red | `#2e6b3a` / `#a2453a` | right / wrong, always with an icon and words |
 
-Why brown, sage and cream: low‑saturation green is among the lowest‑arousal colors in Wilms & Oberfeld (2018), cream is the warm background that reads fastest (Rello & Bigham, 2017), and brown gives strong, quiet contrast for text and buttons.
+**Уусгалт (blending):** big cards use a soft gradient from deep sage to dark wood, highlight areas blend light sage → beige, and page sections fade into each other instead of switching color in hard blocks. Gentle transitions and low saturation keep arousal low (Wilms & Oberfeld, 2018).
+
+Why sage, wood and cream: low‑saturation green is among the lowest‑arousal colors (Wilms & Oberfeld, 2018); cream and beige are warm backgrounds, the fastest to read on (Rello & Bigham, 2017); brown is kept for text, where its strong contrast helps.
 
 Popular claims like "blue = trust, red = urgency" have weak support (Elliot, 2015, *Frontiers in Psychology*), so we don't rely on them. We use only the effects above, which come from controlled experiments.
 

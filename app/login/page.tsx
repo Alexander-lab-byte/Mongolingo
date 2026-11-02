@@ -73,7 +73,7 @@ export default function LoginPage() {
         <svg viewBox="0 0 600 200" className="absolute inset-x-0 bottom-0 w-full" aria-hidden>
           <path d="M0 120 L90 60 L170 110 L260 40 L360 110 L450 70 L600 130 L600 200 L0 200Z" fill="#ddd6c7" />
           <path d="M0 160 C150 130 300 150 450 140 C520 135 560 140 600 150 L600 200 L0 200Z" fill="#c9d3c3" />
-          <circle cx="480" cy="40" r="22" fill="#f2cf6a" />
+          <circle cx="480" cy="40" r="22" fill="#d9b878" />
         </svg>
       </aside>
 

@@ -68,7 +68,7 @@ export default function LearnHome() {
       </header>
 
       {guest && (
-        <div className="bg-gold-soft px-4 py-3 sm:px-6">
+        <div className="bg-blend-soft px-4 py-3 sm:px-6">
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
             <p className="font-semibold">Demo mode. Your progress stays on this device only.</p>
             <Link href="/login?mode=signup" onClick={endGuest} className="btn btn-primary min-h-11 px-5 text-base">
@@ -115,7 +115,7 @@ export default function LearnHome() {
         {/* The one next step */}
         <Link
           href={today.href}
-          className="mt-8 flex flex-col gap-5 rounded-[28px] bg-cobalt p-7 text-white transition hover:bg-cobalt-dark sm:flex-row sm:items-center sm:p-9"
+          className="bg-blend mt-8 flex flex-col gap-5 rounded-[28px] p-7 transition hover:brightness-95 sm:flex-row sm:items-center sm:p-9"
         >
           <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white/15">
             <TodayIcon size={30} aria-hidden />
@@ -131,7 +131,7 @@ export default function LearnHome() {
         </Link>
 
         {reviews.length > 0 && (
-          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-gold-soft p-4">
+          <div className="bg-blend-soft mt-4 flex flex-wrap items-center gap-3 rounded-2xl p-4">
             <CalendarClock size={22} aria-hidden />
             <span className="font-semibold">Lesson review due:</span>
             {reviews.map((id) => {
@@ -168,7 +168,7 @@ export default function LearnHome() {
             </div>
             <ul className="mt-4 grid grid-cols-3 gap-3">
               {myBadges.map((b) => (
-                <li key={b.id} className={`flex flex-col items-center rounded-2xl p-3 text-center ${b.earned ? "bg-gold-soft" : "bg-paper"}`} title={b.desc}>
+                <li key={b.id} className={`flex flex-col items-center rounded-2xl p-3 text-center ${b.earned ? "bg-blend-soft ring-1 ring-coral" : "bg-paper"}`} title={b.desc}>
                   <Award size={30} className={b.earned ? "text-ink" : "text-ink-soft/50"} aria-hidden />
                   <span className={`mt-1 text-sm font-semibold ${b.earned ? "" : "text-ink-soft"}`}>{b.title}</span>
                   <span className="sr-only">{b.earned ? "earned" : `not yet: ${b.desc}`}</span>
@@ -253,7 +253,7 @@ function Ring({ pct, label }: { pct: number; label: string }) {
     <div className="relative grid h-24 w-24 shrink-0 place-items-center" role="img" aria-label={`Daily goal: ${label} cards`}>
       <svg viewBox="0 0 80 80" className="absolute inset-0 -rotate-90">
         <circle cx="40" cy="40" r={r} fill="none" stroke="#e6d8c2" strokeWidth="8" />
-        <circle cx="40" cy="40" r={r} fill="none" stroke={pct >= 1 ? "#2f6b3f" : "#563a1f"} strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} className="transition-all duration-700" />
+        <circle cx="40" cy="40" r={r} fill="none" stroke={pct >= 1 ? "#2f6b3f" : "#4d6a4d"} strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} className="transition-all duration-700" />
       </svg>
       <span className="font-display text-xl font-bold">{label}</span>
     </div>

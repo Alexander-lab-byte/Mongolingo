@@ -6,7 +6,7 @@ const ORDER = "АБВГДЕЁЖЗИЙКЛМНОӨПРСТУҮФХЦЧШЩЪЫЬ�
 const GROUPS: Record<string, { label: string; cls: string; dot: string }> = {
   friends: { label: "You know these", cls: "bg-gold text-night", dot: "bg-gold" },
   tricksters: { label: "Tricky twins", cls: "bg-coral text-night", dot: "bg-coral" },
-  specials: { label: "Mongolian specials", cls: "bg-cobalt text-white", dot: "bg-cobalt" },
+  specials: { label: "Mongolian specials", cls: "bg-wood-dark text-white", dot: "bg-wood-dark" },
 };
 
 export function AlphabetBoard() {
@@ -46,7 +46,7 @@ export function AlphabetBoard() {
                 key={ch}
                 className={`flex aspect-square flex-col items-center justify-center rounded-2xl ${
                   g ? g.cls : "border border-line bg-white text-ink"
-                } ${isUnique ? "ring-4 ring-cobalt/30" : ""}`}
+                } ${isUnique ? "ring-4 ring-wood/40" : ""}`}
               >
                 <span className="font-display text-3xl font-bold sm:text-4xl">{ch}</span>
                 <span className="mt-0.5 text-sm font-semibold sm:text-base">{i?.say}</span>

@@ -221,7 +221,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
         {startPhase === "learn" && item && (
           <div className="panel mt-4 overflow-hidden" key={item.id}>
             <div className="grid md:grid-cols-[1.05fr_1fr]">
-              <div className="flex flex-col items-center justify-center bg-cobalt px-6 py-10 text-white">
+              <div className="bg-blend flex flex-col items-center justify-center px-6 py-10">
                 <p className="text-white">
                   Card {card + 1} of {lesson.items.length}
                 </p>
@@ -248,7 +248,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
                     <p className="mt-2 text-xl text-ink-soft">Say it: “{item.say}”</p>
                   </>
                 )}
-                <div className="mt-6 flex items-center gap-4 rounded-2xl bg-gold-soft p-4">
+                <div className="bg-blend-soft mt-6 flex items-center gap-4 rounded-2xl p-4">
                   <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-white text-3xl" aria-hidden>
                     {item.emoji}
                   </span>
@@ -289,7 +289,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
             {q.big && (
               <div className="my-8 flex justify-center">
                 {lesson.kind === "letters" ? (
-                  <span className="grid h-44 w-44 place-items-center rounded-[32px] bg-cobalt font-display text-[7rem] font-bold leading-none text-white">
+                  <span className="grid h-44 w-44 place-items-center rounded-[32px] bg-blend font-display text-[7rem] font-bold leading-none text-white">
                     {q.big}
                   </span>
                 ) : (
@@ -315,7 +315,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
         )}
 
         {phase === "done" && result && (
-          <div className="relative mt-4 overflow-hidden rounded-[28px] bg-cobalt px-6 py-12 text-center text-white sm:px-10">
+          <div className="bg-blend relative mt-4 overflow-hidden rounded-[28px] px-6 py-12 text-center sm:px-10">
             <Confetti />
             <div className="flex justify-center gap-2" role="img" aria-label={`${result.stars} of 3 stars`}>
               {[0, 1, 2].map((i) => (

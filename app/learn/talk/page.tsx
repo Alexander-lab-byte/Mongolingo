@@ -168,7 +168,7 @@ function Conversation({ d, onDone, onExit }: { d: Dialogue; onDone: (firstTry: n
             })}
           </div>
           {choice && (
-            <div className={`pop mt-4 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between ${choice.ok ? "bg-ok-soft" : "bg-gold-soft"}`} role="status">
+            <div className={`pop mt-4 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between ${choice.ok ? "bg-ok-soft" : "bg-beige"}`} role="status">
               <p className="text-lg">
                 {choice.ok ? (
                   <>
@@ -189,7 +189,7 @@ function Conversation({ d, onDone, onExit }: { d: Dialogue; onDone: (firstTry: n
           )}
         </div>
       ) : (
-        <div className="mt-8 rounded-[28px] bg-cobalt px-6 py-10 text-center text-white">
+        <div className="bg-blend mt-8 rounded-[28px] px-6 py-10 text-center">
           <Star size={48} className="pop mx-auto text-gold" fill="currentColor" aria-hidden />
           <h2 className="mt-3 text-3xl font-bold">You did it!</h2>
           <p className="mt-2 text-xl text-white/90">

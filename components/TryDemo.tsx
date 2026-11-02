@@ -70,7 +70,7 @@ export function TryDemo() {
   }
 
   return (
-    <section id="try" className="relative scroll-mt-20 overflow-hidden bg-gradient-to-b from-white via-sky-soft to-white px-4 pb-24 pt-20">
+    <section id="try" className="relative scroll-mt-20 overflow-hidden bg-gradient-to-b from-sage-mist via-sky-soft to-paper px-4 pb-24 pt-20">
       <div className="mx-auto max-w-5xl">
         <div className="max-w-2xl">
           <h2 className="text-4xl font-bold sm:text-5xl">Read your first word in 2 minutes.</h2>
@@ -159,7 +159,7 @@ export function TryDemo() {
                 <div className="mt-7 grid gap-4 sm:grid-cols-2">
                   {NEW.map((l) => (
                     <div key={l.ch} className="flex items-center gap-5 rounded-3xl bg-paper p-6">
-                      <div className="grid h-28 w-28 shrink-0 place-items-center rounded-3xl bg-cobalt font-display text-6xl font-bold text-white">
+                      <div className="grid h-28 w-28 shrink-0 place-items-center rounded-3xl bg-blend font-display text-6xl font-bold">
                         {l.ch}
                       </div>
                       <div>
@@ -250,7 +250,7 @@ export function TryDemo() {
 export function TaxiSign() {
   return (
     <div className="inline-flex flex-col items-center" role="img" aria-label="A yellow taxi roof sign that says ТАКСИ">
-      <div className="rounded-t-2xl bg-gold px-8 pb-2 pt-3 shadow-[0_18px_40px_-18px_rgba(255,197,49,0.9)]">
+      <div className="rounded-t-2xl bg-honey px-8 pb-2 pt-3">
         <span className="font-display text-5xl font-extrabold tracking-wide text-night sm:text-6xl" aria-hidden>
           ТАКСИ
         </span>
