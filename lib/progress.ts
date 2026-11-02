@@ -7,6 +7,13 @@ export type Progress = {
   streak: number;
   lastActive: string | null; // YYYY-MM-DD
   reviewDue: Record<string, { due: string; step: number }>;
+  // Flashcards (Leitner boxes), daily goal and stats — stored in the `extra` column.
+  cards: Record<string, { box: number; due: string }>;
+  goal: number; // cards per day
+  day: { date: string; n: number }; // cards reviewed today
+  reviewed: number;
+  bestStreak: number;
+  talks: string[]; // finished conversations
 };
 
 // Spaced review gaps in days (spacing effect, Cepeda et al. 2006).
@@ -19,6 +26,12 @@ export const EMPTY: Progress = {
   streak: 0,
   lastActive: null,
   reviewDue: {},
+  cards: {},
+  goal: 10,
+  day: { date: "", n: 0 },
+  reviewed: 0,
+  bestStreak: 0,
+  talks: [],
 };
 
 export function today(d = new Date()) {
@@ -60,6 +73,8 @@ export async function loadProgress(userId: string, fallbackName: string): Promis
     const { data, error } = await sb.from("progress").select("*").eq("user_id", userId).maybeSingle();
     if (!error && data) {
       const p: Progress = {
+        ...EMPTY,
+        ...(data.extra ?? {}),
         displayName: data.display_name ?? fallbackName,
         completed: data.completed_lessons ?? [],
         xp: data.xp ?? 0,
@@ -86,17 +101,24 @@ export async function saveProgress(userId: string, p: Progress) {
     streak: p.streak,
     last_active: p.lastActive,
     review_due: p.reviewDue,
+    extra: { cards: p.cards, goal: p.goal, day: p.day, reviewed: p.reviewed, bestStreak: p.bestStreak, talks: p.talks },
     updated_at: new Date().toISOString(),
   });
 }
 
-/** Returns new progress after finishing a lesson (new or review). */
-export function finishLesson(p: Progress, lessonId: string, correctFirstTry: number, total: number): Progress {
+/** Marks today as active and updates the streak. */
+function touchDay(p: Progress): Progress {
   const t = today();
   let streak = p.streak;
-  if (p.lastActive !== t) {
-    streak = p.lastActive === addDays(t, -1) ? p.streak + 1 : 1;
-  }
+  if (p.lastActive !== t) streak = p.lastActive === addDays(t, -1) ? p.streak + 1 : 1;
+  return { ...p, streak, bestStreak: Math.max(p.bestStreak ?? 0, streak), lastActive: t };
+}
+
+/** Returns new progress after finishing a lesson (new or review). */
+export function finishLesson(p0: Progress, lessonId: string, correctFirstTry: number, total: number): Progress {
+  const p = touchDay(p0);
+  const t = today();
+  const streak = p.streak;
   const prev = p.reviewDue[lessonId];
   const isReview = p.completed.includes(lessonId);
   // If they did well, wait longer before the next review; if not, review again tomorrow.
@@ -141,6 +163,8 @@ export function startGuest() {
     if (!localStorage.getItem(`mongolingo_progress_${GUEST_ID}`)) {
       const t = today();
       const sample: Progress = {
+        ...EMPTY,
+        bestStreak: 1,
         displayName: "Guest",
         completed: ["friends"],
         xp: 15,
@@ -158,4 +182,38 @@ export function endGuest() {
     localStorage.removeItem(GUEST_KEY);
     localStorage.removeItem(`mongolingo_progress_${GUEST_ID}`);
   } catch {}
+}
+
+// ---------- Flashcards (Leitner system: know it → wait longer; miss it → see it again soon) ----------
+const CARD_GAPS = [0, 1, 2, 4, 8, 16]; // days per box
+
+export function todayCount(p: Progress) {
+  return p.day?.date === today() ? p.day.n : 0;
+}
+
+export function cardResult(p0: Progress, cardId: string, knew: boolean): Progress {
+  const p = touchDay(p0);
+  const t = today();
+  const prev = p.cards[cardId]?.box ?? 0;
+  const box = knew ? Math.min(prev + 1, CARD_GAPS.length - 1) : 1;
+  return {
+    ...p,
+    cards: { ...p.cards, [cardId]: { box, due: knew ? addDays(t, CARD_GAPS[box]) : t } },
+    day: { date: t, n: todayCount(p) + 1 },
+    reviewed: (p.reviewed ?? 0) + 1,
+    xp: p.xp + (knew ? 1 : 0),
+  };
+}
+
+/** Cards to study now: due ones first (oldest first), then new ones. */
+export function cardsToStudy<T extends { id: string }>(p: Progress, deck: T[], limit: number): T[] {
+  const t = today();
+  const due = deck.filter((c) => p.cards[c.id] && p.cards[c.id].due <= t).sort((a, b) => (p.cards[a.id].due < p.cards[b.id].due ? -1 : 1));
+  const fresh = deck.filter((c) => !p.cards[c.id]);
+  return [...due, ...fresh].slice(0, limit);
+}
+
+export function finishTalk(p0: Progress, id: string, firstTry: number): Progress {
+  const p = touchDay(p0);
+  return { ...p, talks: p.talks.includes(id) ? p.talks : [...p.talks, id], xp: p.xp + 5 + firstTry };
 }

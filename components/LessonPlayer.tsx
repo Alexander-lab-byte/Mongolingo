@@ -43,7 +43,11 @@ function pickWrong(pool: string[], answer: string, seed: number) {
 function buildQuestions(lesson: Lesson): Question[] {
   // Wrong answers come from this lesson AND earlier ones, so the quiz is not too easy.
   const idx = LESSONS.findIndex((l) => l.id === lesson.id);
-  const pool = LESSONS.slice(0, idx + 1).filter((l) => l.kind === lesson.kind).flatMap((l) => l.items);
+  // Numbers are only mixed with numbers, so wrong answers are believable.
+  const isNum = (id: string) => id.startsWith("numbers") || id === "money";
+  const pool = LESSONS.slice(0, idx + 1)
+    .filter((l) => l.kind === lesson.kind && isNum(l.id) === isNum(lesson.id))
+    .flatMap((l) => l.items);
   const qs: Question[] = [];
   lesson.items.forEach((it, i) => {
     if (lesson.kind === "letters") {

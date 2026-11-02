@@ -163,6 +163,50 @@ export const LESSONS: Lesson[] = [
       { id: "bayartai", show: "Баяртай", say: "bayartai", hint: "", emoji: "🫶", trick: "Like 'bayarlalaa' but shorter.", meaning: "Goodbye" },
     ],
   },
+  {
+    id: "numbers1",
+    title: "Numbers 1 to 5",
+    subtitle: "Count in Mongolian",
+    emoji: "🔢",
+    kind: "words",
+    items: [
+      { id: "n1", show: "нэг", say: "neg", hint: "", emoji: "1️⃣", trick: "Think of one long neck: neg.", meaning: "1" },
+      { id: "n2", show: "хоёр", say: "khoyor", hint: "", emoji: "2️⃣", trick: "Two singers in a choir: kho-yor.", meaning: "2" },
+      { id: "n3", show: "гурав", say: "gurav", hint: "", emoji: "3️⃣", trick: "Three gurus: gu-rav.", meaning: "3" },
+      { id: "n4", show: "дөрөв", say: "döröv", hint: "", emoji: "4️⃣", trick: "Four doors: dö-röv.", meaning: "4" },
+      { id: "n5", show: "тав", say: "tav", hint: "", emoji: "5️⃣", trick: "A five-star tavern: tav.", meaning: "5" },
+    ],
+  },
+  {
+    id: "numbers2",
+    title: "Numbers 6 to 10",
+    subtitle: "Finish counting to ten",
+    emoji: "🔢",
+    kind: "words",
+    items: [
+      { id: "n6", show: "зургаа", say: "zurgaa", hint: "", emoji: "6️⃣", trick: "Six zebras: zur-gaa.", meaning: "6" },
+      { id: "n7", show: "долоо", say: "doloo", hint: "", emoji: "7️⃣", trick: "Seven dollars: do-loo.", meaning: "7" },
+      { id: "n8", show: "найм", say: "naim", hint: "", emoji: "8️⃣", trick: "Eight sounds like “name”: naim.", meaning: "8" },
+      { id: "n9", show: "ес", say: "yös", hint: "", emoji: "9️⃣", trick: "Nine? Yes! yös.", meaning: "9" },
+      { id: "n10", show: "арав", say: "arav", hint: "", emoji: "🔟", trick: "Ten people at a rave: a-rav.", meaning: "10" },
+    ],
+  },
+  {
+    id: "money",
+    title: "Prices and money",
+    subtitle: "Understand prices at the shop",
+    emoji: "💰",
+    kind: "words",
+    items: [
+      { id: "n20", show: "хорь", say: "khori", hint: "", emoji: "💵", trick: "Twenty voices in a chorus: khori.", meaning: "20" },
+      { id: "n50", show: "тавь", say: "tavi", hint: "", emoji: "💵", trick: "Fifty looks like тав (5) with a soft ь.", meaning: "50" },
+      { id: "n100", show: "зуу", say: "zuu", hint: "", emoji: "💯", trick: "A hundred animals at the zoo: zuu.", meaning: "100" },
+      { id: "n500", show: "таван зуу", say: "tavan zuu", hint: "", emoji: "💴", trick: "Five hundreds: таван (5) + зуу (100).", meaning: "500" },
+      { id: "n1000", show: "мянга", say: "myanga", hint: "", emoji: "💰", trick: "A thousand is many: myanga.", meaning: "1,000" },
+      { id: "n5000", show: "таван мянга", say: "tavan myanga", hint: "", emoji: "💰", trick: "Five thousands: таван + мянга.", meaning: "5,000" },
+      { id: "n10000", show: "арван мянга", say: "arvan myanga", hint: "", emoji: "🏦", trick: "Ten thousands: арван + мянга. Prices are in төгрөг (₮).", meaning: "10,000" },
+    ],
+  },
 ];
 
 export const TOTAL_LETTERS = LESSONS.filter((l) => l.kind === "letters").reduce(
