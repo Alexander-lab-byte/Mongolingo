@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Nav, Logo } from "@/components/Nav";
-import { SteppeScene } from "@/components/SteppeScene";
+import { HeroBlast } from "@/components/HeroBlast";
 import { TryDemo } from "@/components/TryDemo";
 import { AlphabetBoard } from "@/components/AlphabetBoard";
 import { StreetSigns } from "@/components/StreetSigns";
@@ -23,7 +23,7 @@ export default function Home() {
       </a>
       <Nav />
       <main>
-        <SteppeScene />
+        <HeroBlast />
 
         <section className="bg-gradient-to-b from-paper to-sage-mist px-4 py-20" aria-labelledby="need-now">
           <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_1.3fr] lg:items-start">
