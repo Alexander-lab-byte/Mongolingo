@@ -347,7 +347,10 @@ export function HeroBlast() {
 
       {/* tilted ribbon */}
       <div className="relative -mx-6 mb-10 -rotate-[1.6deg] bg-blend py-4 shadow-[0_24px_40px_-28px_rgba(59,39,22,0.7)]" aria-hidden>
-        <div className="marquee-slow flex w-max whitespace-nowrap font-display text-2xl font-bold sm:text-3xl">
+        <div
+          className="flex w-max whitespace-nowrap font-display text-2xl font-bold sm:text-3xl"
+          style={{ animation: "marquee 70s linear infinite" }}
+        >
           {[0, 1].map((k) => (
             <span key={k} className="flex">
               {RIBBON.map((w, j) => (
