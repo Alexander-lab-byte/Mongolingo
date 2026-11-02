@@ -39,7 +39,7 @@ Every choice below is backed by a published study or an official standard. We al
 
 ## Colors: warm, calm and easy on the eyes
 
-The palette, "Warm sand + saddle brown", uses **no blue anywhere**. It follows three groups of studies:
+The palette, "Brown, sage & cream", uses **no blue anywhere**. It follows three groups of studies:
 
 | Finding | Study | What we did |
 |---|---|---|
@@ -49,15 +49,18 @@ The palette, "Warm sand + saddle brown", uses **no blue anywhere**. It follows t
 
 | Name | Hex | Used for |
 |---|---|---|
-| Cream | `#fbf5ec` | page background |
-| Warm white | `#fffdf9` | cards and panels |
-| Peach | `#fbe9da` | highlight areas, icon tiles |
-| Charcoal | `#2a2420` | text (14:1 on cream) |
-| Warm grey | `#5c5249` | secondary text (7:1 on cream) |
-| Saddle brown | `#7a4b2a` | buttons and links only (white text 7.2:1, AAA) |
-| Caramel | `#d9a066` | progress bar gradient |
-| Saffron | `#e8b04b` | stars, goal, taxi |
-| Green / Red | `#276b43` / `#b3403a` | right / wrong, always with an icon and words |
+| Cream | `#f7eedf` | page background |
+| Card white | `#fffbf4` | cards and panels |
+| Light sage | `#e8efe3` | calm highlight areas (translator result, icon tiles) |
+| Mid sage | `#a9c2a6` | "tricky twin" letters, café awning, hills |
+| Sage | `#6e8f6e` | icons, progress, decoration (never text: 3.5:1) |
+| Deep brown | `#3b2716` | text (12:1 on cream) |
+| Soft brown | `#6a5440` | secondary text (6:1 on cream) |
+| Brown | `#563a1f` | buttons and links (cream text 10:1) |
+| Soft yellow | `#f2cf6a` | stars, goal, taxi, café sign |
+| Green / Red | `#2f6b3f` / `#a43f33` | right / wrong, always with an icon and words |
+
+Why brown, sage and cream: low‑saturation green is among the lowest‑arousal colors in Wilms & Oberfeld (2018), cream is the warm background that reads fastest (Rello & Bigham, 2017), and brown gives strong, quiet contrast for text and buttons.
 
 Popular claims like "blue = trust, red = urgency" have weak support (Elliot, 2015, *Frontiers in Psychology*), so we don't rely on them. We use only the effects above, which come from controlled experiments.
 

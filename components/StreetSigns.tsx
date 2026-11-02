@@ -22,7 +22,7 @@ export function StreetSigns() {
 
         <div className="mt-12 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           <Sign en="Pharmacy" note="emiin san">
-            <div className="flex items-center gap-4 rounded-xl bg-[#276b43] px-5 py-4 text-white shadow-lg">
+            <div className="flex items-center gap-4 rounded-xl bg-[#2f6b3f] px-5 py-4 text-white shadow-lg">
               <span className="relative block h-12 w-12" aria-hidden>
                 <span className="absolute left-1/2 top-0 h-full w-4 -translate-x-1/2 rounded-sm bg-white" />
                 <span className="absolute left-0 top-1/2 h-4 w-full -translate-y-1/2 rounded-sm bg-white" />
@@ -34,12 +34,12 @@ export function StreetSigns() {
           <Sign en="Shop" note="delgüür">
             <div className="w-full max-w-xs overflow-hidden rounded-lg shadow-lg">
               <div className="bg-cobalt px-4 py-3 text-center font-display text-3xl font-extrabold text-white">ДЭЛГҮҮР</div>
-              <div className="h-5" style={{ background: "repeating-linear-gradient(90deg,#e9935a 0 22px,#fffdf9 22px 44px)" }} />
+              <div className="h-5" style={{ background: "repeating-linear-gradient(90deg,#a9c2a6 0 22px,#fffbf4 22px 44px)" }} />
             </div>
           </Sign>
 
           <Sign en="Exit" note="garts">
-            <div className="flex items-center gap-3 rounded-lg bg-[#276b43] px-5 py-3 text-white shadow-lg">
+            <div className="flex items-center gap-3 rounded-lg bg-[#2f6b3f] px-5 py-3 text-white shadow-lg">
               <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <circle cx="13" cy="4" r="2" fill="#fff" />
                 <path d="M7 21l3-6 3 2v4M10 15l1-5 4 3 3 1M6 11l3-2 2 1" />
@@ -80,7 +80,7 @@ export function StreetSigns() {
               <div className="rounded-t-2xl bg-gold px-7 pb-2 pt-3">
                 <span className="font-display text-4xl font-extrabold text-night">ТАКСИ</span>
               </div>
-              <div className="h-4 w-full rounded-b-md" style={{ background: "repeating-linear-gradient(90deg,#2a2420 0 14px,#fffdf9 14px 28px)" }} />
+              <div className="h-4 w-full rounded-b-md" style={{ background: "repeating-linear-gradient(90deg,#3b2716 0 14px,#fffbf4 14px 28px)" }} />
             </div>
           </Sign>
         </div>

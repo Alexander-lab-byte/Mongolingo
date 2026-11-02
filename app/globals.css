@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
-  Mongolingo — "Warm sand + saddle brown" (no blue anywhere)
+  Mongolingo — "Brown, sage & cream" (no blue anywhere)
   Research behind the palette (see docs/RESEARCH.md):
   - Warm backgrounds (peach, cream, yellow) are read faster than cool ones (Rello & Bigham, 2017, n=341).
   - Saturated, bright colors raise arousal; low-saturation colors are calmest (Wilms & Oberfeld, 2018).
@@ -12,25 +12,25 @@
   Every text pair passes WCAG 2.2 AA; body text pairs are 7:1 or more.
 */
 @theme {
-  --color-white: #fffdf9; /* warm white: less glare than #fff */
-  --color-night: #2a2420; /* warm charcoal */
-  --color-night-2: #3a322c;
-  --color-cobalt: #7a4b2a; /* saddle brown — buttons and links only (name kept for code history) */
-  --color-cobalt-dark: #623b20;
-  --color-sky: #d9a066; /* caramel */
-  --color-sky-soft: #fbe9da; /* peach — highlight areas */
-  --color-coral: #e9935a; /* apricot */
-  --color-coral-ink: #9c3f22;
-  --color-gold: #e8b04b; /* soft saffron */
-  --color-gold-soft: #fbefd6;
-  --color-paper: #fbf5ec; /* warm cream background */
-  --color-ink: #2a2420;
-  --color-ink-soft: #5c5249;
-  --color-line: #e7dccb;
-  --color-ok: #276b43;
-  --color-ok-soft: #e5f2e8;
-  --color-bad: #b3403a;
-  --color-bad-soft: #fbe6e2;
+  --color-white: #fffbf4; /* warm card white: less glare than #fff */
+  --color-night: #3b2716; /* deep brown */
+  --color-night-2: #4a3220;
+  --color-cobalt: #563a1f; /* brown — buttons and links (name kept for code history) */
+  --color-cobalt-dark: #432c17;
+  --color-sky: #6e8f6e; /* sage — icons, progress, decoration (not for text) */
+  --color-sky-soft: #e8efe3; /* light sage — calm highlight areas */
+  --color-coral: #a9c2a6; /* mid sage */
+  --color-coral-ink: #3b2716;
+  --color-gold: #f2cf6a; /* soft yellow */
+  --color-gold-soft: #faefd2;
+  --color-paper: #f7eedf; /* cream background */
+  --color-ink: #3b2716;
+  --color-ink-soft: #6a5440;
+  --color-line: #e6d8c2;
+  --color-ok: #2f6b3f;
+  --color-ok-soft: #e3eedf;
+  --color-bad: #a43f33;
+  --color-bad-soft: #f8e3dc;
   --font-sans: "Onest Variable", system-ui, sans-serif;
   --font-display: "Montserrat Variable", "Onest Variable", system-ui, sans-serif;
 }
@@ -96,9 +96,9 @@ p { text-wrap: pretty; }
 .btn-gold {
   background: var(--color-gold);
   color: var(--color-night);
-  box-shadow: 0 2px 0 #c48f2c;
+  box-shadow: 0 2px 0 #d4ad45;
 }
-.btn-gold:hover { background: #efbd5f; }
+.btn-gold:hover { background: #f5d886; }
 .btn-line { border: 2px solid currentColor; background: transparent; }
 .btn-line:hover { background: rgba(92, 82, 73, 0.08); }
 
@@ -106,7 +106,7 @@ p { text-wrap: pretty; }
   background: #fff;
   border: 1px solid var(--color-line);
   border-radius: 28px;
-  box-shadow: 0 1px 0 rgba(42, 36, 32, 0.04), 0 18px 40px -28px rgba(42, 36, 32, 0.3);
+  box-shadow: 0 1px 0 rgba(59, 39, 22, 0.04), 0 18px 40px -28px rgba(59, 39, 22, 0.3);
 }
 
 .glass {
@@ -117,11 +117,11 @@ p { text-wrap: pretty; }
 }
 
 .light-glass {
-  background: rgba(255, 253, 249, 0.88);
-  border: 1px solid rgba(255, 253, 249, 0.95);
+  background: rgba(255, 251, 244, 0.9);
+  border: 1px solid rgba(255, 251, 244, 0.95);
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
-  box-shadow: 0 18px 44px -26px rgba(42, 36, 32, 0.35);
+  box-shadow: 0 18px 44px -26px rgba(59, 39, 22, 0.35);
 }
 
 .input {
@@ -134,8 +134,8 @@ p { text-wrap: pretty; }
   background: #fff;
   transition: border-color 0.15s ease;
 }
-.input:hover { border-color: #cdbfa9; }
-.input:focus { outline: none; border-color: var(--color-cobalt); box-shadow: 0 0 0 4px rgba(122, 75, 42, 0.2); }
+.input:hover { border-color: #c9b597; }
+.input:focus { outline: none; border-color: var(--color-cobalt); box-shadow: 0 0 0 4px rgba(86, 58, 31, 0.2); }
 
 @keyframes pop {
   0% { transform: scale(0.92); opacity: 0; }
