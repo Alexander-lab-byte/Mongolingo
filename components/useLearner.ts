@@ -14,22 +14,26 @@ export function useLearner() {
   const [progress, setProgress] = useState<Progress | null>(null);
   const [guest, setGuest] = useState(false);
 
+  // Supabase hands out a new user object on every auth event (even on tab focus),
+  // so depend on these strings: progress must only reload when the person changes.
+  const userId = user?.id;
+  const name = user ? (user.user_metadata?.display_name as string) || user.email?.split("@")[0] || "friend" : "Guest";
+
   useEffect(() => {
     if (loading) return;
-    const asGuest = !user && isGuest();
-    if (!user && !asGuest) {
+    const asGuest = !userId && isGuest();
+    if (!userId && !asGuest) {
       router.replace("/login");
       return;
     }
-    const id = user?.id ?? GUEST_ID;
-    const name = user
-      ? (user.user_metadata?.display_name as string) || user.email?.split("@")[0] || "friend"
-      : "Guest";
+    const id = userId ?? GUEST_ID;
+    let stale = false;
     loadProgress(id, name).then((p) => {
+      if (stale) return;
       // Carry over the free mini lesson: they already met 5 friendly letters (endowed progress).
       let next = p;
       try {
-        if (user && localStorage.getItem(DEMO_KEY) && !p.completed.includes("friends")) {
+        if (userId && localStorage.getItem(DEMO_KEY) && !p.completed.includes("friends")) {
           next = { ...p, xp: p.xp + 5 };
           localStorage.removeItem(DEMO_KEY);
           saveProgress(id, next);
@@ -38,7 +42,10 @@ export function useLearner() {
       setGuest(asGuest);
       setProgress(next);
     });
-  }, [user, loading, router]);
+    return () => {
+      stale = true;
+    };
+  }, [userId, name, loading, router]);
 
   // Keep every open screen (including pages kept alive in the background) in sync.
   useEffect(() => {
@@ -51,9 +58,9 @@ export function useLearner() {
     async (p: Progress) => {
       setProgress(p);
       window.dispatchEvent(new CustomEvent(PROGRESS_EVENT, { detail: p }));
-      await saveProgress(user?.id ?? GUEST_ID, p);
+      await saveProgress(userId ?? GUEST_ID, p);
     },
-    [user],
+    [userId],
   );
 
   return { user, guest, progress: progress ?? (loading ? null : EMPTY), ready: !!progress, update };

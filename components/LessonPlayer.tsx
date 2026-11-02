@@ -115,6 +115,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const [baseQuestions, setBaseQuestions] = useState<Question[]>([]);
   const [queue, setQueue] = useState<Question[]>([]);
   const [qi, setQi] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [missed, setMissed] = useState<Set<string>>(new Set());
   const [result, setResult] = useState<{ stars: number; firstTry: number; wasReview: boolean } | null>(null);
@@ -128,7 +129,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const questionCount = lesson.items.length * 2;
   const totalSteps = lesson.items.length + questionCount;
   const doneSteps =
-    phase === "learn" ? card : phase === "quiz" ? lesson.items.length + Math.min(qi, questionCount) : totalSteps;
+    phase === "learn" ? card : phase === "quiz" ? lesson.items.length + correctAnswers : totalSteps;
   const pct = Math.round((doneSteps / totalSteps) * 100);
 
   function startQuiz() {
@@ -136,22 +137,27 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
     setBaseQuestions(qs);
     setQueue(qs);
     setQi(0);
+    setCorrectAnswers(0);
     setPicked(null);
     setPhase("quiz");
   }
 
   async function answer(o: string) {
-    if (picked) return;
+    if (picked != null) return;
     setPicked(o);
     const q = queue[qi];
     if (o !== q.answer) {
-      setMissed((m) => new Set(m).add(q.key));
+      // Only first tries count toward the score, not misses on the repeat questions.
+      if (qi < baseQuestions.length) setMissed((m) => new Set(m).add(q.key));
       // Ask it again at the end: practice what you got wrong.
       setQueue((qq) => [...qq, { ...q, key: q.key + "-again", options: shuffle(q.options, qq.length) }]);
     }
   }
 
   async function nextQuestion() {
+    if (picked == null) return;
+    // Moving to another question only fills the bar after a correct answer.
+    if (picked === queue[qi].answer) setCorrectAnswers((count) => count + 1);
     if (qi + 1 < queue.length) {
       setQi(qi + 1);
       setPicked(null);
@@ -303,13 +309,13 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
                   key={o}
                   label={o}
                   big={q.bigOptions}
-                  state={picked == null ? "idle" : o === q.answer ? "right" : o === picked ? "wrong" : "dim"}
+                  state={picked == null ? "idle" : o !== picked ? "dim" : o === q.answer ? "right" : "wrong"}
                   onClick={() => answer(o)}
                 />
               ))}
             </div>
             {picked != null && (
-              <Feedback ok={picked === q.answer} text={picked === q.answer ? `Correct! ${q.explain}` : `Good try. ${q.explain}`} onNext={nextQuestion} />
+              <Feedback ok={picked === q.answer} text={picked === q.answer ? `Correct! ${q.explain}` : "That’s incorrect."} onNext={nextQuestion} />
             )}
           </div>
         )}

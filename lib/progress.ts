@@ -93,7 +93,7 @@ export async function saveProgress(userId: string, p: Progress) {
   writeLocal(userId, p);
   const sb = userId === GUEST_ID ? null : getSupabase();
   if (!sb) return;
-  await sb.from("progress").upsert({
+  const { error } = await sb.from("progress").upsert({
     user_id: userId,
     display_name: p.displayName,
     completed_lessons: p.completed,
@@ -104,6 +104,7 @@ export async function saveProgress(userId: string, p: Progress) {
     extra: { cards: p.cards, goal: p.goal, day: p.day, reviewed: p.reviewed, bestStreak: p.bestStreak, talks: p.talks },
     updated_at: new Date().toISOString(),
   });
+  if (error) console.error("Could not save progress:", error.message);
 }
 
 /** Marks today as active and updates the streak. */
