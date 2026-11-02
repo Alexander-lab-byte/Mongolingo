@@ -39,30 +39,27 @@ Every choice below is backed by a published study or an official standard. We al
 
 ## Colors: warm, calm and easy on the eyes
 
-The palette, "Sage, wood & cream", uses **no blue anywhere**. It follows three groups of studies:
+The palette, "Blush, sage, mist, tan & brown" (coolors `e8dfe0-8d9b6a-8a9ea7-dab692-8f5b34`), is 5 soft, low‑saturation colors. It follows three groups of studies:
 
 | Finding | Study | What we did |
 |---|---|---|
-| **Warm backgrounds are read faster.** Peach, orange and yellow gave the fastest reading. Blue‑grey, blue and green were slowest. This held for readers with and without dyslexia (341 people). | Rello & Bigham (2017), *Good Background Colors for Readers*, ASSETS | Cream background `#f6efe4`; beige `#efe5d3` and light sage `#e4ebdd` for highlight areas; no cool blue‑grey backgrounds. |
-| **Saturated, bright colors raise arousal** (stress, alertness); low‑saturation colors are the calmest. Brighter colors and **medium** saturation feel most pleasant. | Wilms & Oberfeld (2018), *Psychological Research* 82; Valdez & Mehrabian (1994), *J. Exp. Psychology: General* 123 | Big areas are soft and low‑saturation. Strong color is kept small (buttons, progress, signs). |
-| **Aging eyes:** the lens yellows, blues and greens get confused, pastels blur together, and glare from bright surfaces hurts. | Aging‑eye research (summary: Sherwin‑Williams, *Color and the Aging Eye*) | No pure white (warm white `#fffcf6`); no blue at all, since it's the hue aging eyes lose first; meaning carried by light/dark contrast + icons + words, never by hue alone. |
+| **Warm backgrounds are read faster.** Peach, orange and yellow gave the fastest reading. Blue‑grey, blue and green were slowest. This held for readers with and without dyslexia (341 people). | Rello & Bigham (2017), *Good Background Colors for Readers*, ASSETS | Warm blush background `#e8dfe0`; blue‑grey `#8a9ea7` is used only for small accents, never behind body text. |
+| **Saturated, bright colors raise arousal** (stress, alertness); low‑saturation colors are the calmest. Brighter colors and **medium** saturation feel most pleasant. | Wilms & Oberfeld (2018), *Psychological Research* 82; Valdez & Mehrabian (1994), *J. Exp. Psychology: General* 123 | All 5 base colors are muted. Strong color is kept small (buttons, progress, signs). |
+| **Aging eyes:** the lens yellows, blues and greens get confused, pastels blur together, and glare from bright surfaces hurts. | Aging‑eye research (summary: Sherwin‑Williams, *Color and the Aging Eye*) | No pure white (card white `#fbf8f8`); meaning carried by light/dark contrast + icons + words, never by hue alone. |
 
 | Name | Hex | Used for |
 |---|---|---|
-| Cream | `#f6efe4` | page background |
-| Beige | `#efe5d3` | soft areas, section blends |
-| Sage mist / light sage | `#eef1e6` / `#e4ebdd` | calm highlight areas, section blends |
-| Mid sage | `#a9bfa3` | "tricky twin" letters, café awning, hills |
-| Deep sage | `#4d6a4d` | buttons (white text 5.9:1) |
-| Light / dark wood | `#d8c3a3` / `#7a5a3c` | secondary buttons, letter tiles, shop sign (white on dark wood 6.1:1) |
-| Brown | `#3a2a1c` | text only (12:1 on cream) |
-| Soft brown | `#66574a` | secondary text (6:1 on cream) |
-| Honey | `#d9b878` | taxi and café signs only — no yellow backgrounds |
+| Blush | `#e8dfe0` | page background |
+| Sage | `#8d9b6a` | big soft shapes, "tricky twin" letters, logo (dark text on it 4.6:1) |
+| Mist (blue‑grey) | `#8a9ea7` | small accents only: toono sky, icons, progress |
+| Tan | `#dab692` | letter tiles, highlights, secondary buttons, taxi sign |
+| Brown | `#8f5b34` (text/buttons `#875530`) | primary buttons and links (white text 5.9:1, brown text 4.8:1 on blush) |
+| Light tints | `#e4e6da` / `#dde4e7` / `#efe2d3` | sage / mist / tan highlight areas |
+| Deep brown | `#3a2a1f` | text only (10.5:1 on blush) |
+| Soft brown | `#5f5048` | secondary text (5.9:1 on blush) |
 | Green / Red | `#2e6b3a` / `#a2453a` | right / wrong, always with an icon and words |
 
-**Уусгалт (blending):** big cards use a soft gradient from deep sage to dark wood, highlight areas blend light sage → beige, and page sections fade into each other instead of switching color in hard blocks. Gentle transitions and low saturation keep arousal low (Wilms & Oberfeld, 2018).
-
-Why sage, wood and cream: low‑saturation green is among the lowest‑arousal colors (Wilms & Oberfeld, 2018); cream and beige are warm backgrounds, the fastest to read on (Rello & Bigham, 2017); brown is kept for text, where its strong contrast helps.
+**Уусгалт (blending):** big cards use a gradient of the darker shades: dark sage `#5e6b42` → dark mist `#4e5f69` → dark brown `#6b4426` (white text passes on all). Highlight areas blend light sage → blush → light tan, and page sections fade into each other instead of switching color in hard blocks (Wilms & Oberfeld, 2018).
 
 Popular claims like "blue = trust, red = urgency" have weak support (Elliot, 2015, *Frontiers in Psychology*), so we don't rely on them. We use only the effects above, which come from controlled experiments.
 

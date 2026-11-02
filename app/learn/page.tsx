@@ -252,8 +252,8 @@ function Ring({ pct, label }: { pct: number; label: string }) {
   return (
     <div className="relative grid h-24 w-24 shrink-0 place-items-center" role="img" aria-label={`Daily goal: ${label} cards`}>
       <svg viewBox="0 0 80 80" className="absolute inset-0 -rotate-90">
-        <circle cx="40" cy="40" r={r} fill="none" stroke="#e6d8c2" strokeWidth="8" />
-        <circle cx="40" cy="40" r={r} fill="none" stroke={pct >= 1 ? "#2f6b3f" : "#4d6a4d"} strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} className="transition-all duration-700" />
+        <circle cx="40" cy="40" r={r} fill="none" stroke="#e3d6d0" strokeWidth="8" />
+        <circle cx="40" cy="40" r={r} fill="none" stroke={pct >= 1 ? "#5e6b42" : "#8f5b34"} strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} className="transition-all duration-700" />
       </svg>
       <span className="font-display text-xl font-bold">{label}</span>
     </div>

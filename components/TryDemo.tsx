@@ -257,7 +257,7 @@ export function TaxiSign() {
       </div>
       <div
         className="h-4 w-full rounded-b-md"
-        style={{ background: "repeating-linear-gradient(90deg,#3b2716 0 16px,#fffbf4 16px 32px)" }}
+        style={{ background: "repeating-linear-gradient(90deg,#3a2a1f 0 16px,#fbf8f8 16px 32px)" }}
         aria-hidden
       />
     </div>

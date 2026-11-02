@@ -12,11 +12,11 @@ export function Logo({ dark = false }: { dark?: boolean }) {
       aria-label="Mongolingo home"
     >
       <svg width="44" height="44" viewBox="0 0 40 40" aria-hidden>
-        <rect width="40" height="40" rx="12" fill="#4d6a4d" />
-        <circle cx="29" cy="11" r="5" fill="#d9b878" />
+        <rect width="40" height="40" rx="12" fill="#8d9b6a" />
+        <circle cx="29" cy="11" r="5" fill="#dab692" />
         <path d="M7 31 L7 20 L20 12 L33 20 L33 31 Z" fill="#fff" />
-        <rect x="7" y="20" width="26" height="3" fill="#a9c2a6" />
-        <rect x="17" y="24" width="6" height="7" rx="1" fill="#a9c2a6" />
+        <rect x="7" y="20" width="26" height="3" fill="#8a9ea7" />
+        <rect x="17" y="24" width="6" height="7" rx="1" fill="#8f5b34" />
       </svg>
       <span className="hidden min-[420px]:inline">Mongolingo</span>
     </Link>

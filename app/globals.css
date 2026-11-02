@@ -1,38 +1,43 @@
 @import "tailwindcss";
 
 /*
-  Mongolingo — "Sage, wood & cream" with soft blends (no blue anywhere)
-  Research behind the palette (see docs/RESEARCH.md):
-  - Warm backgrounds (peach, cream, yellow) are read faster than cool ones (Rello & Bigham, 2017, n=341).
-  - Saturated, bright colors raise arousal; low-saturation colors are calmest (Wilms & Oberfeld, 2018).
-    So big areas are soft and warm; strong color is kept small (buttons, progress).
-  - No blue: blue is the hue aging eyes lose first (yellowing lens), and cool backgrounds read slowest.
-  - Aging eyes: yellowing lens, glare from pure white, blue/green confusion. So no pure white,
-    and meaning is carried by light/dark contrast + icons, never by hue alone.
-  Every text pair passes WCAG 2.2 AA; body text pairs are 7:1 or more.
+  Mongolingo — "Blush, sage, mist, tan & brown" (coolors e8dfe0-8d9b6a-8a9ea7-dab692-8f5b34)
+  The 5 base colors:
+    #E8DFE0 blush  — page background (warm-grey, no glare)
+    #8D9B6A sage   — big soft shapes, "tricky twin" tiles
+    #8A9EA7 mist   — accents only (small areas). Blue-grey backgrounds read slower (Rello & Bigham, 2017),
+                     so it is never used behind body text.
+    #DAB692 tan    — highlights, letter tiles, secondary buttons
+    #8F5B34 brown  — primary buttons and links (#875530 used for text: 4.8:1 on blush, 5.9:1 white on it)
+  Darker shades of the same hues are used only where text must pass WCAG 2.2 AA.
+  Meaning is carried by light/dark contrast + icons + words, never by hue alone.
 */
 @theme {
-  --color-white: #fffcf6; /* card white: less glare than #fff */
-  --color-night: #3a2a1c; /* brown — text only */
-  --color-night-2: #4a3626;
-  --color-cobalt: #4d6a4d; /* deep sage — buttons (name kept for code history) */
-  --color-cobalt-dark: #3d553d;
-  --color-sky: #a47e58; /* natural wood — progress, icons */
-  --color-sky-soft: #e4ebdd; /* light sage — calm highlight areas */
-  --color-sage-mist: #eef1e6; /* blend between cream and sage */
-  --color-coral: #a9bfa3; /* mid sage */
-  --color-coral-ink: #3a2a1c;
-  --color-gold: #d8c3a3; /* light wood (replaces yellow) */
-  --color-gold-soft: #efe5d3; /* beige (replaces soft yellow) */
-  --color-beige: #efe5d3;
-  --color-wood: #a47e58;
-  --color-wood-light: #d8c3a3;
-  --color-wood-dark: #7a5a3c;
-  --color-honey: #d9b878;
-  --color-paper: #f6efe4; /* cream background */
-  --color-ink: #3a2a1c;
-  --color-ink-soft: #66574a;
-  --color-line: #e2d6c3;
+  --color-white: #fbf8f8; /* card white: less glare than #fff */
+  --color-night: #3a2a1f; /* deep brown — text only */
+  --color-night-2: #4a3628;
+  --color-cobalt: #875530; /* palette brown, a touch deeper so small text passes AA on blush (4.8:1) — buttons */
+  --color-cobalt-dark: #6b4426;
+  --color-sky: #8a9ea7; /* mist — progress, icons */
+  --color-sky-soft: #dde4e7; /* light mist — small highlight areas */
+  --color-sage-mist: #e4e6da; /* light sage */
+  --color-coral: #8d9b6a; /* sage */
+  --color-coral-ink: #3a2a1f;
+  --color-gold: #dab692; /* tan */
+  --color-gold-soft: #efe2d3;
+  --color-beige: #efe2d3;
+  --color-wood: #8f5b34;
+  --color-wood-light: #dab692;
+  --color-wood-dark: #6b4426;
+  --color-honey: #dab692;
+  --color-sage: #8d9b6a;
+  --color-sage-dark: #5e6b42;
+  --color-mist: #8a9ea7;
+  --color-mist-dark: #4e5f69;
+  --color-paper: #e8dfe0; /* blush background */
+  --color-ink: #3a2a1f;
+  --color-ink-soft: #5f5048;
+  --color-line: #d5c8c9;
   --color-ok: #2e6b3a;
   --color-ok-soft: #e3eedf;
   --color-bad: #a2453a;
@@ -102,9 +107,9 @@ p { text-wrap: pretty; }
 .btn-gold {
   background: var(--color-wood-light);
   color: var(--color-ink);
-  box-shadow: 0 2px 0 #b9a07c;
+  box-shadow: 0 2px 0 #b8946f;
 }
-.btn-gold:hover { background: #e0ceb2; }
+.btn-gold:hover { background: #e3c6a8; }
 .btn-line { border: 2px solid currentColor; background: transparent; }
 .btn-line:hover { background: rgba(92, 82, 73, 0.08); }
 
@@ -123,8 +128,8 @@ p { text-wrap: pretty; }
 }
 
 .light-glass {
-  background: rgba(255, 251, 244, 0.9);
-  border: 1px solid rgba(255, 251, 244, 0.95);
+  background: rgba(251, 248, 248, 0.9);
+  border: 1px solid rgba(251, 248, 248, 0.95);
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
   box-shadow: 0 18px 44px -26px rgba(59, 39, 22, 0.35);
@@ -140,8 +145,8 @@ p { text-wrap: pretty; }
   background: #fff;
   transition: border-color 0.15s ease;
 }
-.input:hover { border-color: #c9b597; }
-.input:focus { outline: none; border-color: var(--color-cobalt); box-shadow: 0 0 0 4px rgba(77, 106, 77, 0.22); }
+.input:hover { border-color: #c2b2b4; }
+.input:focus { outline: none; border-color: var(--color-cobalt); box-shadow: 0 0 0 4px rgba(143, 91, 52, 0.22); }
 
 @keyframes pop {
   0% { transform: scale(0.92); opacity: 0; }
@@ -165,13 +170,13 @@ p { text-wrap: pretty; }
   .hero-word { font-size: 96px; letter-spacing: -2px; }
 }
 
-/* Уусгалт — soft blends between sage and natural wood, so no area feels like a hard block. */
+/* Уусгалт — soft blends: dark sage → dark mist → dark brown, so no area feels like a hard block. */
 .bg-blend {
-  background: linear-gradient(135deg, #4d6a4d 0%, #5b6f4f 45%, #7a5a3c 100%);
+  background: linear-gradient(120deg, #5e6b42 0%, #4e5f69 50%, #6b4426 100%);
   color: var(--color-white);
 }
 .bg-blend-soft {
-  background: linear-gradient(135deg, #e4ebdd 0%, #eef1e6 45%, #efe5d3 100%);
+  background: linear-gradient(135deg, #e4e6da 0%, #e8dfe0 50%, #efe2d3 100%);
 }
 
 /* ---- Starting page hero (HeroBlast) ---- */

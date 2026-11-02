@@ -93,20 +93,20 @@ function Toono({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> })
           <path id="ring-outer" d={ring(262)} />
           <path id="ring-inner" d={ring(196)} />
           <radialGradient id="toono-glow">
-            <stop offset="0" stopColor="#fff4dc" />
-            <stop offset="0.45" stopColor="#efe5d3" />
-            <stop offset="1" stopColor="#efe5d3" stopOpacity="0" />
+            <stop offset="0" stopColor="#f6ece0" />
+            <stop offset="0.45" stopColor="#efe2d3" />
+            <stop offset="1" stopColor="#efe2d3" stopOpacity="0" />
           </radialGradient>
           <radialGradient id="toono-sky">
-            <stop offset="0" stopColor="#eef1e6" />
-            <stop offset="1" stopColor="#a9bfa3" />
+            <stop offset="0" stopColor="#e4e6da" />
+            <stop offset="1" stopColor="#8a9ea7" />
           </radialGradient>
         </defs>
 
         <circle cx={C} cy={C} r="300" fill="url(#toono-glow)" />
 
         {/* roof poles (уни) */}
-        <g stroke="#d8c3a3" strokeWidth="5" strokeLinecap="round">
+        <g stroke="#dab692" strokeWidth="5" strokeLinecap="round">
           {poles.map((a, i) => (
             <line key={i} x1={r1(C + Math.cos(a) * 150)} y1={r1(C + Math.sin(a) * 150)} x2={r1(C + Math.cos(a) * 232)} y2={r1(C + Math.sin(a) * 232)} />
           ))}
@@ -114,8 +114,8 @@ function Toono({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> })
 
         {/* outer ring: all 35 letters */}
         <g className="spin-slow">
-          <circle cx={C} cy={C} r="284" fill="none" stroke="#a47e58" strokeWidth="2" strokeDasharray="3 9" />
-          <text fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="30" fill="#7a5a3c">
+          <circle cx={C} cy={C} r="284" fill="none" stroke="#b08a66" strokeWidth="2" strokeDasharray="3 9" />
+          <text fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="30" fill="#6b4426">
             <textPath href="#ring-outer" textLength={Math.round(2 * Math.PI * 262)} lengthAdjust="spacing">
               {CYR.split("").join(" ") + " "}
             </textPath>
@@ -124,7 +124,7 @@ function Toono({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> })
 
         {/* inner ring: day-one words */}
         <g className="spin-rev">
-          <text fontFamily="Montserrat Variable, sans-serif" fontWeight="700" fontSize="19" fill="#4d6a4d" letterSpacing="2">
+          <text fontFamily="Montserrat Variable, sans-serif" fontWeight="700" fontSize="19" fill="#5e6b42" letterSpacing="2">
             <textPath href="#ring-inner" textLength={Math.round(2 * Math.PI * 196)} lengthAdjust="spacing">
               САЙН УУ ✦ БАЯРЛАЛАА ✦ ХЭД ВЭ ✦ ТАКСИ ✦ КАФЕ ✦ ЭМИЙН САН ✦ ДЭЛГҮҮР ✦ ЗА ✦
             </textPath>
@@ -133,16 +133,16 @@ function Toono({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> })
 
         {/* the toono: wooden crown with crossing bands, sky inside */}
         <circle cx={C} cy={C} r="140" fill="url(#toono-sky)" />
-        <circle cx={C} cy={C} r="140" fill="none" stroke="#7a5a3c" strokeWidth="16" />
-        <circle cx={C} cy={C} r="122" fill="none" stroke="#a47e58" strokeWidth="4" strokeDasharray="2 11" strokeLinecap="round" />
-        <g className="spin-toono" stroke="#7a5a3c" strokeWidth="11" fill="none" strokeLinecap="round">
+        <circle cx={C} cy={C} r="140" fill="none" stroke="#6b4426" strokeWidth="16" />
+        <circle cx={C} cy={C} r="122" fill="none" stroke="#b08a66" strokeWidth="4" strokeDasharray="2 11" strokeLinecap="round" />
+        <g className="spin-toono" stroke="#6b4426" strokeWidth="11" fill="none" strokeLinecap="round">
           <path d={`M${C} 162 Q 252 ${C} ${C} 438`} />
           <path d={`M${C} 162 Q 348 ${C} ${C} 438`} />
           <path d={`M162 ${C} Q ${C} 252 438 ${C}`} />
           <path d={`M162 ${C} Q ${C} 348 438 ${C}`} />
         </g>
-        <circle cx={C} cy={C} r="28" fill="#4d6a4d" stroke="#fffcf6" strokeWidth="6" />
-        <circle cx={C + 46} cy={C - 54} r="14" fill="#d9b878" className="pulse-sun" />
+        <circle cx={C} cy={C} r="28" fill="#8d9b6a" stroke="#fbf8f8" strokeWidth="6" />
+        <circle cx={C + 46} cy={C - 54} r="14" fill="#dab692" className="pulse-sun" />
       </svg>
     </motion.div>
   );
@@ -172,7 +172,7 @@ function Tile({ t, mx, my, i }: { t: (typeof TILES)[number]; mx: MotionValue<num
             animate={{ rotateY: flip ? 180 : 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 18 }}
           >
-            <span className="absolute inset-0 grid place-items-center rounded-[22px] bg-white font-display text-4xl font-extrabold text-ink shadow-[0_3px_0_#d8c3a3,0_20px_34px_-18px_rgba(59,39,22,0.55)] ring-1 ring-line [backface-visibility:hidden] sm:text-5xl">
+            <span className="absolute inset-0 grid place-items-center rounded-[22px] bg-white font-display text-4xl font-extrabold text-ink shadow-[0_3px_0_#dab692,0_20px_34px_-18px_rgba(59,39,22,0.55)] ring-1 ring-line [backface-visibility:hidden] sm:text-5xl">
               {t.c}
             </span>
             <span className="absolute inset-0 flex flex-col items-center justify-center rounded-[22px] bg-blend leading-tight shadow-[0_20px_34px_-18px_rgba(59,39,22,0.55)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
@@ -205,7 +205,7 @@ export function HeroBlast() {
   const my = useSpring(rawY, { stiffness: 70, damping: 18 });
   const px = useMotionValue(50);
   const py = useMotionValue(40);
-  const spotlight = useMotionTemplate`radial-gradient(600px circle at ${px}% ${py}%, rgba(217,184,120,0.28), transparent 60%)`;
+  const spotlight = useMotionTemplate`radial-gradient(600px circle at ${px}% ${py}%, rgba(218,182,146,0.34), transparent 60%)`;
 
   const onMove = (e: React.PointerEvent<HTMLElement>) => {
     if (reduce || e.pointerType !== "mouse") return;
@@ -264,7 +264,7 @@ export function HeroBlast() {
                     key={idx}
                     d="M4 14 C 80 4, 160 4, 296 10"
                     fill="none"
-                    stroke="#d9b878"
+                    stroke="#dab692"
                     strokeWidth="7"
                     strokeLinecap="round"
                     initial={{ pathLength: reduce ? 1 : 0 }}
@@ -298,7 +298,7 @@ export function HeroBlast() {
               {KNOWN.map((c, i) => (
                 <li
                   key={c}
-                  className="grid h-11 w-11 place-items-center rounded-xl bg-gold font-display text-xl font-extrabold text-night shadow-[0_2px_0_#b9a07c] transition-transform hover:-translate-y-1.5 hover:rotate-[-6deg]"
+                  className="grid h-11 w-11 place-items-center rounded-xl bg-gold font-display text-xl font-extrabold text-night shadow-[0_2px_0_#b8946f] transition-transform hover:-translate-y-1.5 hover:rotate-[-6deg]"
                   style={{ transitionDelay: `${i * 20}ms` }}
                   aria-hidden
                 >

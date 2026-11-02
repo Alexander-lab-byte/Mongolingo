@@ -87,7 +87,7 @@ export function Feedback({
   );
 }
 
-const SPARK_COLORS = ["#4d6a4d", "#a47e58", "#a9c2a6", "#d9b878", "#2f6b3f"];
+const SPARK_COLORS = ["#8f5b34", "#b08a66", "#8d9b6a", "#dab692", "#5e6b42"];
 
 export function Confetti() {
   return (
