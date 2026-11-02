@@ -1,5 +1,6 @@
 "use client";
 
+import { Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 /**
@@ -25,7 +26,7 @@ export function Speak({ text, label }: { text: string; label?: string }) {
   return (
     <button
       type="button"
-      className="btn btn-ghost"
+      className="btn btn-line text-ink"
       onClick={() => {
         const u = new SpeechSynthesisUtterance(text);
         u.voice = voice;
@@ -35,7 +36,7 @@ export function Speak({ text, label }: { text: string; label?: string }) {
         window.speechSynthesis.speak(u);
       }}
     >
-      🔊 {label ?? "Listen"}
+      <Volume2 size={20} aria-hidden /> {label ?? "Listen"}
     </button>
   );
 }

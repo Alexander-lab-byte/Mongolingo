@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { AlertCircle, Mail } from "lucide-react";
 import { Logo, TextSizeControl } from "@/components/Nav";
 import { useAuth } from "@/components/Providers";
 import { getSupabase } from "@/lib/supabase";
@@ -62,24 +63,42 @@ export default function LoginPage() {
   const isSignup = mode === "signup";
 
   return (
-    <div className="min-h-screen bg-sky">
-      <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4">
+    <div className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
+      <aside className="relative hidden overflow-hidden bg-night p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <Logo />
-        <TextSizeControl />
-      </header>
-      <main className="mx-auto max-w-lg px-4 pb-16 pt-4">
-        <div className="card p-6 sm:p-8">
-          <div className="text-center text-6xl" aria-hidden>
-            {isSignup ? "🏕️" : "👋"}
-          </div>
-          <h1 className="mt-2 text-center text-3xl font-black">
-            {isSignup ? "Create your free account" : "Welcome back!"}
-          </h1>
-          <p className="mt-1 text-center text-lg text-ink-soft">
-            {isSignup ? "Save your progress and keep learning." : "Log in to continue your lessons."}
+        <div className="relative z-10">
+          <p className="font-display text-[7rem] font-extrabold leading-none text-sky/90">Сайн уу</p>
+          <p className="mt-4 max-w-sm text-xl text-white/85">
+            “Сайн уу” means hello. In a few lessons you&apos;ll read it, say it, and understand the answer.
+          </p>
+        </div>
+        <svg viewBox="0 0 600 200" className="absolute inset-x-0 bottom-0 w-full" aria-hidden>
+          <path d="M0 120 L90 60 L170 110 L260 40 L360 110 L450 70 L600 130 L600 200 L0 200Z" fill="#1b2a63" />
+          <path d="M0 160 C150 130 300 150 450 140 C520 135 560 140 600 150 L600 200 L0 200Z" fill="#1e5bff" opacity="0.6" />
+          <circle cx="480" cy="40" r="22" fill="#ffc531" />
+        </svg>
+      </aside>
+
+      <div className="flex flex-col bg-paper">
+        <header className="flex items-center justify-between gap-3 bg-night px-4 py-3 lg:bg-transparent lg:px-8 lg:py-6">
+          <span className="lg:hidden">
+            <Logo />
+          </span>
+          <span className="hidden lg:block" />
+          <span className="lg:hidden">
+            <TextSizeControl />
+          </span>
+          <span className="hidden lg:block">
+            <TextSizeControl dark={false} />
+          </span>
+        </header>
+        <main className="mx-auto w-full max-w-md flex-1 px-4 pb-16 pt-8 lg:pt-12">
+          <h1 className="text-3xl font-bold sm:text-4xl">{isSignup ? "Create your free account" : "Welcome back"}</h1>
+          <p className="mt-3 text-lg text-ink-soft">
+            {isSignup ? "Your progress, stars and reviews are saved to your account." : "Log in to continue where you stopped."}
           </p>
 
-          <div role="tablist" aria-label="Log in or sign up" className="mt-6 grid grid-cols-2 gap-2 rounded-full bg-cream p-1.5">
+          <div role="tablist" aria-label="Log in or sign up" className="mt-8 grid grid-cols-2 gap-1 rounded-full bg-white p-1 ring-1 ring-line">
             {(["login", "signup"] as const).map((m) => (
               <button
                 key={m}
@@ -91,23 +110,17 @@ export default function LoginPage() {
                   setError("");
                   setInfo("");
                 }}
-                className={`min-h-12 rounded-full font-extrabold ${mode === m ? "bg-ink text-white" : "text-ink hover:bg-white"}`}
+                className={`min-h-12 rounded-full font-semibold transition ${mode === m ? "bg-night text-white" : "text-ink hover:bg-sky-soft"}`}
               >
                 {m === "login" ? "Log in" : "Sign up"}
               </button>
             ))}
           </div>
 
-          <form onSubmit={submit} className="mt-6 flex flex-col gap-5" noValidate>
+          <form onSubmit={submit} className="mt-8 flex flex-col gap-6" noValidate>
             {isSignup && (
               <Field label="Your name" hint="What should we call you?">
-                <input
-                  className="input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  autoComplete="given-name"
-                  required
-                />
+                <input className="input" value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" required />
               </Field>
             )}
             <Field label="Email">
@@ -122,43 +135,50 @@ export default function LoginPage() {
               />
             </Field>
             <Field label="Password" hint={isSignup ? "At least 6 characters" : undefined}>
-              <div className="flex gap-2">
+              <div className="relative">
                 <input
-                  className="input flex-1"
+                  className="input pr-24"
                   type={show ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete={isSignup ? "new-password" : "current-password"}
                   required
                 />
-                <button type="button" className="btn btn-ghost px-4" onClick={() => setShow(!show)} aria-pressed={show}>
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 min-h-11 -translate-y-1/2 rounded-full px-4 font-semibold text-cobalt hover:bg-sky-soft"
+                  onClick={() => setShow(!show)}
+                  aria-pressed={show}
+                >
                   {show ? "Hide" : "Show"}
                 </button>
               </div>
             </Field>
 
             {error && (
-              <p role="alert" className="rounded-2xl border-3 border-bad bg-bad-soft p-3 font-bold">
-                ⚠️ {error}
+              <p role="alert" className="flex gap-3 rounded-2xl bg-bad-soft p-4 font-medium text-ink">
+                <AlertCircle className="mt-0.5 shrink-0 text-bad" size={22} aria-hidden />
+                {error}
               </p>
             )}
             {info && (
-              <p role="status" className="rounded-2xl border-3 border-ok bg-ok-soft p-3 font-bold">
-                📧 {info}
+              <p role="status" className="flex gap-3 rounded-2xl bg-ok-soft p-4 font-medium text-ink">
+                <Mail className="mt-0.5 shrink-0 text-ok" size={22} aria-hidden />
+                {info}
               </p>
             )}
 
-            <button type="submit" className="btn btn-primary w-full text-xl" disabled={busy}>
+            <button type="submit" className="btn btn-primary w-full text-lg" disabled={busy}>
               {busy ? "Please wait…" : isSignup ? "Create my account" : "Log in"}
             </button>
           </form>
-        </div>
-        <p className="mt-6 text-center text-lg">
-          <Link href="/#try" className="font-bold underline underline-offset-4">
-            ← Try a free lesson first
-          </Link>
-        </p>
-      </main>
+          <p className="mt-8 text-center text-lg">
+            <Link href="/#try" className="font-semibold text-cobalt underline underline-offset-4">
+              Try a free lesson first
+            </Link>
+          </p>
+        </main>
+      </div>
     </div>
   );
 }
@@ -166,7 +186,7 @@ export default function LoginPage() {
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-lg font-extrabold">{label}</span>
+      <span className="text-lg font-semibold">{label}</span>
       {hint && <span className="-mt-1 text-ink-soft">{hint}</span>}
       {children}
     </label>

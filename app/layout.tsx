@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/nunito";
+import "@fontsource-variable/onest";
+import "@fontsource-variable/unbounded";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fffbf2",
+  themeColor: "#0a0f2c",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

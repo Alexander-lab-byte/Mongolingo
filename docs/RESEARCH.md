@@ -39,11 +39,21 @@ Every choice below is backed by a published study or an official standard. We al
 
 ## Colors: what we did NOT claim
 
-Popular claims like "blue = trust, red = urgency" have **weak scientific support**. Elliot (2015, *Frontiers in Psychology*) reviews the field and finds the evidence for color effects mostly preliminary. So we chose colors for **contrast and recognition**, not "color psychology":
+Popular claims like "blue = trust, red = urgency" have **weak scientific support**. Elliot (2015, *Frontiers in Psychology*) reviews the field and finds the evidence for color effects mostly preliminary. So we chose colors for **contrast, recognition and meaning**, not "color psychology".
 
-- **Mongolian flag colors** (red, blue, gold): instantly connect the brand to Mongolia.
-- **Warm cream background** instead of pure white, to reduce glare. Text stays at 7:1+ contrast.
-- **Green and red** only for right and wrong, always together with an icon.
+The palette is called "Eternal Blue Sky", after Mongolia's own nickname (Мөнх хөх тэнгэр):
+
+| name | hex | used for |
+|---|---|---|
+| Night | `#0a0f2c` | the story's night sky, headers, big letters |
+| Cobalt | `#1e5bff` | main buttons, the day sky |
+| Sky | `#4fc3ff` | highlights, lowercase letters |
+| Coral | `#ff5a4e` | sunrise, "tricky twin" letters, flag red |
+| Gold | `#ffc531` | the Soyombo gold: main call‑to‑action, stars, the sun |
+| Paper | `#f5f8ff` | reading background (cool white, low glare) |
+
+- **Long reading happens on light backgrounds.** Dark text on a light background is read faster and more accurately, including by older adults (Piepenbrock, Mayr & Buchner, 2013, *Ergonomics*). The dark night sky is used only for short, very large text.
+- **Green and red** appear only for right and wrong answers, always with an icon and words.
 
 ## Do we need AI?
 

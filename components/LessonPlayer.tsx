@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowLeft, CalendarClock, Star, X } from "lucide-react";
 import { useState } from "react";
 import { getLesson, LESSONS, type Item, type Lesson } from "@/lib/lessons";
 import { finishLesson } from "@/lib/progress";
@@ -163,21 +164,25 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const q = queue[qi];
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b-3 border-line bg-cream">
-        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-          <Link href="/learn" className="btn btn-ghost px-4" aria-label="Close lesson and go back">
-            ✕
+    <div className="flex min-h-screen flex-col bg-paper">
+      <header className="sticky top-0 z-20 bg-night">
+        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
+          <Link
+            href="/learn"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white ring-1 ring-white/25 hover:bg-white/10"
+            aria-label="Close lesson and go back"
+          >
+            <X size={22} aria-hidden />
           </Link>
           <div
-            className="h-5 flex-1 overflow-hidden rounded-full bg-line"
+            className="h-3 flex-1 overflow-hidden rounded-full bg-white/15"
             role="progressbar"
             aria-valuenow={pct}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="Lesson progress"
           >
-            <div className="h-full rounded-full bg-ok transition-all duration-500" style={{ width: `${Math.max(pct, 3)}%` }} />
+            <div className="h-full rounded-full bg-gradient-to-r from-sky to-gold transition-all duration-500" style={{ width: `${Math.max(pct, 3)}%` }} />
           </div>
           <div className="hidden sm:block">
             <TextSizeControl />
@@ -185,25 +190,24 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
-        <p className="font-extrabold uppercase tracking-wide text-mn-red">
-          {lesson.emoji} {lesson.title} {isReview && phase !== "done" && "· Review"}
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
+        <p className="font-semibold text-cobalt">
+          {lesson.title}
+          {isReview && phase !== "done" ? ", review" : ""}
         </p>
 
         {startPhase === "review-intro" && (
-          <div className="card mt-4 p-6 text-center">
-            <div className="text-6xl" aria-hidden>
-              📅
-            </div>
-            <h1 className="mt-2 text-3xl font-black">Quick review</h1>
-            <p className="mt-2 text-lg">
-              Let&apos;s see what you remember. Trying to remember makes your memory stronger — even if you get some wrong.
+          <div className="panel mt-4 p-8 sm:p-10">
+            <CalendarClock size={36} className="text-cobalt" aria-hidden />
+            <h1 className="mt-4 text-3xl font-bold sm:text-4xl">Quick review</h1>
+            <p className="mt-3 max-w-xl text-lg text-ink-soft">
+              Let&apos;s see what you remember. Trying to remember makes memory stronger, even when you get some wrong.
             </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <div className="mt-7 flex flex-wrap gap-3">
               <button type="button" className="btn btn-primary" onClick={startQuiz}>
-                Start the quiz →
+                Start the quiz
               </button>
-              <button type="button" className="btn btn-ghost" onClick={() => setShowReviewIntro(false)}>
+              <button type="button" className="btn btn-line text-ink" onClick={() => setShowReviewIntro(false)}>
                 Look at the cards first
               </button>
             </div>
@@ -211,44 +215,54 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
         )}
 
         {startPhase === "learn" && item && (
-          <div className="card mt-4 p-6 text-center sm:p-8" key={item.id}>
-            <p className="font-bold text-ink-soft">
-              Card {card + 1} of {lesson.items.length}
-            </p>
-            {lesson.kind === "letters" ? (
-              <>
-                <div className="pop mt-2 flex items-end justify-center gap-4">
-                  <span className="cyr text-9xl font-black leading-none">{item.show}</span>
-                  <span className="cyr text-6xl font-black leading-none text-ink-soft">{item.small}</span>
+          <div className="panel mt-4 overflow-hidden" key={item.id}>
+            <div className="grid md:grid-cols-[1.05fr_1fr]">
+              <div className="flex flex-col items-center justify-center bg-night px-6 py-10 text-white">
+                <p className="text-white/75">
+                  Card {card + 1} of {lesson.items.length}
+                </p>
+                {lesson.kind === "letters" ? (
+                  <div className="pop mt-3 flex items-end gap-5">
+                    <span className="font-display text-[8.5rem] font-bold leading-none">{item.show}</span>
+                    <span className="font-display text-7xl font-bold leading-none text-sky">{item.small}</span>
+                  </div>
+                ) : (
+                  <div className="pop mt-5 rounded-xl bg-gold px-6 py-3 text-center font-display text-3xl font-extrabold text-night sm:text-4xl">
+                    {item.show}
+                  </div>
+                )}
+              </div>
+              <div className="p-7 sm:p-9">
+                {lesson.kind === "letters" ? (
+                  <>
+                    <h1 className="text-3xl font-bold sm:text-4xl">says “{item.say}”</h1>
+                    <p className="mt-2 text-xl text-ink-soft">{item.hint}</p>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-3xl font-bold sm:text-4xl">{item.meaning}</h1>
+                    <p className="mt-2 text-xl text-ink-soft">Say it: “{item.say}”</p>
+                  </>
+                )}
+                <div className="mt-6 flex items-center gap-4 rounded-2xl bg-gold-soft p-4">
+                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-white text-3xl" aria-hidden>
+                    {item.emoji}
+                  </span>
+                  <p className="text-lg font-medium">{item.trick}</p>
                 </div>
-                <h1 className="mt-4 text-3xl font-black">says “{item.say}”</h1>
-                <p className="text-xl text-ink-soft">{item.hint}</p>
-              </>
-            ) : (
-              <>
-                <div className="pop cyr mx-auto mt-3 w-fit rounded-xl border-4 border-ink bg-sun px-6 py-3 text-4xl font-black shadow-[0_6px_0_#14213d] sm:text-5xl">
-                  {item.show}
-                </div>
-                <h1 className="mt-5 text-3xl font-black">{item.meaning}</h1>
-                <p className="text-xl text-ink-soft">Say: “{item.say}”</p>
-              </>
-            )}
-            <div className="mx-auto mt-5 flex max-w-md items-center gap-4 rounded-2xl bg-sun-soft p-4 text-left">
-              <span className="text-5xl" aria-hidden>
-                {item.emoji}
-              </span>
-              <p className="text-lg font-bold">{item.trick}</p>
+                {item.word && (
+                  <p className="mt-5 text-lg">
+                    <span className="text-ink-soft">Example: </span>
+                    <strong className="font-display">{item.word.mn}</strong> ({item.word.latin}) = {item.word.en}
+                  </p>
+                )}
+              </div>
             </div>
-            {item.word && (
-              <p className="mt-4 text-xl">
-                Example: <strong className="cyr">{item.word.mn}</strong> ({item.word.latin}) = {item.word.en}
-              </p>
-            )}
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line px-6 py-4 sm:px-9">
               <Speak text={item.word?.mn ?? item.show} />
               {card >= 1 && (
-                <button type="button" className="btn btn-ghost" onClick={() => setCard(card - 1)}>
-                  ← Back
+                <button type="button" className="btn btn-line text-ink" onClick={() => setCard(card - 1)}>
+                  <ArrowLeft size={18} aria-hidden /> Back
                 </button>
               )}
               <button
@@ -256,7 +270,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
                 className="btn btn-primary"
                 onClick={() => (card + 1 < lesson.items.length ? setCard(card + 1) : startQuiz())}
               >
-                {card + 1 < lesson.items.length ? "Next card →" : "I'm ready — quiz me →"}
+                {card + 1 < lesson.items.length ? "Next card" : "I'm ready, quiz me"}
               </button>
             </div>
           </div>
@@ -264,22 +278,22 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
 
         {phase === "quiz" && q && (
           <div className="mt-4">
-            <p className="font-bold text-ink-soft">
-              {qi < baseQuestions.length ? `Question ${qi + 1} of ${baseQuestions.length}` : "🔁 One more try — you missed this one before"}
+            <p className="font-semibold text-ink-soft">
+              {qi < baseQuestions.length ? `Question ${qi + 1} of ${baseQuestions.length}` : "One more try. You missed this one before."}
             </p>
-            <h1 className="text-2xl font-black sm:text-3xl">{q.prompt}</h1>
+            <h1 className="mt-1 text-2xl font-bold sm:text-4xl">{q.prompt}</h1>
             {q.big && (
-              <div
-                className={`cyr mx-auto my-5 w-fit text-center font-black ${
-                  lesson.kind === "letters"
-                    ? "text-9xl"
-                    : "rounded-xl border-4 border-ink bg-sun px-6 py-3 text-4xl shadow-[0_6px_0_#14213d] sm:text-5xl"
-                }`}
-              >
-                {q.big}
+              <div className="my-8 flex justify-center">
+                {lesson.kind === "letters" ? (
+                  <span className="grid h-44 w-44 place-items-center rounded-[32px] bg-night font-display text-[7rem] font-bold leading-none text-white">
+                    {q.big}
+                  </span>
+                ) : (
+                  <span className="rounded-xl bg-gold px-6 py-3 font-display text-3xl font-extrabold text-night sm:text-5xl">{q.big}</span>
+                )}
               </div>
             )}
-            <div className="mt-4 grid gap-3 sm:grid-cols-2" key={q.key}>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2" key={q.key}>
               {q.options.map((o) => (
                 <OptionButton
                   key={o}
@@ -291,36 +305,40 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
               ))}
             </div>
             {picked != null && (
-              <Feedback
-                ok={picked === q.answer}
-                text={picked === q.answer ? `Correct! ${q.explain}` : `Good try! ${q.explain}`}
-                onNext={nextQuestion}
-              />
+              <Feedback ok={picked === q.answer} text={picked === q.answer ? `Correct! ${q.explain}` : `Good try. ${q.explain}`} onNext={nextQuestion} />
             )}
           </div>
         )}
 
         {phase === "done" && result && (
-          <div className="card relative mt-4 overflow-hidden p-8 text-center">
+          <div className="relative mt-4 overflow-hidden rounded-[28px] bg-night px-6 py-12 text-center text-white sm:px-10">
             <Confetti />
-            <div className="pop text-6xl tracking-widest" aria-label={`${result.stars} of 3 stars`}>
-              {"⭐".repeat(result.stars)}
-              <span className="opacity-25">{"⭐".repeat(3 - result.stars)}</span>
+            <div className="flex justify-center gap-2" role="img" aria-label={`${result.stars} of 3 stars`}>
+              {[0, 1, 2].map((i) => (
+                <Star
+                  key={i}
+                  size={56}
+                  className={`pop ${i < result.stars ? "text-gold" : "text-white/20"}`}
+                  fill="currentColor"
+                  style={{ animationDelay: `${i * 0.12}s` }}
+                  aria-hidden
+                />
+              ))}
             </div>
-            <h1 className="mt-3 text-3xl font-black">{result.wasReview ? "Review done!" : "Lesson complete!"}</h1>
-            <p className="mt-2 text-xl">
-              You got <strong>{result.firstTry}</strong> of {baseQuestions.length} right on the first try.
+            <h1 className="mt-6 text-3xl font-bold sm:text-5xl">{result.wasReview ? "Review done!" : "Lesson complete!"}</h1>
+            <p className="mt-4 text-xl text-white/90">
+              {result.firstTry} of {baseQuestions.length} right on the first try. You earned {10 + result.firstTry} stars.
             </p>
-            <p className="mt-1 text-xl">
-              +{10 + result.firstTry} stars ⭐ · 🔥 {progress.streak} day streak
+            <p className="mt-1 text-xl text-white/90">
+              Streak: {progress.streak} {progress.streak === 1 ? "day" : "days"}
             </p>
-            <p className="mx-auto mt-4 max-w-md rounded-2xl bg-sky p-4 text-lg">
-              📅 We will ask you to review this lesson again soon. Short reviews on different days help you remember for
-              months.
+            <p className="mx-auto mt-8 flex max-w-lg items-start gap-3 rounded-2xl bg-white/10 p-5 text-left text-lg">
+              <CalendarClock className="mt-0.5 shrink-0 text-gold" size={24} aria-hidden />
+              We&apos;ll bring this lesson back for a short review soon. Reviews on different days help you remember for months.
             </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link href="/learn" className="btn btn-primary text-xl">
-                Continue →
+            <div className="mt-8 flex justify-center">
+              <Link href="/learn" className="btn btn-gold text-lg">
+                Continue
               </Link>
             </div>
           </div>

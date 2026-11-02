@@ -3,39 +3,51 @@
 import Link from "next/link";
 import { useAuth, useTextSize, TEXT_SCALES } from "./Providers";
 
-export function Logo() {
+export function Logo({ dark = true }: { dark?: boolean }) {
   return (
-    <Link href="/" className="flex items-center gap-2 font-black text-xl text-ink" aria-label="Mongolingo home">
-      <span
-        aria-hidden
-        className="grid h-[44px] w-[44px] place-items-center rounded-2xl bg-mn-red text-[24px] text-white shadow-[0_3px_0_#8f0b20]"
-      >
-        М
-      </span>
+    <Link
+      href="/"
+      className={`flex items-center gap-2.5 font-display text-[19px] font-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}
+      aria-label="Mongolingo home"
+    >
+      <svg width="44" height="44" viewBox="0 0 40 40" aria-hidden>
+        <rect width="40" height="40" rx="12" fill="#1e5bff" />
+        <circle cx="29" cy="11" r="5" fill="#ffc531" />
+        <path d="M7 31 L7 20 L20 12 L33 20 L33 31 Z" fill="#fff" />
+        <rect x="7" y="20" width="26" height="3" fill="#ff5a4e" />
+        <rect x="17" y="24" width="6" height="7" rx="1" fill="#ff5a4e" />
+      </svg>
       <span className="hidden min-[420px]:inline">Mongolingo</span>
     </Link>
   );
 }
 
-export function TextSizeControl() {
+export function TextSizeControl({ dark = true }: { dark?: boolean }) {
   const { scale, setScale } = useTextSize();
   return (
-    <div role="group" aria-label="Text size" className="flex items-center rounded-full border-3 border-ink bg-white p-1">
-      {TEXT_SCALES.map((s, i) => (
-        <button
-          key={s}
-          type="button"
-          onClick={() => setScale(s)}
-          aria-pressed={scale === s}
-          aria-label={["Normal text", "Bigger text", "Biggest text"][i]}
-          className={`grid h-[44px] min-w-[44px] place-items-center rounded-full px-1.5 font-black sm:px-2 ${
-            scale === s ? "bg-ink text-white" : "text-ink hover:bg-sun-soft"
-          }`}
-          style={{ fontSize: `${14 + i * 5}px` }}
-        >
-          A
-        </button>
-      ))}
+    <div
+      role="group"
+      aria-label="Text size"
+      className={`flex items-center rounded-full p-1 ${dark ? "bg-white/10 ring-1 ring-white/20" : "bg-white ring-1 ring-line"}`}
+    >
+      {TEXT_SCALES.map((s, i) => {
+        const on = scale === s;
+        return (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setScale(s)}
+            aria-pressed={on}
+            aria-label={["Normal text", "Bigger text", "Biggest text"][i]}
+            className={`grid h-[44px] min-w-[44px] place-items-center rounded-full font-bold transition ${
+              on ? "bg-gold text-night" : dark ? "text-white hover:bg-white/10" : "text-ink hover:bg-sky-soft"
+            }`}
+            style={{ fontSize: `${14 + i * 5}px` }}
+          >
+            A
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -43,20 +55,14 @@ export function TextSizeControl() {
 export function Nav() {
   const { user, loading } = useAuth();
   return (
-    <header className="sticky top-0 z-50 border-b-3 border-line bg-cream/95 backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3" aria-label="Main">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-night/85 backdrop-blur-md">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6" aria-label="Main">
         <Logo />
         <div className="flex items-center gap-2 sm:gap-3">
           <TextSizeControl />
-          {!loading && user ? (
-            <Link href="/learn" className="btn btn-primary px-4 text-[17px] sm:px-6">
-              My lessons
-            </Link>
-          ) : (
-            <Link href="/login" className="btn btn-primary px-4 text-[17px] sm:px-6">
-              Log in
-            </Link>
-          )}
+          <Link href={!loading && user ? "/learn" : "/login"} className="btn btn-primary px-4 text-[16px] sm:px-6">
+            {!loading && user ? "My lessons" : "Log in"}
+          </Link>
         </div>
       </nav>
     </header>

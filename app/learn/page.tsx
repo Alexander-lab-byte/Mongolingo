@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CalendarClock, Check, Flame, Lock, Play, Star } from "lucide-react";
 import { Logo, TextSizeControl } from "@/components/Nav";
 import { useAuth } from "@/components/Providers";
 import { useLearner } from "@/components/useLearner";
@@ -15,127 +16,141 @@ export default function LearnHome() {
   if (!ready || !progress) return <Loading />;
 
   const nextLesson = LESSONS.find((l) => !progress.completed.includes(l.id));
+  const nextIndex = nextLesson ? LESSONS.indexOf(nextLesson) : -1;
   const reviews = dueReviews(progress);
   const letters = lettersLearned(progress.completed);
   const pct = Math.round((letters / TOTAL_LETTERS) * 100);
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b-3 border-line bg-cream">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+    <div className="min-h-screen bg-paper">
+      <header className="bg-night">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Logo />
           <div className="flex items-center gap-2">
             <TextSizeControl />
-            <button type="button" className="btn btn-ghost" onClick={signOut}>
+            <button type="button" className="btn btn-line px-4 text-white" onClick={signOut}>
               Log out
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-8">
-        <h1 className="text-3xl font-black sm:text-4xl">
-          <span className="cyr">Сайн уу</span>, {progress.displayName}! 👋
-        </h1>
-        <p className="mt-1 text-lg text-ink-soft">“Сайн уу” means “Hello”.</p>
+      {/* Hero strip */}
+      <section className="bg-night px-4 pb-24 pt-8 text-white sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <h1 className="text-3xl font-bold sm:text-5xl">Сайн уу, {progress.displayName}!</h1>
+          <p className="mt-2 text-lg text-white/80">“Сайн уу” means hello. Here&apos;s where you are.</p>
 
-        <ul className="mt-6 grid grid-cols-3 gap-3">
-          <Stat emoji="🔤" value={`${letters}/${TOTAL_LETTERS}`} label="letters" />
-          <Stat emoji="🔥" value={String(progress.streak)} label={progress.streak === 1 ? "day streak" : "days streak"} />
-          <Stat emoji="⭐" value={String(progress.xp)} label="stars" />
-        </ul>
+          <dl className="mt-8 grid grid-cols-3 gap-3 sm:max-w-xl">
+            <Stat icon={<span className="font-display text-lg font-bold">Аа</span>} label="Letters" value={`${letters}/${TOTAL_LETTERS}`} />
+            <Stat icon={<Flame size={22} aria-hidden />} label={progress.streak === 1 ? "Day streak" : "Days streak"} value={String(progress.streak)} />
+            <Stat icon={<Star size={22} aria-hidden />} label="Stars" value={String(progress.xp)} />
+          </dl>
 
-        <div className="mt-4">
-          <div className="flex justify-between font-bold">
-            <span>Alphabet</span>
-            <span>{pct}%</span>
-          </div>
-          <div className="mt-1 h-5 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Alphabet progress">
-            <div className="h-full rounded-full bg-ok" style={{ width: `${Math.max(pct, 3)}%` }} />
+          <div className="mt-6 sm:max-w-xl">
+            <div className="flex justify-between text-white/85">
+              <span>Alphabet</span>
+              <span className="font-semibold text-white">{pct}%</span>
+            </div>
+            <div
+              className="mt-2 h-3 overflow-hidden rounded-full bg-white/15"
+              role="progressbar"
+              aria-valuenow={pct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Alphabet progress"
+            >
+              <div className="h-full rounded-full bg-gradient-to-r from-sky to-gold" style={{ width: `${Math.max(pct, 3)}%` }} />
+            </div>
           </div>
         </div>
+      </section>
+
+      <main className="mx-auto -mt-16 max-w-5xl px-4 pb-20 sm:px-6">
+        {nextLesson ? (
+          <Link
+            href={`/learn/${nextLesson.id}`}
+            className="group flex flex-col gap-6 rounded-[28px] bg-cobalt p-7 text-white shadow-[0_30px_60px_-25px_rgba(30,91,255,0.8)] transition hover:bg-cobalt-dark sm:flex-row sm:items-center sm:p-9"
+          >
+            <span className="grid h-20 w-20 shrink-0 place-items-center rounded-3xl bg-white/15 font-display text-4xl font-bold">
+              {nextLesson.items[0].show.slice(0, 1)}
+            </span>
+            <span className="flex-1">
+              <span className="block text-white">
+                Next up: lesson {nextIndex + 1} of {LESSONS.length}, about 3 minutes
+              </span>
+              <span className="mt-1 block font-display text-2xl font-bold sm:text-3xl">{nextLesson.title}</span>
+              <span className="mt-1 block text-lg text-white/90">{nextLesson.subtitle}</span>
+            </span>
+            <span className="btn btn-gold self-start sm:self-center">
+              <Play size={18} fill="currentColor" aria-hidden /> Start lesson
+            </span>
+          </Link>
+        ) : (
+          <div className="panel p-8 text-center">
+            <h2 className="text-3xl font-bold">You finished every lesson.</h2>
+            <p className="mt-2 text-lg text-ink-soft">Keep doing your reviews so you don&apos;t forget.</p>
+          </div>
+        )}
 
         {reviews.length > 0 && (
-          <section className="card mt-8 border-sun bg-sun-soft p-5">
-            <h2 className="text-2xl font-black">📅 Time to review ({reviews.length})</h2>
-            <p className="text-lg">A quick review today helps you remember for a long time.</p>
-            <div className="mt-3 flex flex-wrap gap-3">
-              {reviews.map((id) => {
-                const l = LESSONS.find((x) => x.id === id)!;
-                return (
-                  <Link key={id} href={`/learn/${id}`} className="btn btn-sun">
-                    {l.emoji} {l.title}
-                  </Link>
-                );
-              })}
+          <section className="mt-6 rounded-[28px] bg-gold-soft p-6 sm:p-8" aria-labelledby="reviews">
+            <div className="flex items-start gap-4">
+              <CalendarClock className="mt-1 shrink-0" size={28} aria-hidden />
+              <div>
+                <h2 id="reviews" className="text-2xl font-bold">
+                  Review today
+                </h2>
+                <p className="mt-1 text-lg text-ink-soft">A two-minute review now helps you remember it for weeks.</p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {reviews.map((id) => {
+                    const l = LESSONS.find((x) => x.id === id)!;
+                    return (
+                      <Link key={id} href={`/learn/${id}`} className="btn btn-primary">
+                        {l.title}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </section>
         )}
 
-        {nextLesson ? (
-          <Link
-            href={`/learn/${nextLesson.id}`}
-            className="mt-8 flex items-center gap-4 rounded-3xl bg-brand p-6 text-white shadow-[0_6px_0_#084a8a] transition hover:-translate-y-0.5"
-          >
-            <span className="text-6xl" aria-hidden>
-              {nextLesson.emoji}
-            </span>
-            <span>
-              <span className="block font-extrabold uppercase tracking-wide text-sun-soft">Next lesson · about 3 min</span>
-              <span className="block text-2xl font-black sm:text-3xl">{nextLesson.title}</span>
-              <span className="block text-lg">{nextLesson.subtitle}</span>
-            </span>
-            <span className="ml-auto text-4xl" aria-hidden>
-              ▶
-            </span>
-          </Link>
-        ) : (
-          <div className="card mt-8 p-6 text-center">
-            <div className="text-6xl">🏆</div>
-            <h2 className="text-2xl font-black">You finished every lesson!</h2>
-            <p className="text-lg">Keep your reviews going so you never forget.</p>
-          </div>
-        )}
-
-        <h2 className="mt-10 text-2xl font-black">Your path</h2>
-        <ol className="mt-4 flex flex-col gap-3">
+        <h2 className="mt-14 text-3xl font-bold">Your path</h2>
+        <ol className="relative mt-8">
+          <span className="absolute bottom-6 left-7 top-6 w-[3px] rounded-full bg-line" aria-hidden />
           {LESSONS.map((l, i) => {
             const done = progress.completed.includes(l.id);
             const isNext = nextLesson?.id === l.id;
             const locked = !done && !isNext;
+            const inner = (
+              <>
+                <span
+                  className={`relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-2xl font-display text-xl font-bold ${
+                    done ? "bg-ok text-white" : isNext ? "bg-cobalt text-white ring-8 ring-cobalt/15" : "bg-white text-ink-soft ring-1 ring-line"
+                  }`}
+                  aria-hidden
+                >
+                  {done ? <Check size={26} strokeWidth={3} /> : locked ? <Lock size={20} /> : i + 1}
+                </span>
+                <span className="flex-1">
+                  <span className={`block text-xl font-bold ${locked ? "text-ink-soft" : ""}`}>
+                    {i + 1}. {l.title}
+                  </span>
+                  <span className="block text-ink-soft">
+                    {done ? "Done. Tap to practise again." : locked ? `Opens after lesson ${i}` : l.subtitle}
+                  </span>
+                </span>
+              </>
+            );
             return (
-              <li key={l.id}>
+              <li key={l.id} className="relative mb-3">
                 {locked ? (
-                  <div className="flex items-center gap-4 rounded-2xl border-3 border-dashed border-line bg-white/60 p-4 text-ink-soft">
-                    <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-line text-2xl" aria-hidden>
-                      🔒
-                    </span>
-                    <span>
-                      <span className="block font-black">
-                        {i + 1}. {l.title}
-                      </span>
-                      <span className="block">Opens after lesson {i}</span>
-                    </span>
-                  </div>
+                  <div className="flex items-center gap-5 rounded-2xl p-3">{inner}</div>
                 ) : (
-                  <Link
-                    href={`/learn/${l.id}`}
-                    className={`flex items-center gap-4 rounded-2xl border-3 p-4 transition hover:-translate-y-0.5 ${
-                      done ? "border-ok bg-ok-soft" : "border-brand bg-white"
-                    }`}
-                  >
-                    <span
-                      className={`grid h-14 w-14 shrink-0 place-items-center rounded-full text-2xl ${done ? "bg-ok text-white" : "bg-sky"}`}
-                      aria-hidden
-                    >
-                      {done ? "✓" : l.emoji}
-                    </span>
-                    <span>
-                      <span className="block text-lg font-black">
-                        {i + 1}. {l.title}
-                      </span>
-                      <span className="block text-ink-soft">{done ? "Done ✓ · tap to practise again" : l.subtitle}</span>
-                    </span>
+                  <Link href={`/learn/${l.id}`} className="flex items-center gap-5 rounded-2xl p-3 transition hover:bg-white">
+                    {inner}
                   </Link>
                 )}
               </li>
@@ -147,14 +162,14 @@ export default function LearnHome() {
   );
 }
 
-function Stat({ emoji, value, label }: { emoji: string; value: string; label: string }) {
+function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <li className="card flex flex-col items-center p-3 text-center">
-      <span className="text-3xl" aria-hidden>
-        {emoji}
-      </span>
-      <span className="text-2xl font-black">{value}</span>
-      <span className="text-ink-soft">{label}</span>
-    </li>
+    <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15">
+      <dt className="flex items-center gap-2 text-white/85">
+        <span className="text-gold">{icon}</span>
+        {label}
+      </dt>
+      <dd className="mt-1 font-display text-2xl font-bold">{value}</dd>
+    </div>
   );
 }
