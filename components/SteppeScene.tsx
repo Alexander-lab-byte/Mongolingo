@@ -24,14 +24,11 @@ function usePrefersReducedMotion() {
 }
 
 const STEPS = [
-  {
-    title: "Learn Mongolian for real life in Mongolia.",
-    body: "Short lessons for foreigners living here. Start with your first letter, then read street signs and talk at the market. Made for kids, adults and grandparents.",
-  },
-  { title: "Start with the alphabet", body: "Mongolian uses 35 Cyrillic letters. You already know 5 of them: А, К, М, О and Т." },
-  { title: "Read real street signs", body: "ТАКСИ, ЭМИЙН САН, ГАРЦ. Taxi, pharmacy, exit. You'll read them on your way home." },
-  { title: "Speak everyday words", body: "Hello, thank you, “how much is it?” The words you need at the shop and the market." },
-  { title: "Сайн уу! Welcome home.", body: "“Сайн уу” means hello. Each lesson takes about 3 minutes, and the first one is free." },
+  { title: "Learn Mongolian for life in Mongolia.", body: "Translate what you need now. Learn to say it yourself in 3-minute lessons." },
+  { title: "35 letters. You know 5 already.", body: "" },
+  { title: "Read the signs around you.", body: "" },
+  { title: "Speak at the shop and market.", body: "" },
+  { title: "Сайн уу! Welcome home.", body: "" },
 ];
 const RAIL = ["Letters", "Signs", "Words", "Home"];
 
@@ -43,7 +40,7 @@ const RANGES: [number, number][] = [
   [0.82, 1],
 ];
 
-// Deterministic "random" so server and browser draw the same stars.
+// Deterministic "random" so server and browser draw the same grass.
 function rng(seed: number) {
   let s = seed;
   return () => {
@@ -52,12 +49,6 @@ function rng(seed: number) {
   };
 }
 const R = rng(7);
-const STARS = Array.from({ length: 90 }, () => ({
-  x: R() * 1600,
-  y: R() * 520,
-  r: R() * 1.8 + 0.4,
-  d: (R() * 4 + 2).toFixed(1),
-}));
 const GRASS = Array.from({ length: 70 }, (_, i) => ({ x: (i * 23.3 + R() * 18) % 1600, h: 14 + R() * 22, lean: (R() - 0.5) * 14 }));
 
 function lattice() {
@@ -90,37 +81,25 @@ function Caption({ i, p }: { i: number; p: MotionValue<number> }) {
   return (
     <motion.div
       style={{ opacity, y, pointerEvents }}
-      className={`absolute inset-x-4 mx-auto text-white md:left-10 md:right-auto md:mx-0 lg:left-16 ${isLast ? "max-w-[25rem]" : "max-w-[34rem]"} ${
-        isFirst ? "top-28 sm:top-36" : isLast ? "bottom-8 md:bottom-12" : "top-28 sm:top-32"
-      } ${isFirst ? "" : `glass rounded-[28px] ${isLast ? "p-5" : "p-6"} sm:p-8`}`}
+      className={`absolute inset-x-4 mx-auto text-ink md:left-10 md:right-auto md:mx-0 lg:left-16 ${
+        isFirst ? "top-28 max-w-[40rem] sm:top-36" : isLast ? "bottom-8 max-w-[26rem] md:bottom-12" : "top-28 max-w-[30rem] sm:top-32"
+      } ${isFirst ? "" : "light-glass rounded-[28px] p-6 sm:p-8"}`}
     >
-      {!isFirst && (
-        <p className={`font-semibold text-gold ${isLast ? "mb-1 sm:mb-3" : "mb-3"}`}>
-          Step {i} of 4
-        </p>
-      )}
+      {!isFirst && <p className="mb-2 font-semibold text-cobalt">Step {i} of 4</p>}
       <Heading
-        className={`font-bold ${
-          isFirst ? "text-[2.5rem] leading-[1.02] sm:text-[3.6rem] lg:text-[4.2rem]" : isLast ? "text-2xl sm:text-4xl" : "text-3xl sm:text-4xl"
-        }`}
-        style={isFirst ? { textShadow: "0 4px 30px rgba(10,15,44,0.6)" } : undefined}
+        className={`font-bold ${isFirst ? "text-[2.6rem] leading-[1.02] sm:text-[3.8rem] lg:text-[4.4rem]" : "text-2xl sm:text-4xl"}`}
       >
         {s.title}
       </Heading>
-      <p
-        className={`mt-4 sm:text-xl ${isLast ? "hidden text-base sm:block" : "text-lg"} ${isFirst ? "max-w-md text-white" : "text-white/85"}`}
-        style={isFirst ? { textShadow: "0 1px 2px rgba(10,15,44,0.9), 0 2px 18px rgba(10,15,44,0.9)" } : undefined}
-      >
-        {s.body}
-      </p>
+      {s.body && <p className="mt-4 text-xl text-ink-soft sm:text-2xl">{s.body}</p>}
       {(isFirst || isLast) && (
-        <div className={`flex flex-wrap gap-3 ${isLast ? "mt-4 sm:mt-7" : "mt-7"}`}>
-          <a href="#try" className="btn btn-gold">
-            Try a 2-minute lesson
+        <div className={`flex flex-wrap gap-3 ${isLast ? "mt-5" : "mt-8"}`}>
+          <a href="#try" className="btn btn-primary">
+            Try a free lesson
           </a>
           {isFirst && (
-            <Link href="/login?mode=signup" className="btn btn-line text-white">
-              Create free account
+            <Link href="/translate" className="btn btn-line text-ink">
+              Translate now
             </Link>
           )}
         </div>
@@ -134,8 +113,8 @@ function Rail({ p }: { p: MotionValue<number> }) {
   return (
     <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 lg:block" aria-hidden>
       <div className="relative flex h-80 flex-col justify-between pl-6">
-        <div className="absolute left-[7px] top-2 h-[calc(100%-1rem)] w-[2px] bg-white/20">
-          <motion.div className="w-full bg-gold" style={{ height: h }} />
+        <div className="absolute left-[7px] top-2 h-[calc(100%-1rem)] w-[2px] bg-ink/15">
+          <motion.div className="w-full bg-cobalt" style={{ height: h }} />
         </div>
         {RAIL.map((label, i) => (
           <RailDot key={label} label={label} i={i} p={p} />
@@ -148,11 +127,11 @@ function Rail({ p }: { p: MotionValue<number> }) {
 function RailDot({ label, i, p }: { label: string; i: number; p: MotionValue<number> }) {
   const at = RANGES[i + 1][0];
   const on = useTransform(p, [at - 0.02, at], [0, 1]);
-  const bg = useTransform(on, [0, 1], ["rgba(255,255,255,0.25)", "#ffc531"]);
-  const color = useTransform(on, [0, 1], ["rgba(255,255,255,0.55)", "#ffffff"]);
+  const bg = useTransform(on, [0, 1], ["rgba(10,15,44,0.18)", "#1e5bff"]);
+  const color = useTransform(on, [0, 1], ["rgba(10,15,44,0.5)", "#0a0f2c"]);
   return (
     <div className="relative flex items-center gap-3">
-      <motion.span className="absolute -left-6 h-4 w-4 rounded-full ring-4 ring-night/40" style={{ background: bg }} />
+      <motion.span className="absolute -left-6 h-4 w-4 rounded-full ring-4 ring-white" style={{ background: bg }} />
       <motion.span className="font-semibold" style={{ color }}>
         {label}
       </motion.span>
@@ -164,8 +143,6 @@ function Scene({ p }: { p: MotionValue<number> }) {
   // Sky
   const sunrise = useTransform(p, [0.08, 0.32], [0, 1]);
   const day = useTransform(p, [0.32, 0.6], [0, 1]);
-  const stars = useTransform(p, [0.05, 0.28], [1, 0]);
-  const moonY = useTransform(p, [0, 0.3], [0, -160]);
   const sunY = useTransform(p, [0.1, 0.62], [720, 230]);
   const sunScale = useTransform(p, [0.1, 0.62], [1.25, 1]);
   // Giant word
@@ -199,20 +176,20 @@ function Scene({ p }: { p: MotionValue<number> }) {
     >
       <defs>
         <linearGradient id="g-night" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#060a24" />
-          <stop offset="0.6" stopColor="#141b45" />
-          <stop offset="1" stopColor="#2c2366" />
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.6" stopColor="#f2f6ff" />
+          <stop offset="1" stopColor="#ffe8da" />
         </linearGradient>
         <linearGradient id="g-sunrise" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#24195e" />
-          <stop offset="0.45" stopColor="#c8357a" />
-          <stop offset="0.75" stopColor="#ff5a4e" />
-          <stop offset="1" stopColor="#ffc531" />
+          <stop offset="0" stopColor="#f4f8ff" />
+          <stop offset="0.5" stopColor="#ffe2cf" />
+          <stop offset="0.8" stopColor="#ffd2a6" />
+          <stop offset="1" stopColor="#ffe9b0" />
         </linearGradient>
         <linearGradient id="g-day" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1e5bff" />
-          <stop offset="0.55" stopColor="#4fc3ff" />
-          <stop offset="1" stopColor="#c9efff" />
+          <stop offset="0" stopColor="#7ccbff" />
+          <stop offset="0.6" stopColor="#d4eeff" />
+          <stop offset="1" stopColor="#ffffff" />
         </linearGradient>
         <radialGradient id="g-sun">
           <stop offset="0" stopColor="#fff6d8" />
@@ -230,8 +207,8 @@ function Scene({ p }: { p: MotionValue<number> }) {
           <stop offset="1" stopColor="#d3d9ef" />
         </linearGradient>
         <linearGradient id="g-ground" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#36b56a" />
-          <stop offset="1" stopColor="#13703f" />
+          <stop offset="0" stopColor="#6fd08f" />
+          <stop offset="1" stopColor="#2f9e5c" />
         </linearGradient>
         <pattern id="p-orn" width="28" height="22" patternUnits="userSpaceOnUse">
           <rect width="28" height="22" fill="#1e5bff" />
@@ -246,17 +223,6 @@ function Scene({ p }: { p: MotionValue<number> }) {
       <rect width="1600" height="1000" fill="url(#g-night)" />
       <motion.rect width="1600" height="1000" fill="url(#g-sunrise)" style={{ opacity: sunrise }} />
       <motion.rect width="1600" height="1000" fill="url(#g-day)" style={{ opacity: day }} />
-
-      {/* Stars + moon */}
-      <motion.g style={{ opacity: stars }} fill="#fff">
-        {STARS.map((s, i) => (
-          <circle key={i} cx={s.x} cy={s.y} r={s.r} style={{ animation: `twinkle ${s.d}s ease-in-out infinite` }} />
-        ))}
-        <motion.g style={{ y: moonY }}>
-          <circle cx="1310" cy="150" r="46" fill="#fff6d8" />
-          <circle cx="1332" cy="136" r="42" fill="#0d1335" />
-        </motion.g>
-      </motion.g>
 
       {/* Sun */}
       <motion.circle cx="1060" r="220" fill="url(#g-sun)" style={{ cy: sunY, scale: sunScale }} />
@@ -287,28 +253,28 @@ function Scene({ p }: { p: MotionValue<number> }) {
 
       {/* Far mountains with snow */}
       <motion.g style={{ y: farY }}>
-        <path d="M0 690 L170 520 L300 610 L460 470 L620 600 L760 500 L930 640 L1100 480 L1260 590 L1420 500 L1600 610 L1600 1000 L0 1000Z" fill="#2a3474" />
+        <path d="M0 690 L170 520 L300 610 L460 470 L620 600 L760 500 L930 640 L1100 480 L1260 590 L1420 500 L1600 610 L1600 1000 L0 1000Z" fill="#c9d3f5" />
         <motion.path
           d="M0 690 L170 520 L300 610 L460 470 L620 600 L760 500 L930 640 L1100 480 L1260 590 L1420 500 L1600 610 L1600 1000 L0 1000Z"
-          fill="#7d9be6"
+          fill="#a9c0f3"
           style={{ opacity: day }}
         />
-        <path d="M460 470 L505 512 L480 508 L462 525 L440 505 L420 515Z M1100 480 L1142 520 L1118 516 L1100 532 L1080 512 L1060 520Z M170 520 L205 555 L185 551 L170 565 L152 548Z" fill="#fff" opacity="0.85" />
+        <path d="M460 470 L505 512 L480 508 L462 525 L440 505 L420 515Z M1100 480 L1142 520 L1118 516 L1100 532 L1080 512 L1060 520Z M170 520 L205 555 L185 551 L170 565 L152 548Z" fill="#fff" opacity="0.95" />
       </motion.g>
 
       {/* Mid hills */}
       <motion.g style={{ y: midY }}>
-        <path d="M0 760 C220 650 420 700 620 720 C820 740 1000 640 1220 680 C1400 712 1500 690 1600 700 L1600 1000 L0 1000Z" fill="#1b2a63" />
+        <path d="M0 760 C220 650 420 700 620 720 C820 740 1000 640 1220 680 C1400 712 1500 690 1600 700 L1600 1000 L0 1000Z" fill="#a7bdf0" />
         <motion.path
           d="M0 760 C220 650 420 700 620 720 C820 740 1000 640 1220 680 C1400 712 1500 690 1600 700 L1600 1000 L0 1000Z"
-          fill="#3f8fd8"
+          fill="#7cb3f0"
           style={{ opacity: day }}
         />
       </motion.g>
 
       {/* Near steppe */}
       <motion.g style={{ y: nearY }}>
-        <path d="M0 800 C300 760 560 790 800 790 C1060 790 1300 750 1600 780 L1600 1100 L0 1100Z" fill="#123a3a" />
+        <path d="M0 800 C300 760 560 790 800 790 C1060 790 1300 750 1600 780 L1600 1100 L0 1100Z" fill="#9fdcae" />
         <motion.path
           d="M0 800 C300 760 560 790 800 790 C1060 790 1300 750 1600 780 L1600 1100 L0 1100Z"
           fill="url(#g-ground)"
@@ -316,7 +282,7 @@ function Scene({ p }: { p: MotionValue<number> }) {
         />
 
         {/* Ger — lattice walls */}
-        <ellipse cx="800" cy="796" rx="290" ry="18" fill="#0a0f2c" opacity="0.25" />
+        <ellipse cx="800" cy="796" rx="290" ry="18" fill="#0a0f2c" opacity="0.12" />
         <motion.path
           d={lattice()}
           clipPath="url(#c-wall)"
@@ -357,7 +323,7 @@ function Scene({ p }: { p: MotionValue<number> }) {
         </motion.g>
 
         {/* Grass */}
-        <motion.g style={{ opacity: sunrise }} stroke="#0d6b39" strokeWidth="3" strokeLinecap="round" fill="none">
+        <motion.g style={{ opacity: sunrise }} stroke="#2a8a50" strokeWidth="3" strokeLinecap="round" fill="none">
           {GRASS.map((g, i) => (
             <path key={i} d={`M${g.x} ${900 + (i % 3) * 30} q${g.lean / 2} ${-g.h / 2} ${g.lean} ${-g.h}`} />
           ))}
@@ -369,24 +335,23 @@ function Scene({ p }: { p: MotionValue<number> }) {
 
 function StaticStory() {
   return (
-    <section className="relative overflow-hidden bg-night px-4 pb-16 pt-14 text-white">
+    <section className="bg-gradient-to-b from-white to-sky-soft px-4 pb-16 pt-14">
       <div className="mx-auto max-w-6xl">
-        <h1 className="max-w-3xl text-[2.5rem] font-bold leading-[1.04] sm:text-6xl">{STEPS[0].title}</h1>
-        <p className="mt-5 max-w-xl text-xl text-white/90">{STEPS[0].body}</p>
+        <h1 className="max-w-3xl text-[2.6rem] font-bold leading-[1.04] sm:text-6xl">{STEPS[0].title}</h1>
+        <p className="mt-5 text-xl text-ink-soft sm:text-2xl">{STEPS[0].body}</p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <a href="#try" className="btn btn-gold">
-            Try a 2-minute lesson
+          <a href="#try" className="btn btn-primary">
+            Try a free lesson
           </a>
-          <Link href="/login?mode=signup" className="btn btn-line text-white">
-            Create free account
+          <Link href="/translate" className="btn btn-line text-ink">
+            Translate now
           </Link>
         </div>
-        <ol className="mt-14 grid gap-4 sm:grid-cols-2">
+        <ol className="mt-12 grid gap-3 sm:grid-cols-2">
           {STEPS.slice(1).map((s, i) => (
-            <li key={s.title} className="glass rounded-[24px] p-6">
-              <p className="font-semibold text-gold">Step {i + 1} of 4</p>
+            <li key={s.title} className="rounded-[24px] bg-white p-6 ring-1 ring-line">
+              <p className="font-semibold text-cobalt">Step {i + 1} of 4</p>
               <h2 className="mt-1 text-2xl font-bold">{s.title}</h2>
-              <p className="mt-2 text-white/85">{s.body}</p>
             </li>
           ))}
         </ol>
@@ -404,21 +369,21 @@ export function SteppeScene() {
   if (reduce) return <StaticStory />;
 
   return (
-    <section ref={ref} className="relative h-[460vh] bg-night" aria-label="The Mongolingo story">
+    <section ref={ref} className="relative h-[380vh] bg-white" aria-label="The Mongolingo story">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <Scene p={scrollYProgress} />
         {STEPS.map((_, i) => (
           <Caption key={i} i={i} p={scrollYProgress} />
         ))}
         <Rail p={scrollYProgress} />
-        <motion.div style={{ opacity: hint }} className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-3 text-white">
+        <motion.div style={{ opacity: hint }} className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-3 text-ink">
           <span className="flex items-center gap-2 text-lg font-semibold">
-            <span className="relative flex h-9 w-6 justify-center rounded-full border-2 border-white/80">
-              <span className="mt-1.5 h-2 w-1 animate-bounce rounded-full bg-white" />
+            <span className="relative flex h-9 w-6 justify-center rounded-full border-2 border-ink/70">
+              <span className="mt-1.5 h-2 w-1 animate-bounce rounded-full bg-ink" />
             </span>
-            Scroll to build the ger
+            Scroll
           </span>
-          <a href="#try" className="rounded-full px-4 py-2 font-semibold text-white/85 underline underline-offset-4 hover:text-white">
+          <a href="#try" className="rounded-full px-4 py-2 font-semibold text-ink-soft underline underline-offset-4 hover:text-ink">
             Skip to the free lesson
           </a>
         </motion.div>

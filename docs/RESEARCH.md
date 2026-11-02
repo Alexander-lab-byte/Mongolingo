@@ -55,9 +55,25 @@ The palette is called "Eternal Blue Sky", after Mongolia's own nickname (Мөн�
 - **Long reading happens on light backgrounds.** Dark text on a light background is read faster and more accurately, including by older adults (Piepenbrock, Mayr & Buchner, 2013, *Ergonomics*). The dark night sky is used only for short, very large text.
 - **Green and red** appear only for right and wrong answers, always with an icon and words.
 
+## Why the translator and phrasebook come first
+
+Our main users are 20–40-year-olds who just moved to Mongolia. Research on why people adopt a new tool says they keep using it when it is **useful right away** and **easy to use**.
+
+| What we do | Why (evidence) |
+|---|---|
+| Free translator and phrasebook, no sign-up | **Technology Acceptance Model** (Davis, 1989): *perceived usefulness* is the strongest predictor of whether people adopt a tool. Solving today's problem (a taxi, a pharmacy) proves usefulness in seconds. |
+| Give first, ask later | **Reciprocity** (Regan, 1971; Cialdini, 2001): people are more willing to say yes after they have received something. We ask for sign-up only after they've got value. |
+| Phrases grouped by situation (Taxi, Shop, Café, Doctor, Emergency) | **Hick's law** (Hick, 1952): fewer, clearer choices mean faster decisions. Six situations instead of one long list. |
+| "Show to someone" full screen | Removes the hardest part, pronunciation, in stressful moments. Big text also works for older eyes and for the person reading it. |
+| Pronunciation in Latin letters for every Mongolian word | Learners can act before they can read Cyrillic. This also builds letter–sound links for the lessons (**dual coding**). |
+| After 3 translations: "Want to read signs without your phone?" | **Curiosity gap** (Loewenstein, 1994) plus a small next step. It's an invitation, never a pop‑up or a block. |
+| "Checked phrase" badge vs. "Machine translation" label | Being honest about reliability builds trust. Machine translation into Mongolian still makes mistakes. |
+
+**What we chose not to do:** no fake user counts, fake reviews, fake countdown timers or fake "only 2 spots left". These dark patterns damage trust once noticed (Mathur et al., 2019, *Dark Patterns at Scale*), and an early‑stage product has no real numbers to show yet.
+
 ## Do we need AI?
 
-**Not for the first version.** The core learning (letters, signs, phrases, quizzes, spacing) works better with fixed, checked content. AI can make mistakes in Mongolian, and a beginner can't spot them.
+**Only for free‑text translation.** The translator uses a free machine‑translation service (MyMemory) for sentences that aren't in our phrasebook. It shows a "Machine translation" label and checks the phrasebook first. Lessons and phrases stay fixed and checked, because AI can make mistakes in Mongolian and a beginner can't spot them.
 
 Good later uses of AI:
 1. A **conversation partner** for intermediate learners (shopping or taxi role‑play).
@@ -73,4 +89,10 @@ Good later uses of AI:
 - Elliot (2015), color and psychological functioning — [Frontiers / PMC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4383146/)
 - Older‑adult website usability — [PMC content analysis](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7741326/)
 - Roediger & Karpicke (2006), testing effect, *Psychological Science* 17(3)
+- Davis (1989), perceived usefulness and ease of use, *MIS Quarterly* 13(3)
+- Regan (1971), effects of a favor on liking and compliance, *Journal of Experimental Social Psychology* 7(6)
+- Hick (1952), on the rate of gain of information, *Quarterly Journal of Experimental Psychology* 4(1)
+- Loewenstein (1994), the psychology of curiosity, *Psychological Bulletin* 116(1)
+- Mathur et al. (2019), Dark Patterns at Scale, *Proc. ACM HCI* (CSCW)
+- Emergency numbers — [Communications Regulatory Commission of Mongolia](https://crc.gov.mn/list/harilcaa-holboony-jlchilgee/en?show=196)
 - WCAG 2.2 — w3.org/TR/WCAG22

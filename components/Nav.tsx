@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { Languages } from "lucide-react";
 import { useAuth, useTextSize, TEXT_SCALES } from "./Providers";
 
-export function Logo({ dark = true }: { dark?: boolean }) {
+export function Logo({ dark = false }: { dark?: boolean }) {
   return (
     <Link
       href="/"
@@ -22,7 +23,7 @@ export function Logo({ dark = true }: { dark?: boolean }) {
   );
 }
 
-export function TextSizeControl({ dark = true }: { dark?: boolean }) {
+export function TextSizeControl({ dark = false }: { dark?: boolean }) {
   const { scale, setScale } = useTextSize();
   return (
     <div
@@ -55,10 +56,18 @@ export function TextSizeControl({ dark = true }: { dark?: boolean }) {
 export function Nav() {
   const { user, loading } = useAuth();
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-night/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-line bg-white/85 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6" aria-label="Main">
         <Logo />
         <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/translate"
+            className="hidden h-[44px] min-w-[44px] place-items-center gap-2 rounded-full px-0 font-semibold text-ink ring-1 ring-line hover:bg-sky-soft min-[380px]:grid sm:flex sm:px-4"
+            aria-label="Translate"
+          >
+            <Languages size={20} aria-hidden />
+            <span className="hidden sm:inline">Translate</span>
+          </Link>
           <TextSizeControl />
           <Link href={!loading && user ? "/learn" : "/login"} className="btn btn-primary px-4 text-[16px] sm:px-6">
             {!loading && user ? "My lessons" : "Log in"}

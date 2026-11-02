@@ -4,9 +4,9 @@ import { LESSONS } from "@/lib/lessons";
 const ORDER = "АБВГДЕЁЖЗИЙКЛМНОӨПРСТУҮФХЦЧШЩЪЫЬЭЮЯ".split("");
 
 const GROUPS: Record<string, { label: string; cls: string; dot: string }> = {
-  friends: { label: "Looks and sounds like English", cls: "bg-gold text-night", dot: "bg-gold" },
-  tricksters: { label: "Looks English, sounds different", cls: "bg-coral text-night", dot: "bg-coral" },
-  specials: { label: "Special letters, like Ө and Ү", cls: "bg-cobalt text-white", dot: "bg-cobalt" },
+  friends: { label: "You know these", cls: "bg-gold text-night", dot: "bg-gold" },
+  tricksters: { label: "Tricky twins", cls: "bg-coral text-night", dot: "bg-coral" },
+  specials: { label: "Mongolian specials", cls: "bg-cobalt text-white", dot: "bg-cobalt" },
 };
 
 export function AlphabetBoard() {
@@ -19,11 +19,8 @@ export function AlphabetBoard() {
         <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <h2 id="alphabet" className="max-w-2xl text-4xl font-bold sm:text-5xl">
-              35 letters. Less scary than it looks.
+              The whole alphabet.
             </h2>
-            <p className="mt-4 max-w-xl text-xl text-ink-soft">
-              Five you already know. Seven look English but sound different. Two, Ө and Ү, aren&apos;t even in the Russian alphabet.
-            </p>
           </div>
           <ul className="flex flex-col gap-2 text-base font-semibold">
             {Object.entries(GROUPS).map(([k, g]) => (
@@ -34,7 +31,7 @@ export function AlphabetBoard() {
             ))}
             <li className="flex items-center gap-3">
               <span className="h-4 w-4 rounded-md border-2 border-line bg-white" aria-hidden />
-              New shapes with picture tricks
+              New shapes
             </li>
           </ul>
         </div>

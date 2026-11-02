@@ -15,8 +15,8 @@ const KNOWN = [
 ];
 
 const NEW = [
-  { ch: "С", say: "s", pic: "🐍", trick: "Looks like an English C, but it's a curvy snake that says “sss”." },
-  { ch: "И", say: "ee", pic: "👀", trick: "A backwards N. Remember it as “I see” and say “ee”." },
+  { ch: "С", say: "s", pic: "🐍", trick: "A curvy snake: sss." },
+  { ch: "И", say: "ee", pic: "👀", trick: "Backwards N. “I see!”" },
 ];
 
 const QUESTIONS = [
@@ -37,7 +37,7 @@ const QUESTIONS = [
   },
 ];
 
-const STAGES = ["Letters you know", "Two new letters", "Quiz"];
+const STAGES = ["Known letters", "New letters", "Quiz"];
 
 export function TryDemo() {
   const [step, setStep] = useState(0); // 0 known, 1 new, 2 quiz, 3 done
@@ -70,11 +70,11 @@ export function TryDemo() {
   }
 
   return (
-    <section id="try" className="relative scroll-mt-20 overflow-hidden bg-gradient-to-b from-[#c9efff] via-sky-soft to-paper px-4 pb-24 pt-20">
+    <section id="try" className="relative scroll-mt-20 overflow-hidden bg-gradient-to-b from-white via-sky-soft to-white px-4 pb-24 pt-20">
       <div className="mx-auto max-w-5xl">
         <div className="max-w-2xl">
-          <h2 className="text-4xl font-bold sm:text-5xl">Read your first Mongolian word in two minutes.</h2>
-          <p className="mt-4 text-xl text-ink-soft">No account needed. Just tap.</p>
+          <h2 className="text-4xl font-bold sm:text-5xl">Read your first word in 2 minutes.</h2>
+          <p className="mt-4 text-xl text-ink-soft">No sign-up needed.</p>
         </div>
 
         <div className="panel relative mt-10 overflow-hidden">
@@ -113,8 +113,8 @@ export function TryDemo() {
           <div className="p-6 sm:p-10">
             {step === 0 && (
               <div>
-                <h3 className="text-2xl font-bold sm:text-3xl">You already know these five.</h3>
-                <p className="mt-2 text-lg text-ink-soft">They look and sound like English. Tap each one to check.</p>
+                <h3 className="text-2xl font-bold sm:text-3xl">You already know these.</h3>
+                <p className="mt-2 text-lg text-ink-soft">Tap each one.</p>
                 <div className="mt-7 grid grid-cols-3 gap-3 sm:grid-cols-5">
                   {KNOWN.map((k) => {
                     const open = flipped.includes(k.ch);
@@ -144,7 +144,7 @@ export function TryDemo() {
                 </div>
                 <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
                   <p className="text-lg font-semibold" aria-live="polite">
-                    {flipped.length < KNOWN.length ? `${flipped.length} of 5 checked` : "That's 5 of 35 letters. You've already started."}
+                    {flipped.length < KNOWN.length ? `${flipped.length} of 5 checked` : "5 of 35 done!"}
                   </p>
                   <button type="button" className="btn btn-primary" onClick={next} disabled={flipped.length < KNOWN.length}>
                     Next
@@ -155,12 +155,11 @@ export function TryDemo() {
 
             {step === 1 && (
               <div>
-                <h3 className="text-2xl font-bold sm:text-3xl">Two new letters, each with a picture trick.</h3>
-                <p className="mt-2 text-lg text-ink-soft">A picture and a short story make a new letter much easier to remember.</p>
+                <h3 className="text-2xl font-bold sm:text-3xl">Two new letters.</h3>
                 <div className="mt-7 grid gap-4 sm:grid-cols-2">
                   {NEW.map((l) => (
                     <div key={l.ch} className="flex items-center gap-5 rounded-3xl bg-paper p-6">
-                      <div className="grid h-28 w-28 shrink-0 place-items-center rounded-3xl bg-night font-display text-6xl font-bold text-white">
+                      <div className="grid h-28 w-28 shrink-0 place-items-center rounded-3xl bg-cobalt font-display text-6xl font-bold text-white">
                         {l.ch}
                       </div>
                       <div>
@@ -223,14 +222,14 @@ export function TryDemo() {
                 <div className="flex justify-center">
                   <TaxiSign />
                 </div>
-                <h3 className="mx-auto mt-8 max-w-xl text-3xl font-bold sm:text-4xl">You just read your first Mongolian word.</h3>
+                <h3 className="mx-auto mt-8 max-w-xl text-3xl font-bold sm:text-4xl">You read your first Mongolian word!</h3>
                 <p className="mx-auto mt-3 max-w-lg text-xl text-ink-soft">
-                  You now know <strong className="text-ink">7 of the 35 letters</strong>. That&apos;s 20% of the alphabet.
+                  <strong className="text-ink">7 of 35</strong> letters learned.
                 </p>
                 <div className="mx-auto mt-6 h-3 max-w-md overflow-hidden rounded-full bg-line">
                   <div className="h-full rounded-full bg-ok" style={{ width: "20%" }} />
                 </div>
-                <p className="mt-6 text-lg">Create a free account to keep going. You start with 5 bonus stars.</p>
+                <p className="mt-6 text-lg">Keep going with a free account, plus 5 bonus stars.</p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
                   <Link href="/login?mode=signup" className="btn btn-primary text-lg">
                     Create free account

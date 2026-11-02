@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarClock, Check, Flame, Lock, Play, Star } from "lucide-react";
+import { CalendarClock, Check, Flame, Languages, Lock, MessageCircle, Play, Star } from "lucide-react";
 import { Logo, TextSizeControl } from "@/components/Nav";
 import { useAuth } from "@/components/Providers";
 import { useLearner } from "@/components/useLearner";
@@ -23,12 +23,12 @@ export default function LearnHome() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="bg-night">
+      <header className="border-b border-line bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Logo />
           <div className="flex items-center gap-2">
             <TextSizeControl />
-            <button type="button" className="btn btn-line px-4 text-white" onClick={signOut}>
+            <button type="button" className="btn btn-line px-4 text-ink" onClick={signOut}>
               Log out
             </button>
           </div>
@@ -36,10 +36,10 @@ export default function LearnHome() {
       </header>
 
       {/* Hero strip */}
-      <section className="bg-night px-4 pb-24 pt-8 text-white sm:px-6">
+      <section className="bg-gradient-to-b from-white to-sky-soft px-4 pb-24 pt-8 sm:px-6">
         <div className="mx-auto max-w-5xl">
           <h1 className="text-3xl font-bold sm:text-5xl">Сайн уу, {progress.displayName}!</h1>
-          <p className="mt-2 text-lg text-white/80">“Сайн уу” means hello. Here&apos;s where you are.</p>
+          <p className="mt-2 text-lg text-ink-soft">“Сайн уу” means hello.</p>
 
           <dl className="mt-8 grid grid-cols-3 gap-3 sm:max-w-xl">
             <Stat icon={<span className="font-display text-lg font-bold">Аа</span>} label="Letters" value={`${letters}/${TOTAL_LETTERS}`} />
@@ -48,19 +48,19 @@ export default function LearnHome() {
           </dl>
 
           <div className="mt-6 sm:max-w-xl">
-            <div className="flex justify-between text-white/85">
+            <div className="flex justify-between text-ink-soft">
               <span>Alphabet</span>
-              <span className="font-semibold text-white">{pct}%</span>
+              <span className="font-semibold text-ink">{pct}%</span>
             </div>
             <div
-              className="mt-2 h-3 overflow-hidden rounded-full bg-white/15"
+              className="mt-2 h-3 overflow-hidden rounded-full bg-line"
               role="progressbar"
               aria-valuenow={pct}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-label="Alphabet progress"
             >
-              <div className="h-full rounded-full bg-gradient-to-r from-sky to-gold" style={{ width: `${Math.max(pct, 3)}%` }} />
+              <div className="h-full rounded-full bg-gradient-to-r from-cobalt to-sky" style={{ width: `${Math.max(pct, 3)}%` }} />
             </div>
           </div>
         </div>
@@ -117,6 +117,23 @@ export default function LearnHome() {
           </section>
         )}
 
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <Link href="/translate" className="flex items-center gap-4 rounded-2xl bg-white p-5 ring-1 ring-line transition hover:ring-cobalt">
+            <Languages size={28} className="text-cobalt" aria-hidden />
+            <span>
+              <span className="block text-lg font-bold">Translate</span>
+              <span className="text-ink-soft">English ⇄ Mongolian</span>
+            </span>
+          </Link>
+          <Link href="/translate#phrases" className="flex items-center gap-4 rounded-2xl bg-white p-5 ring-1 ring-line transition hover:ring-cobalt">
+            <MessageCircle size={28} className="text-cobalt" aria-hidden />
+            <span>
+              <span className="block text-lg font-bold">Ready phrases</span>
+              <span className="text-ink-soft">Taxi, shop, doctor, emergency</span>
+            </span>
+          </Link>
+        </div>
+
         <h2 className="mt-14 text-3xl font-bold">Your path</h2>
         <ol className="relative mt-8">
           <span className="absolute bottom-6 left-7 top-6 w-[3px] rounded-full bg-line" aria-hidden />
@@ -164,9 +181,9 @@ export default function LearnHome() {
 
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15">
-      <dt className="flex items-center gap-2 text-white/85">
-        <span className="text-gold">{icon}</span>
+    <div className="rounded-2xl bg-white p-4 ring-1 ring-line">
+      <dt className="flex items-center gap-2 text-ink-soft">
+        <span className="text-cobalt">{icon}</span>
         {label}
       </dt>
       <dd className="mt-1 font-display text-2xl font-bold">{value}</dd>

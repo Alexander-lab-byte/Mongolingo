@@ -165,24 +165,24 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
-      <header className="sticky top-0 z-20 bg-night">
+      <header className="sticky top-0 z-20 border-b border-line bg-white">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
           <Link
             href="/learn"
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white ring-1 ring-white/25 hover:bg-white/10"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-ink ring-1 ring-line hover:bg-paper"
             aria-label="Close lesson and go back"
           >
             <X size={22} aria-hidden />
           </Link>
           <div
-            className="h-3 flex-1 overflow-hidden rounded-full bg-white/15"
+            className="h-3 flex-1 overflow-hidden rounded-full bg-line"
             role="progressbar"
             aria-valuenow={pct}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="Lesson progress"
           >
-            <div className="h-full rounded-full bg-gradient-to-r from-sky to-gold transition-all duration-500" style={{ width: `${Math.max(pct, 3)}%` }} />
+            <div className="h-full rounded-full bg-gradient-to-r from-cobalt to-sky transition-all duration-500" style={{ width: `${Math.max(pct, 3)}%` }} />
           </div>
           <div className="hidden sm:block">
             <TextSizeControl />
@@ -217,14 +217,14 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
         {startPhase === "learn" && item && (
           <div className="panel mt-4 overflow-hidden" key={item.id}>
             <div className="grid md:grid-cols-[1.05fr_1fr]">
-              <div className="flex flex-col items-center justify-center bg-night px-6 py-10 text-white">
-                <p className="text-white/75">
+              <div className="flex flex-col items-center justify-center bg-cobalt px-6 py-10 text-white">
+                <p className="text-white">
                   Card {card + 1} of {lesson.items.length}
                 </p>
                 {lesson.kind === "letters" ? (
                   <div className="pop mt-3 flex items-end gap-5">
                     <span className="font-display text-[8.5rem] font-bold leading-none">{item.show}</span>
-                    <span className="font-display text-7xl font-bold leading-none text-sky">{item.small}</span>
+                    <span className="font-display text-7xl font-bold leading-none text-gold">{item.small}</span>
                   </div>
                 ) : (
                   <div className="pop mt-5 rounded-xl bg-gold px-6 py-3 text-center font-display text-3xl font-extrabold text-night sm:text-4xl">
@@ -285,7 +285,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
             {q.big && (
               <div className="my-8 flex justify-center">
                 {lesson.kind === "letters" ? (
-                  <span className="grid h-44 w-44 place-items-center rounded-[32px] bg-night font-display text-[7rem] font-bold leading-none text-white">
+                  <span className="grid h-44 w-44 place-items-center rounded-[32px] bg-cobalt font-display text-[7rem] font-bold leading-none text-white">
                     {q.big}
                   </span>
                 ) : (
@@ -311,7 +311,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
         )}
 
         {phase === "done" && result && (
-          <div className="relative mt-4 overflow-hidden rounded-[28px] bg-night px-6 py-12 text-center text-white sm:px-10">
+          <div className="relative mt-4 overflow-hidden rounded-[28px] bg-cobalt px-6 py-12 text-center text-white sm:px-10">
             <Confetti />
             <div className="flex justify-center gap-2" role="img" aria-label={`${result.stars} of 3 stars`}>
               {[0, 1, 2].map((i) => (

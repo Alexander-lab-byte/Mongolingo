@@ -17,12 +17,11 @@ export function StreetSigns() {
     <section className="bg-white px-4 py-24" aria-labelledby="signs">
       <div className="mx-auto max-w-6xl">
         <h2 id="signs" className="max-w-2xl text-4xl font-bold sm:text-5xl">
-          Signs you&apos;ll be able to read.
+          Read the signs around you.
         </h2>
-        <p className="mt-4 max-w-xl text-xl text-ink-soft">Lesson 7 teaches the signs you see every day in the city, not textbook sentences.</p>
 
-        <div className="mt-14 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          <Sign en="Pharmacy" note="эмийн сан, said “emiin san”">
+        <div className="mt-12 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          <Sign en="Pharmacy" note="emiin san">
             <div className="flex items-center gap-4 rounded-xl bg-[#0f8a4f] px-5 py-4 text-white shadow-lg">
               <span className="relative block h-12 w-12" aria-hidden>
                 <span className="absolute left-1/2 top-0 h-full w-4 -translate-x-1/2 rounded-sm bg-white" />
@@ -32,14 +31,14 @@ export function StreetSigns() {
             </div>
           </Sign>
 
-          <Sign en="Shop" note="дэлгүүр, said “delgüür”">
+          <Sign en="Shop" note="delgüür">
             <div className="w-full max-w-xs overflow-hidden rounded-lg shadow-lg">
               <div className="bg-cobalt px-4 py-3 text-center font-display text-3xl font-extrabold text-white">ДЭЛГҮҮР</div>
               <div className="h-5" style={{ background: "repeating-linear-gradient(90deg,#ff5a4e 0 22px,#fff 22px 44px)" }} />
             </div>
           </Sign>
 
-          <Sign en="Exit" note="гарц, said “garts”">
+          <Sign en="Exit" note="garts">
             <div className="flex items-center gap-3 rounded-lg bg-[#0f8a4f] px-5 py-3 text-white shadow-lg">
               <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <circle cx="13" cy="4" r="2" fill="#fff" />
@@ -52,7 +51,7 @@ export function StreetSigns() {
             </div>
           </Sign>
 
-          <Sign en="Hospital" note="эмнэлэг, said “emneleg”">
+          <Sign en="Hospital" note="emneleg">
             <div className="flex items-center gap-4 rounded-xl border-4 border-coral bg-white px-5 py-3 shadow-lg">
               <span className="relative block h-10 w-10" aria-hidden>
                 <span className="absolute left-1/2 top-0 h-full w-3.5 -translate-x-1/2 bg-coral" />
@@ -62,7 +61,7 @@ export function StreetSigns() {
             </div>
           </Sign>
 
-          <Sign en="Bus stop" note="автобусны буудал, said “avtobusny buudal”">
+          <Sign en="Bus stop" note="avtobusny buudal">
             <div className="flex flex-col items-center gap-2">
               <div className="grid h-28 w-28 place-items-center rounded-full border-[6px] border-white bg-cobalt shadow-lg">
                 <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" aria-hidden>
@@ -76,7 +75,7 @@ export function StreetSigns() {
             </div>
           </Sign>
 
-          <Sign en="Taxi" note="такси, said “taksi”">
+          <Sign en="Taxi" note="taksi">
             <div className="inline-flex flex-col items-center">
               <div className="rounded-t-2xl bg-gold px-7 pb-2 pt-3">
                 <span className="font-display text-4xl font-extrabold text-night">ТАКСИ</span>

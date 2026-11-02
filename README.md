@@ -3,6 +3,7 @@
 **Learn Mongolian, one piece at a time.** Easy lessons for foreigners living in Mongolia: kids, adults and grandparents.
 
 - **Landing page:** a scroll story where a Mongolian ger (home) builds itself while you scroll (walls → roof → cover → door), plus a free 2‑minute lesson you can try without an account.
+- **Translator + phrasebook (no login):** English ⇄ Mongolian with Latin pronunciation, "show to someone" full screen, saved phrases, ready phrases for taxi/shop/café/doctor/emergency and the official emergency numbers.
 - **Learning app (needs login):** 8 lessons. All 35 Cyrillic letters, real street signs, and first phrases. Each lesson has picture tricks, a quiz, mistakes asked again, stars, a streak and spaced reviews.
 
 Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, Motion, Supabase (auth + database).
@@ -44,4 +45,7 @@ One table, `public.progress` (one row per user). Row Level Security is on, so ea
 | `components/SteppeScene.tsx` | the scroll animation (and a still version for "reduce motion" users) |
 | `components/TryDemo.tsx` | the free mini lesson on the landing page |
 | `components/LessonPlayer.tsx` | the lesson: cards → quiz → result |
+| `app/api/translate/route.ts` | free machine translation (MyMemory), used only when the phrasebook has no match |
+| `lib/phrases.ts` | the checked phrasebook and emergency numbers |
+| `lib/translit.ts` | Mongolian Cyrillic → Latin pronunciation |
 | `docs/RESEARCH.md` | the psychology behind every design choice, with studies |
