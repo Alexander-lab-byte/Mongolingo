@@ -115,7 +115,7 @@ export default function LearnHome() {
         {/* The one next step */}
         <Link
           href={today.href}
-          className="mt-8 flex flex-col gap-5 rounded-[28px] bg-cobalt p-7 text-white shadow-[0_30px_60px_-25px_rgba(30,91,255,0.8)] transition hover:bg-cobalt-dark sm:flex-row sm:items-center sm:p-9"
+          className="mt-8 flex flex-col gap-5 rounded-[28px] bg-cobalt p-7 text-white transition hover:bg-cobalt-dark sm:flex-row sm:items-center sm:p-9"
         >
           <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white/15">
             <TodayIcon size={30} aria-hidden />
@@ -253,7 +253,7 @@ function Ring({ pct, label }: { pct: number; label: string }) {
     <div className="relative grid h-24 w-24 shrink-0 place-items-center" role="img" aria-label={`Daily goal: ${label} cards`}>
       <svg viewBox="0 0 80 80" className="absolute inset-0 -rotate-90">
         <circle cx="40" cy="40" r={r} fill="none" stroke="#d9e0f2" strokeWidth="8" />
-        <circle cx="40" cy="40" r={r} fill="none" stroke={pct >= 1 ? "#0f8a4f" : "#1e5bff"} strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} className="transition-all duration-700" />
+        <circle cx="40" cy="40" r={r} fill="none" stroke={pct >= 1 ? "#276b43" : "#2f5da8"} strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} className="transition-all duration-700" />
       </svg>
       <span className="font-display text-xl font-bold">{label}</span>
     </div>

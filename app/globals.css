@@ -1,31 +1,35 @@
 @import "tailwindcss";
 
 /*
-  Mongolingo — "Eternal Blue Sky" (Мөнх хөх тэнгэр)
-  Night indigo → sunrise coral → electric cobalt day.
-  All text pairs pass WCAG 2.2 AA; body text pairs pass AAA (7:1+).
-  Long reading happens on light backgrounds (dark text on light reads faster,
-  incl. for older adults — Piepenbrock et al. 2013); the dark sky is for short, big text.
+  Mongolingo — "Warm sand + calm blue"
+  Research behind the palette (see docs/RESEARCH.md):
+  - Warm backgrounds (peach, cream, yellow) are read faster than cool ones (Rello & Bigham, 2017, n=341).
+  - Saturated, bright colors raise arousal; low-saturation colors are calmest (Wilms & Oberfeld, 2018).
+    So big areas are soft and warm; strong color is kept small (buttons, progress).
+  - Aging eyes: yellowing lens, glare from pure white, blue/green confusion. So no pure white,
+    and meaning is carried by light/dark contrast + icons, never by hue alone.
+  Every text pair passes WCAG 2.2 AA; body text pairs are 7:1 or more.
 */
 @theme {
-  --color-night: #0a0f2c;
-  --color-night-2: #141b45;
-  --color-cobalt: #1e5bff;
-  --color-cobalt-dark: #1544cc;
-  --color-sky: #4fc3ff;
-  --color-sky-soft: #e3f3ff;
-  --color-coral: #ff5a4e;
-  --color-coral-ink: #c4291e;
-  --color-gold: #ffc531;
-  --color-gold-soft: #fff4d1;
-  --color-paper: #f5f8ff;
-  --color-ink: #0a0f2c;
-  --color-ink-soft: #3b4466;
-  --color-line: #d9e0f2;
-  --color-ok: #0f8a4f;
-  --color-ok-soft: #e1f7ea;
-  --color-bad: #c4291e;
-  --color-bad-soft: #ffe8e5;
+  --color-white: #fffdf9; /* warm white: less glare than #fff */
+  --color-night: #2a2420; /* warm charcoal */
+  --color-night-2: #3a322c;
+  --color-cobalt: #2f5da8; /* calm deep blue — buttons only */
+  --color-cobalt-dark: #244a87;
+  --color-sky: #7fa7d6;
+  --color-sky-soft: #fbe9da; /* peach — highlight areas */
+  --color-coral: #e9935a; /* apricot */
+  --color-coral-ink: #9c3f22;
+  --color-gold: #e8b04b; /* soft saffron */
+  --color-gold-soft: #fbefd6;
+  --color-paper: #fbf5ec; /* warm cream background */
+  --color-ink: #2a2420;
+  --color-ink-soft: #5c5249;
+  --color-line: #e7dccb;
+  --color-ok: #276b43;
+  --color-ok-soft: #e5f2e8;
+  --color-bad: #b3403a;
+  --color-bad-soft: #fbe6e2;
   --font-sans: "Onest Variable", system-ui, sans-serif;
   --font-display: "Montserrat Variable", "Onest Variable", system-ui, sans-serif;
 }
@@ -45,7 +49,7 @@ html {
 }
 
 body {
-  background: #ffffff;
+  background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
   line-height: 1.6;
@@ -61,7 +65,7 @@ h1, h2, h3, .display {
 p { text-wrap: pretty; }
 
 :focus-visible {
-  outline: 3px solid var(--color-gold);
+  outline: 3px solid var(--color-cobalt);
   outline-offset: 3px;
   border-radius: 10px;
 }
@@ -85,23 +89,23 @@ p { text-wrap: pretty; }
 .btn-primary {
   background: var(--color-cobalt);
   color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px -8px rgba(30, 91, 255, 0.7);
+  box-shadow: 0 2px 0 var(--color-cobalt-dark);
 }
 .btn-primary:hover { background: var(--color-cobalt-dark); }
 .btn-gold {
   background: var(--color-gold);
   color: var(--color-night);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 8px 28px -8px rgba(255, 197, 49, 0.8);
+  box-shadow: 0 2px 0 #c48f2c;
 }
-.btn-gold:hover { background: #ffd35e; }
+.btn-gold:hover { background: #efbd5f; }
 .btn-line { border: 2px solid currentColor; background: transparent; }
-.btn-line:hover { background: rgba(127, 140, 190, 0.14); }
+.btn-line:hover { background: rgba(92, 82, 73, 0.08); }
 
 .panel {
   background: #fff;
   border: 1px solid var(--color-line);
   border-radius: 28px;
-  box-shadow: 0 1px 0 rgba(10, 15, 44, 0.04), 0 24px 48px -28px rgba(10, 15, 44, 0.35);
+  box-shadow: 0 1px 0 rgba(42, 36, 32, 0.04), 0 18px 40px -28px rgba(42, 36, 32, 0.3);
 }
 
 .glass {
@@ -112,11 +116,11 @@ p { text-wrap: pretty; }
 }
 
 .light-glass {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 253, 249, 0.88);
+  border: 1px solid rgba(255, 253, 249, 0.95);
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
-  box-shadow: 0 20px 50px -24px rgba(10, 15, 44, 0.35);
+  box-shadow: 0 18px 44px -26px rgba(42, 36, 32, 0.35);
 }
 
 .input {
@@ -129,8 +133,8 @@ p { text-wrap: pretty; }
   background: #fff;
   transition: border-color 0.15s ease;
 }
-.input:hover { border-color: #aab6d9; }
-.input:focus { outline: none; border-color: var(--color-cobalt); box-shadow: 0 0 0 4px rgba(30, 91, 255, 0.18); }
+.input:hover { border-color: #cdbfa9; }
+.input:focus { outline: none; border-color: var(--color-cobalt); box-shadow: 0 0 0 4px rgba(47, 93, 168, 0.18); }
 
 @keyframes pop {
   0% { transform: scale(0.92); opacity: 0; }

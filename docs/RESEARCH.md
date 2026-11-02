@@ -37,23 +37,30 @@ Every choice below is backed by a published study or an official standard. We al
 | Labels above inputs, a "Show" password button, plain error messages | NN/g form research: placeholder‑only labels disappear while typing and confuse users. |
 | Big emoji pictures and very short sentences | Children read pictures before words. NN/g's research on children's websites. |
 
-## Colors: what we did NOT claim
+## Colors: warm, calm and easy on the eyes
 
-Popular claims like "blue = trust, red = urgency" have **weak scientific support**. Elliot (2015, *Frontiers in Psychology*) reviews the field and finds the evidence for color effects mostly preliminary. So we chose colors for **contrast, recognition and meaning**, not "color psychology".
+The palette, "Warm sand + calm blue", follows three groups of studies:
 
-The palette is called "Eternal Blue Sky", after Mongolia's own nickname (Мөнх хөх тэнгэр):
-
-| name | hex | used for |
+| Finding | Study | What we did |
 |---|---|---|
-| Night | `#0a0f2c` | the story's night sky, headers, big letters |
-| Cobalt | `#1e5bff` | main buttons, the day sky |
-| Sky | `#4fc3ff` | highlights, lowercase letters |
-| Coral | `#ff5a4e` | sunrise, "tricky twin" letters, flag red |
-| Gold | `#ffc531` | the Soyombo gold: main call‑to‑action, stars, the sun |
-| Paper | `#f5f8ff` | reading background (cool white, low glare) |
+| **Warm backgrounds are read faster.** Peach, orange and yellow gave the fastest reading. Blue‑grey, blue and green were slowest. This held for readers with and without dyslexia (341 people). | Rello & Bigham (2017), *Good Background Colors for Readers*, ASSETS | Cream background `#fbf5ec`; peach `#fbe9da` for highlight areas; no cool blue‑grey backgrounds. |
+| **Saturated, bright colors raise arousal** (stress, alertness); low‑saturation colors are the calmest. Brighter colors and **medium** saturation feel most pleasant. | Wilms & Oberfeld (2018), *Psychological Research* 82; Valdez & Mehrabian (1994), *J. Exp. Psychology: General* 123 | Big areas are soft and low‑saturation. Strong color is kept small (buttons, progress, signs). |
+| **Aging eyes:** the lens yellows, blues and greens get confused, pastels blur together, and glare from bright surfaces hurts. | Aging‑eye research (summary: Sherwin‑Williams, *Color and the Aging Eye*) | No pure white (warm white `#fffdf9`); meaning carried by light/dark contrast + icons + words, never by hue alone. |
 
-- **Long reading happens on light backgrounds.** Dark text on a light background is read faster and more accurately, including by older adults (Piepenbrock, Mayr & Buchner, 2013, *Ergonomics*). The dark night sky is used only for short, very large text.
-- **Green and red** appear only for right and wrong answers, always with an icon and words.
+| Name | Hex | Used for |
+|---|---|---|
+| Cream | `#fbf5ec` | page background |
+| Warm white | `#fffdf9` | cards and panels |
+| Peach | `#fbe9da` | highlight areas, icon tiles |
+| Charcoal | `#2a2420` | text (14:1 on cream) |
+| Warm grey | `#5c5249` | secondary text (7:1 on cream) |
+| Calm blue | `#2f5da8` | buttons and links only (white text 6.4:1) |
+| Saffron | `#e8b04b` | stars, goal, taxi |
+| Green / Red | `#276b43` / `#b3403a` | right / wrong, always with an icon and words |
+
+Popular claims like "blue = trust, red = urgency" have weak support (Elliot, 2015, *Frontiers in Psychology*), so we don't rely on them. We use only the effects above, which come from controlled experiments.
+
+- **Long reading happens on light backgrounds.** Dark text on light is read faster and more accurately, including by older adults (Piepenbrock, Mayr & Buchner, 2013, *Ergonomics*).
 
 ## Why the translator and phrasebook come first
 
@@ -86,6 +93,10 @@ Good later uses of AI:
 - Cepeda et al. (2006), distributed practice meta‑analysis — [USF Digital Commons](https://digitalcommons.usf.edu/psy_facpub/1771/)
 - Nunes & Drèze (2006), endowed progress — [PDF](https://msbfile03.usc.edu/digitalmeasures/jnunes/intellcont/Endowed%20Progress%20Effect-1.pdf)
 - Kivetz, Urminsky & Zheng (2006), goal gradient — [RePEc](https://ideas.repec.org/a/oup/jconrs/v32y2006i4p504-512.html)
+- Rello & Bigham (2017), good background colors for readers — [PDF](https://www.changedyslexia.org/publications/pdfs/2017-ASSETS-Good%20Background%20Colors.pdf)
+- Wilms & Oberfeld (2018), color and emotion: hue, saturation, brightness — [PDF](https://www.staff.uni-mainz.de/oberfeld/downloads/Wilms-Oberfeld2018_Article_ColorAndEmotionEffectsOfHueSat.pdf)
+- Valdez & Mehrabian (1994), effects of color on emotions — [PubMed](https://pubmed.ncbi.nlm.nih.gov/7996122/)
+- Color and the aging eye — [Sherwin‑Williams](https://www.sherwin-williams.com/architects-specifiers-designers/inspiration/styles-and-techniques/SW-ART-STIR-COLOR-AGING-EYE)
 - Elliot (2015), color and psychological functioning — [Frontiers / PMC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4383146/)
 - Older‑adult website usability — [PMC content analysis](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7741326/)
 - Roediger & Karpicke (2006), testing effect, *Psychological Science* 17(3)
