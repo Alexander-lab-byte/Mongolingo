@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/onest";
-import "@fontsource-variable/unbounded";
+import "@fontsource-variable/montserrat";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 

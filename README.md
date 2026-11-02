@@ -1,8 +1,8 @@
 # Mongolingo 🇲🇳
 
-**Learn Mongolian, one piece at a time.** Easy lessons for foreigners living in Mongolia: kids, adults and grandparents.
+**Learn Mongolian for life in Mongolia.** Easy lessons for foreigners living in Mongolia: kids, adults and grandparents.
 
-- **Landing page:** a scroll story where a Mongolian ger (home) builds itself while you scroll (walls → roof → cover → door), plus a free 2‑minute lesson you can try without an account.
+- **Landing page:** a scroll story where an Ulaanbaatar street comes to life (buildings → shop, pharmacy and café signs + a taxi → speech bubbles → МОНГОЛ over the city), plus a free 2‑minute lesson you can try without an account.
 - **Translator + phrasebook (no login):** English ⇄ Mongolian with Latin pronunciation, "show to someone" full screen, saved phrases, ready phrases for taxi/shop/café/doctor/emergency and the official emergency numbers.
 - **Learning app (needs login):** 8 lessons. All 35 Cyrillic letters, real street signs, and first phrases. Each lesson has picture tricks, a quiz, mistakes asked again, stars, a streak and spaced reviews.
 

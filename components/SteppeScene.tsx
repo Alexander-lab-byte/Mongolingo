@@ -5,9 +5,10 @@ import { useRef, useSyncExternalStore } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 
 /*
-  The story — night turns into the Eternal Blue Sky while a ger is built:
-  walls (letters) → roof (signs) → felt cover (words) → door opens (welcome home).
-  The giant word МОНГОЛ rises behind the mountains with the sun.
+  The story — a street in Ulaanbaatar comes to life as you scroll:
+  buildings appear (letters) → shop, pharmacy and café signs light up and a taxi arrives (signs)
+  → speech bubbles pop up (words) → windows light up and МОНГОЛ rises over the city (you're ready).
+  Everyone understands a street; it also shows exactly what the app helps with.
   Progress is always visible (goal-gradient effect, Kivetz et al. 2006).
 */
 
@@ -28,9 +29,9 @@ const STEPS = [
   { title: "35 letters. You know 5 already.", body: "" },
   { title: "Read the signs around you.", body: "" },
   { title: "Speak at the shop and market.", body: "" },
-  { title: "Сайн уу! Welcome home.", body: "" },
+  { title: "Сайн уу! You\u2019re ready.", body: "" },
 ];
-const RAIL = ["Letters", "Signs", "Words", "Home"];
+const RAIL = ["Letters", "Signs", "Words", "Ready"];
 
 const RANGES: [number, number][] = [
   [0, 0.12],
@@ -40,28 +41,21 @@ const RANGES: [number, number][] = [
   [0.82, 1],
 ];
 
-// Deterministic "random" so server and browser draw the same grass.
-function rng(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
-}
-const R = rng(7);
-const GRASS = Array.from({ length: 70 }, (_, i) => ({ x: (i * 23.3 + R() * 18) % 1600, h: 14 + R() * 22, lean: (R() - 0.5) * 14 }));
+const rectPath = (x: number, y: number, w: number, h: number) => `M${x} ${y + h} V${y} H${x + w} V${y + h} Z`;
 
-function lattice() {
-  let d = "";
-  for (let x = 480; x <= 1080; x += 30) {
-    d += `M${x} 790 L${x + 92} 680 M${x + 92} 790 L${x} 680 `;
-  }
-  return d;
-}
-function roofPoles() {
-  let d = "";
-  for (let x = 610; x <= 990; x += 19) d += `M800 548 L${x} 680 `;
-  return d;
+type Building = { x: number; top: number; w: number; fill: string; cols: number; rows: number };
+const BUILDINGS: Building[] = [
+  { x: 450, top: 440, w: 250, fill: "#ffffff", cols: 3, rows: 2 },
+  { x: 715, top: 370, w: 210, fill: "#f6f9ff", cols: 3, rows: 3 },
+  { x: 940, top: 470, w: 210, fill: "#fff6dd", cols: 3, rows: 2 },
+];
+const GROUND = 790;
+
+function windows(b: Building) {
+  const out: { x: number; y: number }[] = [];
+  const gap = (b.w - 40) / b.cols;
+  for (let r = 0; r < b.rows; r++) for (let c = 0; c < b.cols; c++) out.push({ x: b.x + 20 + c * gap + 6, y: b.top + 28 + r * 58 });
+  return { list: out, w: gap - 12 };
 }
 
 function Caption({ i, p }: { i: number; p: MotionValue<number> }) {
@@ -82,7 +76,7 @@ function Caption({ i, p }: { i: number; p: MotionValue<number> }) {
     <motion.div
       style={{ opacity, y, pointerEvents }}
       className={`absolute inset-x-4 mx-auto text-ink md:left-10 md:right-auto md:mx-0 lg:left-16 ${
-        isFirst ? "top-28 max-w-[40rem] sm:top-36" : isLast ? "bottom-8 max-w-[26rem] md:bottom-12" : "top-28 max-w-[30rem] sm:top-32"
+        isFirst ? "top-28 max-w-[40rem] sm:top-36" : isLast ? "bottom-8 max-w-[21rem] md:bottom-12 lg:left-8" : "bottom-6 max-w-[30rem] md:bottom-auto md:top-32"
       } ${isFirst ? "" : "light-glass rounded-[28px] p-6 sm:p-8"}`}
     >
       {!isFirst && <p className="mb-2 font-semibold text-cobalt">Step {i} of 4</p>}
@@ -139,30 +133,44 @@ function RailDot({ label, i, p }: { label: string; i: number; p: MotionValue<num
   );
 }
 
+function Bubble({ x, y, w, text, p, at, fill, color }: { x: number; y: number; w: number; text: string; p: MotionValue<number>; at: number; fill: string; color: string }) {
+  const scale = useTransform(p, [at, at + 0.04, 0.8, 0.84], [0, 1, 1, 0]);
+  return (
+    <motion.g style={{ scale, transformBox: "fill-box", originX: 0.5, originY: 1 }}>
+      <rect x={x} y={y} width={w} height="56" rx="28" fill={fill} stroke="#1e5bff" strokeWidth="3" />
+      <path d={`M${x + w / 2 - 12} ${y + 54} L${x + w / 2} ${y + 74} L${x + w / 2 + 12} ${y + 54}`} fill={fill} stroke="#1e5bff" strokeWidth="3" strokeLinejoin="round" />
+      <rect x={x + w / 2 - 14} y={y + 50} width="28" height="6" fill={fill} />
+      <text x={x + w / 2} y={y + 37} textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="700" fontSize="24" fill={color}>
+        {text}
+      </text>
+    </motion.g>
+  );
+}
+
+function Sign({ p, at, children }: { p: MotionValue<number>; at: number; children: React.ReactNode }) {
+  const scale = useTransform(p, [at, at + 0.04], [0, 1]);
+  return <motion.g style={{ scale, transformBox: "fill-box", originX: 0.5, originY: 0.5 }}>{children}</motion.g>;
+}
+
 function Scene({ p }: { p: MotionValue<number> }) {
   // Sky
   const sunrise = useTransform(p, [0.08, 0.32], [0, 1]);
   const day = useTransform(p, [0.32, 0.6], [0, 1]);
-  const sunY = useTransform(p, [0.1, 0.62], [720, 230]);
+  const sunY = useTransform(p, [0.1, 0.62], [720, 220]);
   const sunScale = useTransform(p, [0.1, 0.62], [1.25, 1]);
   // Giant word
-  const wordY = useTransform(p, [0.78, 0.96], [300, 0]);
-  const wordOpacity = useTransform(p, [0.78, 0.86], [0, 1]);
-  // Parallax mountains
+  const wordY = useTransform(p, [0.8, 0.96], [320, 0]);
+  const wordOpacity = useTransform(p, [0.8, 0.86], [0, 1]);
+  // Parallax
   const farY = useTransform(p, [0, 1], [0, -18]);
-  const midY = useTransform(p, [0, 1], [0, -40]);
-  const nearY = useTransform(p, [0, 1], [0, -70]);
-  // Ger
-  const wall = useTransform(p, [0.14, 0.32], [0, 1]);
-  const wallShow = useTransform(p, [0.13, 0.15], [0, 1]);
-  const roof = useTransform(p, [0.36, 0.52], [0, 1]);
-  const roofShow = useTransform(p, [0.35, 0.37], [0, 1]);
-  const cover = useTransform(p, [0.58, 0.62], [0, 1]);
-  const coverY = useTransform(p, [0.58, 0.72], [-300, 0]);
-  const door = useTransform(p, [0.8, 0.9], [1, 0.1]);
-  const glow = useTransform(p, [0.8, 0.9], [0, 1]);
-  const smoke = useTransform(p, [0.62, 0.7, 0.8, 0.84], [0, 0.85, 0.85, 0]);
-  const smokeY = useTransform(p, [0.62, 0.84], [10, -50]);
+  const midY = useTransform(p, [0, 1], [0, -36]);
+  // Buildings
+  const outline = useTransform(p, [0.13, 0.3], [0, 1]);
+  const outlineShow = useTransform(p, [0.12, 0.14], [0, 1]);
+  const fill = useTransform(p, [0.28, 0.34], [0, 1]);
+  const lit = useTransform(p, [0.84, 0.92], [0, 1]);
+  // Taxi
+  const taxiX = useTransform(p, [0.42, 0.55], [-520, 560]);
   const birds = useTransform(p, [0.6, 1], [900, 1050]);
   const birdsOpacity = useTransform(p, [0.55, 0.65], [0, 1]);
 
@@ -172,7 +180,7 @@ function Scene({ p }: { p: MotionValue<number> }) {
       preserveAspectRatio="xMidYMax slice"
       className="absolute inset-0 h-full w-full"
       role="img"
-      aria-label="Night turns into a bright blue morning over the Mongolian steppe while a ger (round felt home) is built piece by piece."
+      aria-label="A street in Ulaanbaatar comes to life: buildings appear, shop, pharmacy and café signs light up, a taxi arrives and people say hello."
     >
       <defs>
         <linearGradient id="g-night" x1="0" y1="0" x2="0" y2="1">
@@ -197,45 +205,50 @@ function Scene({ p }: { p: MotionValue<number> }) {
           <stop offset="0.6" stopColor="#ffc531" stopOpacity="0.55" />
           <stop offset="1" stopColor="#ff5a4e" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="g-felt" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.7" stopColor="#eef1fb" />
-          <stop offset="1" stopColor="#c9d0e8" />
+        <linearGradient id="g-tower" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#8fb2f2" />
+          <stop offset="1" stopColor="#5f8ce6" />
         </linearGradient>
-        <linearGradient id="g-roof" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="1" stopColor="#d3d9ef" />
-        </linearGradient>
-        <linearGradient id="g-ground" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#6fd08f" />
-          <stop offset="1" stopColor="#2f9e5c" />
-        </linearGradient>
-        <pattern id="p-orn" width="28" height="22" patternUnits="userSpaceOnUse">
-          <rect width="28" height="22" fill="#1e5bff" />
-          <path d="M5 17 V5 H23 V17 H10 V10 H18" fill="none" stroke="#ffc531" strokeWidth="2.6" />
+        <pattern id="p-checker" width="16" height="8" patternUnits="userSpaceOnUse">
+          <rect width="16" height="8" fill="#0a0f2c" />
+          <rect width="8" height="4" fill="#fff" />
+          <rect x="8" y="4" width="8" height="4" fill="#fff" />
         </pattern>
-        <clipPath id="c-wall">
-          <rect x="560" y="680" width="480" height="110" />
-        </clipPath>
       </defs>
 
-      {/* Sky layers */}
+      {/* Sky */}
       <rect width="1600" height="1000" fill="url(#g-night)" />
       <motion.rect width="1600" height="1000" fill="url(#g-sunrise)" style={{ opacity: sunrise }} />
       <motion.rect width="1600" height="1000" fill="url(#g-day)" style={{ opacity: day }} />
-
-      {/* Sun */}
       <motion.circle cx="1060" r="220" fill="url(#g-sun)" style={{ cy: sunY, scale: sunScale }} />
       <motion.circle cx="1060" r="70" fill="#fff3c4" style={{ cy: sunY }} />
 
-      {/* Giant word, rising behind the mountains */}
+      {/* Birds */}
+      <motion.g style={{ x: birds, opacity: birdsOpacity }} fill="none" stroke="#0a0f2c" strokeWidth="3" strokeLinecap="round" opacity="0.7">
+        <path d="M300 150 q12 -12 24 0 q12 -12 24 0" />
+        <path d="M360 180 q9 -9 18 0 q9 -9 18 0" />
+        <path d="M250 195 q8 -8 16 0 q8 -8 16 0" />
+      </motion.g>
+
+      {/* Mountains around the city */}
+      <motion.g style={{ y: farY }}>
+        <path d="M0 640 L170 500 L300 580 L460 460 L620 570 L760 490 L930 600 L1100 470 L1260 560 L1420 480 L1600 580 L1600 1000 L0 1000Z" fill="#d4dcf7" />
+        <motion.path
+          d="M0 640 L170 500 L300 580 L460 460 L620 570 L760 490 L930 600 L1100 470 L1260 560 L1420 480 L1600 580 L1600 1000 L0 1000Z"
+          fill="#b3c6f3"
+          style={{ opacity: day }}
+        />
+        <path d="M460 460 L505 500 L480 497 L462 512 L440 494 L420 503Z M1100 470 L1142 508 L1118 505 L1100 520 L1080 501 L1060 508Z M170 500 L205 532 L185 529 L170 542 L152 527Z" fill="#fff" />
+      </motion.g>
+
+      {/* Giant word, rising from behind the city */}
       <motion.text
         x="800"
-        y="455"
+        y="312"
         textAnchor="middle"
-        fontFamily="Unbounded Variable, sans-serif"
+        fontFamily="Montserrat Variable, sans-serif"
         fontWeight="800"
-        fontSize="215"
+        fontSize="200"
         className="hero-word"
         letterSpacing="-4"
         fill="#0a0f2c"
@@ -244,91 +257,109 @@ function Scene({ p }: { p: MotionValue<number> }) {
         МОНГОЛ
       </motion.text>
 
-      {/* Birds */}
-      <motion.g style={{ x: birds, opacity: birdsOpacity }} fill="none" stroke="#0a0f2c" strokeWidth="3" strokeLinecap="round" opacity="0.7">
-        <path d="M300 190 q12 -12 24 0 q12 -12 24 0" />
-        <path d="M360 220 q9 -9 18 0 q9 -9 18 0" />
-        <path d="M250 235 q8 -8 16 0 q8 -8 16 0" />
-      </motion.g>
-
-      {/* Far mountains with snow */}
-      <motion.g style={{ y: farY }}>
-        <path d="M0 690 L170 520 L300 610 L460 470 L620 600 L760 500 L930 640 L1100 480 L1260 590 L1420 500 L1600 610 L1600 1000 L0 1000Z" fill="#c9d3f5" />
-        <motion.path
-          d="M0 690 L170 520 L300 610 L460 470 L620 600 L760 500 L930 640 L1100 480 L1260 590 L1420 500 L1600 610 L1600 1000 L0 1000Z"
-          fill="#a9c0f3"
-          style={{ opacity: day }}
-        />
-        <path d="M460 470 L505 512 L480 508 L462 525 L440 505 L420 515Z M1100 480 L1142 520 L1118 516 L1100 532 L1080 512 L1060 520Z M170 520 L205 555 L185 551 L170 565 L152 548Z" fill="#fff" opacity="0.95" />
-      </motion.g>
-
-      {/* Mid hills */}
+      {/* Far skyline with Blue Sky Tower */}
       <motion.g style={{ y: midY }}>
-        <path d="M0 760 C220 650 420 700 620 720 C820 740 1000 640 1220 680 C1400 712 1500 690 1600 700 L1600 1000 L0 1000Z" fill="#a7bdf0" />
-        <motion.path
-          d="M0 760 C220 650 420 700 620 720 C820 740 1000 640 1220 680 C1400 712 1500 690 1600 700 L1600 1000 L0 1000Z"
-          fill="#7cb3f0"
-          style={{ opacity: day }}
-        />
+        <g fill="#c3d0f3">
+          <rect x="0" y="560" width="90" height="240" />
+          <rect x="100" y="610" width="80" height="190" />
+          <rect x="190" y="520" width="70" height="280" />
+          <rect x="270" y="590" width="90" height="210" />
+          <rect x="370" y="545" width="70" height="255" />
+          <rect x="1160" y="580" width="60" height="220" />
+          <rect x="1330" y="600" width="70" height="200" />
+          <rect x="1410" y="530" width="90" height="270" />
+          <rect x="1510" y="590" width="90" height="210" />
+        </g>
+        <path d="M1225 800 V470 C1225 420 1262 386 1318 372 V800 Z" fill="url(#g-tower)" />
+        <path d="M1240 800 V480 M1260 800 V430 M1280 800 V405 M1300 800 V388" stroke="#ffffff" strokeOpacity="0.45" strokeWidth="2" />
       </motion.g>
 
-      {/* Near steppe */}
-      <motion.g style={{ y: nearY }}>
-        <path d="M0 800 C300 760 560 790 800 790 C1060 790 1300 750 1600 780 L1600 1100 L0 1100Z" fill="#9fdcae" />
-        <motion.path
-          d="M0 800 C300 760 560 790 800 790 C1060 790 1300 750 1600 780 L1600 1100 L0 1100Z"
-          fill="url(#g-ground)"
-          style={{ opacity: sunrise }}
-        />
+      {/* Sidewalk and road */}
+      <rect x="0" y={GROUND} width="1600" height="34" fill="#e7ecf8" />
+      <rect x="0" y={GROUND + 34} width="1600" height="200" fill="#8b97b8" />
+      <path d={`M0 ${GROUND + 110} H1600`} stroke="#ffffff" strokeWidth="6" strokeDasharray="60 50" opacity="0.8" />
 
-        {/* Ger — lattice walls */}
-        <ellipse cx="800" cy="796" rx="290" ry="18" fill="#0a0f2c" opacity="0.12" />
-        <motion.path
-          d={lattice()}
-          clipPath="url(#c-wall)"
-          fill="none"
-          stroke="#d9944f"
-          strokeWidth="5"
-          strokeLinecap="round"
-          style={{ pathLength: wall, opacity: wallShow }}
-        />
-        {/* Roof poles + crown */}
-        <motion.path d={roofPoles()} fill="none" stroke="#ff5a4e" strokeWidth="4.5" style={{ pathLength: roof, opacity: roofShow }} />
-        <motion.circle cx="800" cy="548" r="30" fill="none" stroke="#d9944f" strokeWidth="9" style={{ pathLength: roof, opacity: roofShow }} />
+      {/* Front buildings: outlines draw, then fill in */}
+      {BUILDINGS.map((b, i) => {
+        const h = GROUND - b.top;
+        const win = windows(b);
+        return (
+          <g key={i}>
+            <motion.path d={rectPath(b.x, b.top, b.w, h)} fill={b.fill} style={{ opacity: fill }} />
+            <motion.path
+              d={rectPath(b.x, b.top, b.w, h)}
+              fill="none"
+              stroke="#0a0f2c"
+              strokeWidth="3"
+              strokeLinejoin="round"
+              style={{ pathLength: outline, opacity: outlineShow }}
+            />
+            <motion.g style={{ opacity: fill }}>
+              <rect x={b.x - 8} y={b.top - 14} width={b.w + 16} height="16" rx="3" fill={i === 1 ? "#0f8a4f" : i === 2 ? "#ff5a4e" : "#1e5bff"} />
+              {win.list.map((w, j) => (
+                <rect key={j} x={w.x} y={w.y} width={win.w} height="36" rx="4" fill="#dbe8ff" />
+              ))}
+            </motion.g>
+            <motion.g style={{ opacity: lit }}>
+              {win.list.map((w, j) => (j % 2 === 0 ? <rect key={j} x={w.x} y={w.y} width={win.w} height="36" rx="4" fill="#ffd75a" /> : null))}
+            </motion.g>
+          </g>
+        );
+      })}
 
-        {/* Felt cover */}
-        <motion.g style={{ opacity: cover, y: coverY }}>
-          <path d="M548 795 L548 678 Q550 668 566 663 L770 552 Q800 536 830 552 L1034 663 Q1050 668 1052 678 L1052 795 Z" fill="url(#g-felt)" />
-          <path d="M566 663 L770 552 Q800 536 830 552 L1034 663 Z" fill="url(#g-roof)" />
-          <path d="M566 663 L770 552 Q800 536 830 552 L1034 663" fill="none" stroke="#b9c2e0" strokeWidth="3" />
-          <rect x="548" y="668" width="504" height="22" fill="url(#p-orn)" />
-          <path d="M548 730 H1052 M548 764 H1052" stroke="#3b4466" strokeWidth="3" opacity="0.5" />
-          <path d="M680 610 L800 548 L920 610" fill="none" stroke="#3b4466" strokeWidth="3" opacity="0.35" />
-          <circle cx="800" cy="548" r="30" fill="#ffc531" stroke="#c97d2e" strokeWidth="7" />
-          <path d="M778 548 H822 M800 526 V570 M784 532 L816 564 M816 532 L784 564" stroke="#c97d2e" strokeWidth="3.5" />
-        </motion.g>
-
-        {/* Door — warm light, then the door swings open */}
-        <motion.rect x="760" y="694" width="80" height="101" rx="5" fill="#ffe08a" style={{ opacity: glow }} />
-        <motion.g style={{ opacity: cover, scaleX: door, originX: 0, transformBox: "fill-box" }}>
-          <rect x="760" y="694" width="80" height="101" rx="5" fill="#ff5a4e" stroke="#ffc531" strokeWidth="4" />
-          <path d="M774 710 H826 V780 H774 Z M786 722 H814 V768 H786 Z" fill="none" stroke="#ffc531" strokeWidth="3" />
-        </motion.g>
-
-        {/* Smoke */}
-        <motion.g style={{ opacity: smoke, y: smokeY }} fill="#ffffff">
-          <circle cx="818" cy="515" r="11" />
-          <circle cx="845" cy="500" r="14" />
-          <circle cx="880" cy="490" r="17" />
-        </motion.g>
-
-        {/* Grass */}
-        <motion.g style={{ opacity: sunrise }} stroke="#2a8a50" strokeWidth="3" strokeLinecap="round" fill="none">
-          {GRASS.map((g, i) => (
-            <path key={i} d={`M${g.x} ${900 + (i % 3) * 30} q${g.lean / 2} ${-g.h / 2} ${g.lean} ${-g.h}`} />
-          ))}
-        </motion.g>
+      {/* Doors and shop windows */}
+      <motion.g style={{ opacity: fill }}>
+        <rect x="490" y="690" width="56" height="100" rx="4" fill="#c3d0f3" />
+        <rect x="565" y="690" width="110" height="70" rx="4" fill="#dbe8ff" />
+        <rect x="790" y="680" width="60" height="110" rx="4" fill="#c3d0f3" />
+        <path d="M955 650 H1135 L1125 680 H965 Z" fill="#ff5a4e" />
+        <path d="M985 650 V680 M1015 650 V680 M1045 650 V680 M1075 650 V680 M1105 650 V680" stroke="#ffffff" strokeWidth="10" />
+        <rect x="1020" y="700" width="54" height="90" rx="4" fill="#c3d0f3" />
       </motion.g>
+
+      {/* Signs light up */}
+      <Sign p={p} at={0.37}>
+        <rect x="485" y="612" width="180" height="48" rx="8" fill="#1e5bff" />
+        <text x="575" y="645" textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="24" fill="#fff">
+          ДЭЛГҮҮР
+        </text>
+      </Sign>
+      <Sign p={p} at={0.41}>
+        <rect x="728" y="602" width="184" height="50" rx="8" fill="#0f8a4f" />
+        <path d="M748 627 H770 M759 616 V638" stroke="#fff" strokeWidth="7" />
+        <text x="842" y="635" textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="19" fill="#fff">
+          ЭМИЙН САН
+        </text>
+      </Sign>
+      <Sign p={p} at={0.45}>
+        <rect x="975" y="592" width="140" height="46" rx="8" fill="#ffc531" />
+        <text x="1045" y="624" textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="24" fill="#0a0f2c">
+          КАФЕ
+        </text>
+      </Sign>
+
+      {/* Taxi drives in */}
+      <g transform={`translate(0 ${GROUND + 2})`}>
+        <motion.g style={{ x: taxiX }}>
+          <path d="M45 40 L72 8 H160 L192 40 Z" fill="#ffc531" />
+          <path d="M60 38 L80 14 H112 V38 Z M120 38 V14 H154 L176 38 Z" fill="#d4eeff" />
+          <rect x="0" y="38" width="236" height="52" rx="16" fill="#ffc531" />
+          <rect x="0" y="60" width="236" height="8" fill="url(#p-checker)" />
+          <rect x="86" y="-14" width="66" height="22" rx="5" fill="#0a0f2c" />
+          <text x="119" y="2" textAnchor="middle" fontFamily="Montserrat Variable, sans-serif" fontWeight="800" fontSize="12" fill="#ffc531">
+            ТАКСИ
+          </text>
+          <circle cx="56" cy="90" r="20" fill="#0a0f2c" />
+          <circle cx="56" cy="90" r="8" fill="#c3d0f3" />
+          <circle cx="180" cy="90" r="20" fill="#0a0f2c" />
+          <circle cx="180" cy="90" r="8" fill="#c3d0f3" />
+        </motion.g>
+      </g>
+
+      {/* People talk */}
+      <Bubble p={p} at={0.6} x={560} y={366} w={140} text="Хэд вэ?" fill="#ffffff" color="#0a0f2c" />
+      <Bubble p={p} at={0.64} x={705} y={286} w={250} text="Сайн байна уу?" fill="#1e5bff" color="#ffffff" />
+      <Bubble p={p} at={0.68} x={955} y={390} w={190} text="Баярлалаа!" fill="#ffffff" color="#0a0f2c" />
     </svg>
   );
 }
