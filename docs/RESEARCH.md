@@ -43,9 +43,9 @@ The palette, "Sage, wood & cream", uses **no blue anywhere**. It follows three g
 
 | Finding | Study | What we did |
 |---|---|---|
-| **Warm backgrounds are read faster.** Peach, orange and yellow gave the fastest reading. Blue‑grey, blue and green were slowest. This held for readers with and without dyslexia (341 people). | Rello & Bigham (2017), *Good Background Colors for Readers*, ASSETS | Cream background `#fbf5ec`; peach `#fbe9da` for highlight areas; no cool blue‑grey backgrounds. |
+| **Warm backgrounds are read faster.** Peach, orange and yellow gave the fastest reading. Blue‑grey, blue and green were slowest. This held for readers with and without dyslexia (341 people). | Rello & Bigham (2017), *Good Background Colors for Readers*, ASSETS | Cream background `#f6efe4`; beige `#efe5d3` and light sage `#e4ebdd` for highlight areas; no cool blue‑grey backgrounds. |
 | **Saturated, bright colors raise arousal** (stress, alertness); low‑saturation colors are the calmest. Brighter colors and **medium** saturation feel most pleasant. | Wilms & Oberfeld (2018), *Psychological Research* 82; Valdez & Mehrabian (1994), *J. Exp. Psychology: General* 123 | Big areas are soft and low‑saturation. Strong color is kept small (buttons, progress, signs). |
-| **Aging eyes:** the lens yellows, blues and greens get confused, pastels blur together, and glare from bright surfaces hurts. | Aging‑eye research (summary: Sherwin‑Williams, *Color and the Aging Eye*) | No pure white (warm white `#fffdf9`); no blue at all, since it's the hue aging eyes lose first; meaning carried by light/dark contrast + icons + words, never by hue alone. |
+| **Aging eyes:** the lens yellows, blues and greens get confused, pastels blur together, and glare from bright surfaces hurts. | Aging‑eye research (summary: Sherwin‑Williams, *Color and the Aging Eye*) | No pure white (warm white `#fffcf6`); no blue at all, since it's the hue aging eyes lose first; meaning carried by light/dark contrast + icons + words, never by hue alone. |
 
 | Name | Hex | Used for |
 |---|---|---|
