@@ -39,7 +39,7 @@ const QUESTIONS = [
 
 const STAGES = ["Known letters", "New letters", "Quiz"];
 
-export function TryDemo() {
+export function TryDemo({ bare = false }: { bare?: boolean }) {
   const [step, setStep] = useState(0); // 0 known, 1 new, 2 quiz, 3 done
   const [flipped, setFlipped] = useState<string[]>([]);
   const [qi, setQi] = useState(0);
@@ -74,7 +74,10 @@ export function TryDemo() {
   }
 
   return (
-    <section id="try" className="relative scroll-mt-20 overflow-hidden bg-gradient-to-b from-sage-mist via-sky-soft to-paper px-4 pb-24 pt-20">
+    <section
+      id="try"
+      className={bare ? "relative scroll-mt-24" : "relative scroll-mt-20 overflow-hidden bg-gradient-to-b from-sage-mist via-sky-soft to-paper px-4 pb-24 pt-20"}
+    >
       <div className="mx-auto max-w-5xl">
         <div className="max-w-2xl">
           <h2 className="text-4xl font-bold sm:text-5xl">Read your first word in 2 minutes.</h2>
