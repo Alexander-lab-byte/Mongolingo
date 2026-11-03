@@ -9,23 +9,27 @@ import { AlphabetGrid, AlphabetLegend } from "../AlphabetBoard";
 import { SignGrid } from "../StreetSigns";
 import { useDecode, useReduced } from "../useDecode";
 import { RIBBON, WORDS } from "@/lib/everyday";
+import { WORLD_LAYOUT } from "@/lib/worldLayout";
 
 /*
   The starting page as one scroll story (inspired by scroll-driven 3D sites like Kage).
-  A 3D ger camp sits behind the page; scrolling moves the camera through 7 shots, from sunset to night.
-  Each of the 7 sections is a chapter on top of it:
-  - "sticky" chapters (hero, method, start) hold still and fade while the camera flies,
+  A 3D ger camp sits behind the page; scrolling moves the camera through 8 shots, from sunset to night.
+  First it explains what Mongolingo is and how it helps; the things you can use (quiz, translator) come after.
+  Each section is a chapter on top of the scene:
+  - "sticky" chapters (hero, what, method, start) hold still and fade while the camera flies,
   - "flow" chapters (translator, demo, alphabet, signs) are normal glass cards you can use; the page snaps to them.
   Without WebGL, or with reduced motion, the same chapters show over a calm dusk-to-night gradient.
 */
 
+// Story order: first explain what Mongolingo is and how it helps, then let people try it.
 const CHAPTERS = [
   { id: "ch-hello", label: "Hello", mn: "Сайн уу" },
-  { id: "ch-translate", label: "Translate", mn: "Орчуулга" },
-  { id: "ch-first-word", label: "First word", mn: "Эхний үг" },
+  { id: "ch-what", label: "What is Mongolingo", mn: "Монголинго гэж юу вэ?" },
   { id: "ch-alphabet", label: "Alphabet", mn: "Цагаан толгой" },
   { id: "ch-signs", label: "Signs", mn: "Гудамжинд" },
   { id: "ch-method", label: "Method", mn: "Арга" },
+  { id: "ch-first-word", label: "Try it", mn: "Эхний үг" },
+  { id: "ch-translate", label: "Translate", mn: "Орчуулга" },
   { id: "ch-start", label: "Start", mn: "Эхэлцгээе" },
 ];
 const LAST = CHAPTERS.length - 1;
@@ -36,6 +40,12 @@ const METHOD = [
   { title: "Smart reviews", body: "Lessons return right before you'd forget.", source: "Cepeda et al., 2006" },
 ];
 
+const HELPS = [
+  { title: "Read", mn: "Унших", body: "The 35 letters and the signs around you, starting from zero." },
+  { title: "Speak", mn: "Ярих", body: "Real phrases for the taxi, the shop, the market and the doctor." },
+  { title: "Get by", mn: "Орчуулах", body: "Stuck? Type it, hear it, or show it full screen to the person in front of you." },
+];
+
 const KNOWN = ["А", "К", "М", "О", "Т"];
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -44,16 +54,9 @@ const smooth = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/* Small Mongolian label above each chapter title (no chapter numbers). */
 function Kicker({ i, night = false }: { i: number; night?: boolean }) {
-  return (
-    <p className={`flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.22em] ${night ? "text-[#f1e6dc]/85" : "text-ink-soft"}`}>
-      <span className="font-display tabular-nums">
-        {String(i + 1).padStart(2, "0")} <span className="opacity-50">/ 07</span>
-      </span>
-      <span className={`h-px w-10 ${night ? "bg-[#f1e6dc]/50" : "bg-ink/30"}`} aria-hidden />
-      <span className="normal-case tracking-normal">{CHAPTERS[i].mn}</span>
-    </p>
-  );
+  return <p className={`text-base font-semibold ${night ? "text-[#f1e6dc]/85" : "text-ink-soft"}`}>{CHAPTERS[i].mn}</p>;
 }
 
 function HeroChapter({ reduce }: { reduce: boolean }) {
@@ -85,18 +88,7 @@ function HeroChapter({ reduce }: { reduce: boolean }) {
             <span className="mt-3 block font-mono text-lg font-semibold tracking-wide text-wood-dark sm:text-xl">/ {word.say} /</span>
           </span>
         </h1>
-        <p className="mt-6 max-w-xl text-xl text-ink sm:text-2xl [@media(max-height:700px)]:mt-3 [@media(max-height:700px)]:text-lg">Translate what you need now. Learn to say it yourself in 3-minute lessons.</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <a href="#try" className="btn btn-primary group text-lg">
-            Try a free lesson
-            <span className="transition-transform group-hover:translate-x-1" aria-hidden>
-              →
-            </span>
-          </a>
-          <Link href="/translate" className="btn btn-line bg-white/45 text-ink backdrop-blur">
-            Translate now
-          </Link>
-        </div>
+        <p className="mt-6 max-w-xl text-xl text-ink sm:text-2xl [@media(max-height:700px)]:mt-3 [@media(max-height:700px)]:text-lg">Learn Mongolian for real life in Mongolia, one small piece at a time.</p>
         <div className="mt-8 flex flex-wrap items-center gap-3 max-sm:hidden [@media(max-height:820px)]:hidden">
           <ul className="flex gap-1.5" aria-label="Letters you already know: А, К, М, О, Т">
             {KNOWN.map((c) => (
@@ -110,6 +102,17 @@ function HeroChapter({ reduce }: { reduce: boolean }) {
           </p>
         </div>
       </div>
+
+      <a
+        href="#ch-what"
+        data-fade
+        className="mx-auto mb-5 flex shrink-0 flex-col items-center gap-2 rounded-full px-4 py-2 text-base font-semibold text-ink [@media(max-height:760px)]:hidden"
+      >
+        <span className="relative flex h-9 w-6 justify-center rounded-full border-2 border-ink/60" aria-hidden>
+          <span className="mt-1.5 h-2 w-1 animate-bounce rounded-full bg-ink" />
+        </span>
+        Scroll to see how it works
+      </a>
 
       <div data-fade className="relative -mx-6 mb-6 shrink-0 -rotate-[1.4deg] bg-blend py-3.5 shadow-[0_24px_40px_-28px_rgba(30,20,12,0.7)]" aria-hidden>
         <div className="flex w-max whitespace-nowrap font-display text-2xl font-bold sm:text-3xl" style={{ animation: "marquee 70s linear infinite" }}>
@@ -139,9 +142,10 @@ function ChapterNav({ active }: { active: number }) {
             <a
               href={`#${c.id}`}
               aria-current={i === active ? "step" : undefined}
-              className="group relative grid h-10 w-10 place-items-center rounded-full font-display text-xs font-bold text-[#f6ece0] transition hover:bg-white/15 aria-[current=step]:bg-[#f6ece0] aria-[current=step]:text-night"
+              aria-label={c.label}
+              className="group relative grid h-8 w-8 place-items-center rounded-full transition hover:bg-white/15"
             >
-              {String(i + 1).padStart(2, "0")}
+              <span className="h-2 w-2 rounded-full bg-[#f6ece0]/55 transition-all group-aria-[current=step]:h-3.5 group-aria-[current=step]:w-3.5 group-aria-[current=step]:bg-[#f6ece0]" aria-hidden />
               <span className="pointer-events-none absolute right-12 whitespace-nowrap rounded-full bg-night/85 px-3 py-1 text-sm font-semibold text-[#f6ece0] opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
                 {c.label} · {c.mn}
               </span>
@@ -184,7 +188,7 @@ export function ScrollWorld() {
         const test = document.createElement("canvas");
         if (!test.getContext("webgl2") && !test.getContext("webgl")) throw new Error("no webgl");
         const { createWorld } = await import("./createWorld");
-        const world = await createWorld(canvas, { mobile: window.innerWidth < 768 });
+        const world = await createWorld(canvas, { mobile: window.innerWidth < 768, layout: WORLD_LAYOUT });
         if (disposed) return world.dispose();
         worldRef.current = world;
         ro = new ResizeObserver(([e]) => world.resize(e.contentRect.width, e.contentRect.height));
@@ -236,8 +240,8 @@ export function ScrollWorld() {
       worldRef.current?.setTarget(t);
 
       // veils keep text readable: light at dusk, dark at night
-      if (dayVeil.current) dayVeil.current.style.opacity = String(1 - smooth(1.6, 3.2, t));
-      if (nightVeil.current) nightVeil.current.style.opacity = String(smooth(2.6, 4.4, t));
+      if (dayVeil.current) dayVeil.current.style.opacity = String(1 - smooth(1.3, 2.2, t));
+      if (nightVeil.current) nightVeil.current.style.opacity = String(smooth(1.6, 2.8, t));
 
       // sticky chapters fade and blur in/out while the camera moves (always fully visible with reduced motion)
       els.forEach((el, i) => {
@@ -321,40 +325,35 @@ export function ScrollWorld() {
         <HeroChapter reduce={reduce} />
       </section>
 
-      {/* 02 — translator */}
-      <section id={CHAPTERS[1].id} data-ch="1" className="relative flex min-h-[170svh] items-center px-4 py-[22svh] sm:px-8 lg:pr-24" aria-labelledby="need-now">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[1fr_1.15fr]">
-          <div className="world-text">
+      {/* 02 — what is Mongolingo */}
+      <section id={CHAPTERS[1].id} data-ch="1" data-mode="sticky" className="relative h-[210svh]" aria-labelledby="what">
+        <div className="sticky top-0 flex h-svh items-center px-5 pt-[var(--nav-h)] sm:px-8 lg:pr-24">
+          <div data-fade className="world-text mx-auto w-full max-w-6xl">
             <Kicker i={1} />
-            <h2 id="need-now" className="mt-5 text-5xl font-bold sm:text-6xl">
-              Need it right now?
+            <h2 id="what" className="mt-4 max-w-3xl text-4xl font-bold sm:mt-5 sm:text-6xl">
+              Your Mongolian helper for everyday life.
             </h2>
-            <p className="mt-4 text-xl text-ink sm:text-2xl">Translate, hear how to say it, or show it full screen.</p>
-            <Link href="/translate#phrases" className="btn btn-line mt-7 bg-white/40 text-ink backdrop-blur">
-              Ready phrases for taxi, shop, doctor
-            </Link>
-          </div>
-          <div className="glass-card snap-center p-5 sm:p-8">
-            <Translator compact />
+            <p className="mt-4 max-w-2xl text-lg text-ink sm:text-2xl">
+              Mongolingo is for foreigners living in Mongolia. Short lessons, big clear text, and help the moment you need it. For every age.
+            </p>
+            <ul className="mt-7 grid gap-4 sm:mt-10 md:grid-cols-3 md:gap-6">
+              {HELPS.map((h) => (
+                <li key={h.title} className="rounded-[26px] border border-white/60 bg-[rgba(248,243,242,0.62)] p-5 backdrop-blur-md sm:p-6">
+                  <p className="font-display text-sm font-bold uppercase tracking-[0.18em] text-cobalt">{h.mn}</p>
+                  <h3 className="mt-1 text-2xl font-bold sm:text-3xl">{h.title}</h3>
+                  <p className="mt-2 text-base text-ink-soft sm:text-lg">{h.body}</p>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* 03 — free demo lesson */}
-      <section id={CHAPTERS[2].id} data-ch="2" className="relative flex min-h-[170svh] items-center px-4 py-[22svh] sm:px-8 lg:pr-24">
-        <div className="glass-card snap-center mx-auto w-full max-w-4xl p-5 sm:p-8">
-          <div className="mb-6">
-            <Kicker i={2} />
-          </div>
-          <TryDemo bare />
-        </div>
-      </section>
-
-      {/* 04 — alphabet */}
-      <section id={CHAPTERS[3].id} data-ch="3" className="relative flex min-h-[175svh] items-center px-4 py-[24svh] sm:px-8 lg:pr-24" aria-labelledby="alphabet">
+      {/* 03 — alphabet */}
+      <section id={CHAPTERS[2].id} data-ch="2" className="relative flex min-h-[175svh] items-center px-4 py-[24svh] sm:px-8 lg:pr-24" aria-labelledby="alphabet">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
           <div className="night-text">
-            <Kicker i={3} night />
+            <Kicker i={2} night />
             <h2 id="alphabet" className="mt-5 text-5xl font-bold sm:text-6xl">
               The whole alphabet.
             </h2>
@@ -367,11 +366,11 @@ export function ScrollWorld() {
         </div>
       </section>
 
-      {/* 05 — street signs */}
-      <section id={CHAPTERS[4].id} data-ch="4" className="relative flex min-h-[175svh] items-center px-4 py-[24svh] sm:px-8 lg:pr-24" aria-labelledby="signs">
+      {/* 04 — street signs */}
+      <section id={CHAPTERS[3].id} data-ch="3" className="relative flex min-h-[175svh] items-center px-4 py-[24svh] sm:px-8 lg:pr-24" aria-labelledby="signs">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
           <div className="night-text">
-            <Kicker i={4} night />
+            <Kicker i={3} night />
             <h2 id="signs" className="mt-5 text-5xl font-bold sm:text-6xl">
               Read the signs around you.
             </h2>
@@ -383,11 +382,11 @@ export function ScrollWorld() {
         </div>
       </section>
 
-      {/* 06 — method */}
-      <section id={CHAPTERS[5].id} data-ch="5" data-mode="sticky" className="relative h-[200svh]" aria-labelledby="method">
+      {/* 05 — method */}
+      <section id={CHAPTERS[4].id} data-ch="4" data-mode="sticky" className="relative h-[200svh]" aria-labelledby="method">
         <div className="sticky top-0 flex h-svh items-center px-5 sm:px-8 lg:pr-24">
           <div data-fade className="night-text mx-auto w-full max-w-6xl">
-            <Kicker i={5} night />
+            <Kicker i={4} night />
             <h2 id="method" className="mt-4 max-w-3xl text-4xl font-bold sm:mt-5 sm:text-7xl">
               How every lesson works.
             </h2>
@@ -405,8 +404,37 @@ export function ScrollWorld() {
         </div>
       </section>
 
-      {/* 07 — start */}
-      <section id={CHAPTERS[6].id} data-ch="6" data-mode="sticky" className="relative h-[170svh]" aria-labelledby="start">
+      {/* 06 — try it: free demo lesson */}
+      <section id={CHAPTERS[5].id} data-ch="5" className="relative flex min-h-[170svh] items-center px-4 py-[22svh] sm:px-8 lg:pr-24">
+        <div className="glass-card snap-center mx-auto w-full max-w-4xl p-5 sm:p-8">
+          <div className="mb-6">
+            <Kicker i={5} />
+          </div>
+          <TryDemo bare />
+        </div>
+      </section>
+
+      {/* 07 — translator */}
+      <section id={CHAPTERS[6].id} data-ch="6" className="relative flex min-h-[170svh] items-center px-4 py-[22svh] sm:px-8 lg:pr-24" aria-labelledby="need-now">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[1fr_1.15fr]">
+          <div className="night-text">
+            <Kicker i={6} night />
+            <h2 id="need-now" className="mt-5 text-5xl font-bold sm:text-6xl">
+              Need it right now?
+            </h2>
+            <p className="mt-4 text-xl text-[#f1e6dc]/90 sm:text-2xl">Translate, hear how to say it, or show it full screen.</p>
+            <Link href="/translate#phrases" className="btn btn-line mt-7 bg-white/10 text-[#f6ece0] backdrop-blur">
+              Ready phrases for taxi, shop, doctor
+            </Link>
+          </div>
+          <div className="glass-card snap-center p-5 sm:p-8">
+            <Translator compact />
+          </div>
+        </div>
+      </section>
+
+      {/* 08 — start */}
+      <section id={CHAPTERS[7].id} data-ch="7" data-mode="sticky" className="relative h-[170svh]" aria-labelledby="start">
         <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden px-5">
           <div data-fade className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none overflow-hidden" aria-hidden>
             <div className="marquee flex w-max gap-16 whitespace-nowrap font-display text-[8rem] font-extrabold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(246,236,224,0.22)] sm:text-[11rem]">
@@ -416,7 +444,7 @@ export function ScrollWorld() {
           </div>
           <div data-fade className="night-text relative mx-auto max-w-3xl text-center">
             <div className="flex justify-center">
-              <Kicker i={6} night />
+              <Kicker i={7} night />
             </div>
             <h2 id="start" className="mt-5 text-5xl font-bold sm:text-7xl">
               Start your first lesson.

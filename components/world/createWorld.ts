@@ -3,6 +3,9 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import type { GerDef, Shot, SignDef, WorldLayout, WorldSettings } from "@/lib/worldLayout";
+import { groundHeight } from "./terrain";
+import { makeAnimals, makeCampProps, makeFlowers, makeGerKit, makeGrass, makeGround, makeOvoo, makeRanges, makeRiver, makeRocks, makeSmoke, makeTracks } from "./props";
 
 /*
   Mongolingo world — a ger camp on the steppe, from dusk to night.
@@ -12,12 +15,33 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
   Cyrillic letters rise into the sky, signs glow, and snow starts to fall.
 */
 
+/* Extra handles the /studio editor uses. The starting page never touches these. */
+export type WorldStudio = {
+  THREE: typeof THREE;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  canvas: HTMLCanvasElement;
+  pickables: () => THREE.Object3D[];
+  setFreeCamera: (on: boolean) => void;
+  setTodOverride: (tod: number | null) => void;
+  setShots: (shots: Shot[]) => void;
+  setSettings: (s: WorldSettings) => void;
+  addGer: (g: GerDef) => THREE.Object3D;
+  addSign: (d: SignDef) => THREE.Object3D;
+  updateSign: (d: SignDef) => THREE.Object3D;
+  remove: (id: string) => void;
+  groundHeight: (x: number, z: number) => number;
+  onFrame: (fn: (dt: number) => void) => void;
+  getTod: () => number;
+};
+
 export type World = {
   setTarget: (t: number) => void;
   setPointer: (x: number, y: number) => void;
   resize: (w: number, h: number) => void;
   setActive: (on: boolean) => void;
   dispose: () => void;
+  studio: WorldStudio;
 };
 
 const P = {
@@ -59,142 +83,6 @@ const SKY_HORIZON = ["#ecc9a9", "#d2a59f", "#5d5868", "#1d2630"];
 const SUN = ["#ffd3a1", "#ff9c6b", "#3a1e18", "#000000"];
 const HEMI_SKY = ["#e6e2e3", "#b9a8b2", "#4e5f69", "#24303a"];
 const HEMI_GROUND = ["#8d9b6a", "#6c6955", "#2d3227", "#141812"];
-
-/* Seven camera shots, one per chapter: [position, look-at]. Camp centre is (0, 0, 0). */
-const SHOTS: [number, number, number][][] = [
-  [[34, 20, 92], [-22, 7, -30]], // 01 hero — wide over the steppe at sunset
-  [[-30, 11, 58], [8, 3, -2]], // 02 translate — gliding toward camp
-  [[22, 5, 34], [-6, 3, -4]], // 03 first word — at the edge of camp, first lights
-  [[-4, 7, 22], [6, 34, -60]], // 04 alphabet — look up, letters rise into the sky
-  [[13, 2.6, 15], [-5, 2.9, -2]], // 05 signs — eye level, the glowing signs
-  [[-38, 13, -14], [-66, 15, -60]], // 06 method — the ovoo on the hill, stars
-  [[8, 44, 118], [0, 2, 0]], // 07 start — pull back, the whole camp glowing
-];
-const SHOT_TOD = [0, 0.16, 0.34, 0.52, 0.68, 0.86, 1];
-
-/* ---------- terrain ---------- */
-const OVOO = new THREE.Vector2(-64, -58);
-function groundHeight(x: number, z: number) {
-  const d = Math.hypot(x, z);
-  let h = Math.sin(x * 0.012) * 6 + Math.cos(z * 0.015) * 5 + Math.sin((x + z) * 0.03) * 2.2 + Math.sin(x * 0.07 + z * 0.05) * 0.8 + 6;
-  h *= smooth(48, 130, d); // flat camp ground
-  const o = (x - OVOO.x) ** 2 + (z - OVOO.y) ** 2;
-  h += 13 * Math.exp(-o / (2 * 17 * 17)); // the ovoo hill
-  if (d > 360) h += (d - 360) * 0.12; // rise toward the mountains
-  return h;
-}
-
-function makeGround() {
-  const size = 1400;
-  const seg = 180;
-  const geo = new THREE.PlaneGeometry(size, size, seg, seg);
-  geo.rotateX(-Math.PI / 2);
-  const pos = geo.attributes.position as THREE.BufferAttribute;
-  const colors = new Float32Array(pos.count * 3);
-  const sage = new THREE.Color(P.sage);
-  const tan = new THREE.Color(P.tan);
-  const dark = new THREE.Color("#6f7b52");
-  const c = new THREE.Color();
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i);
-    const z = pos.getZ(i);
-    const h = groundHeight(x, z);
-    pos.setY(i, h);
-    const n = Math.sin(x * 0.05) * Math.cos(z * 0.043) + Math.sin(x * 0.17 + z * 0.11) * 0.4;
-    c.copy(sage).lerp(tan, smooth(0.2, 0.9, n) * 0.75).lerp(dark, smooth(-0.3, -1.1, n) * 0.6);
-    const d = Math.hypot(x, z);
-    c.lerp(tan, (1 - smooth(10, 40, d)) * 0.5); // trodden earth in camp
-    colors.set([c.r, c.g, c.b], i * 3);
-  }
-  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-  geo.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 1, metalness: 0 });
-  return new THREE.Mesh(geo, mat);
-}
-
-function makeMountains() {
-  const A = 220;
-  const R = 9;
-  const verts: number[] = [];
-  const cols: number[] = [];
-  const idx: number[] = [];
-  const mist = new THREE.Color(P.mist);
-  const deep = new THREE.Color("#6b7d86");
-  const snow = new THREE.Color("#f3eeee");
-  const c = new THREE.Color();
-  for (let r = 0; r < R; r++) {
-    const rad = 430 + r * 55;
-    const env = Math.sin((r / (R - 1)) * Math.PI);
-    for (let a = 0; a <= A; a++) {
-      const ang = (a / A) * Math.PI * 2;
-      const peaks = Math.sin(ang * 7) + Math.sin(ang * 13 + 1.3) * 0.6 + Math.sin(ang * 31 + r) * 0.25 + Math.sin(ang * 3 + 2) * 0.8 + 2.6;
-      const y = peaks * 26 * env + (r === 0 ? 10 : 30);
-      verts.push(Math.cos(ang) * rad, y, Math.sin(ang) * rad);
-      c.copy(deep).lerp(mist, r / R).lerp(snow, smooth(95, 135, y));
-      cols.push(c.r, c.g, c.b);
-    }
-  }
-  for (let r = 0; r < R - 1; r++) {
-    for (let a = 0; a < A; a++) {
-      const i0 = r * (A + 1) + a;
-      const i1 = i0 + 1;
-      const i2 = i0 + A + 1;
-      const i3 = i2 + 1;
-      idx.push(i0, i2, i1, i1, i2, i3);
-    }
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
-  geo.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3));
-  geo.setIndex(idx);
-  geo.computeVertexNormals();
-  return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 1, side: THREE.DoubleSide }));
-}
-
-/* ---------- ger ---------- */
-type Glow = { mats: THREE.MeshStandardMaterial[]; lights: THREE.PointLight[] };
-
-function makeGerKit() {
-  const wallGeo = new THREE.CylinderGeometry(4, 4, 2.6, 28, 1);
-  const roofGeo = new THREE.ConeGeometry(4.5, 1.9, 28, 1, true);
-  const bandGeo = new THREE.TorusGeometry(4.04, 0.07, 6, 40);
-  const crownGeo = new THREE.CylinderGeometry(0.75, 0.75, 0.32, 16);
-  const doorGeo = new THREE.BoxGeometry(1.15, 1.85, 0.22);
-  const chimneyGeo = new THREE.CylinderGeometry(0.09, 0.09, 1.6, 6);
-  const wallMat = new THREE.MeshStandardMaterial({ color: P.felt, roughness: 0.95 });
-  const roofMat = new THREE.MeshStandardMaterial({ color: "#e3d8d6", roughness: 0.95, side: THREE.DoubleSide });
-  const bandMat = new THREE.MeshStandardMaterial({ color: "#6b4426", roughness: 0.8 });
-  const crownMat = new THREE.MeshStandardMaterial({ color: P.brown, emissive: "#ffc27d", emissiveIntensity: 0 });
-  const doorMat = new THREE.MeshStandardMaterial({ color: "#a8612f", emissive: "#ff9a48", emissiveIntensity: 0, roughness: 0.6 });
-  const chimneyMat = new THREE.MeshStandardMaterial({ color: "#5a5048" });
-  const glow: Glow = { mats: [crownMat, doorMat], lights: [] };
-
-  function ger(x: number, z: number, rotY: number, scale = 1) {
-    const g = new THREE.Group();
-    const wall = new THREE.Mesh(wallGeo, wallMat);
-    wall.position.y = 1.3;
-    const roof = new THREE.Mesh(roofGeo, roofMat);
-    roof.position.y = 2.6 + 0.95;
-    const crown = new THREE.Mesh(crownGeo, crownMat);
-    crown.position.y = 4.55;
-    const door = new THREE.Mesh(doorGeo, doorMat);
-    door.position.set(0, 0.95, 4.0);
-    const chim = new THREE.Mesh(chimneyGeo, chimneyMat);
-    chim.position.set(0.9, 4.6, -0.4);
-    g.add(wall, roof, crown, door, chim);
-    for (const y of [0.55, 1.45, 2.35]) {
-      const band = new THREE.Mesh(bandGeo, bandMat);
-      band.rotation.x = Math.PI / 2;
-      band.position.y = y;
-      g.add(band);
-    }
-    g.position.set(x, groundHeight(x, z), z);
-    g.rotation.y = rotY;
-    g.scale.setScalar(scale);
-    return g;
-  }
-  return { ger, glow };
-}
 
 /* ---------- canvas textures (Cyrillic signs and letters) ---------- */
 const FONT = '"Montserrat Variable", "Onest Variable", system-ui, sans-serif';
@@ -309,7 +197,9 @@ function makeSky() {
 
 /* ================================================================== */
 
-export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boolean }): Promise<World> {
+export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boolean; layout: WorldLayout }): Promise<World> {
+  let settings = { ...opts.layout.settings };
+  let shots = opts.layout.shots;
   try {
     await Promise.all([document.fonts.load(`800 100px "Montserrat Variable"`), document.fonts.ready]);
   } catch {}
@@ -348,106 +238,83 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   stars.frustumCulled = false;
   scene.add(stars);
 
-  /* land */
-  scene.add(makeGround(), makeMountains());
+  /* land: ground, mountains, river, tracks, grass, rocks, flowers */
+  const river = makeRiver();
+  const WATER_DEEP = new THREE.Color("#121a1f");
+  const grass = makeGrass(opts.mobile);
+  scene.add(makeGround(opts.mobile), makeRanges(opts.mobile), river.mesh, makeTracks(), grass.mesh, makeRocks(opts.mobile), makeFlowers(opts.mobile));
 
-  /* ger camp */
+  /* ger camp (from the layout file) */
   const kit = makeGerKit();
-  const camp: [number, number, number, number][] = [
-    [0, -6, 0.2, 1.1],
-    [-12, -2, 0.7, 1],
-    [11, -1, -0.5, 1],
-    [-6, -17, 0.1, 0.95],
-    [8, -15, -0.3, 1],
-    [-21, -12, 0.9, 0.9],
-    [20, -11, -0.8, 0.9],
-    [-2, 9, 0.05, 0.85],
-    [-30, 4, 1.2, 0.85],
-    [27, 6, -1.1, 0.85],
-    [70, -60, -0.4, 0.9],
-    [-95, 30, 1.3, 0.9],
-  ];
-  for (const [x, z, r, s] of camp) {
-    // doors face roughly toward the south (+z), like real gers
-    scene.add(kit.ger(x, z, r, s));
+  const byId = new Map<string, THREE.Object3D>();
+  const maxLights = opts.mobile ? 2 : 4;
+  function addGer(d: GerDef) {
+    const g = kit.ger(d.x, d.z, d.rot, d.scale, kit.glow.lights.length < maxLights);
+    g.userData = { kind: "ger", id: d.id };
+    scene.add(g);
+    byId.set(d.id, g);
+    return g;
   }
-  const doorLights: THREE.PointLight[] = [];
-  for (const [x, z, r, s] of camp.slice(0, opts.mobile ? 2 : 4)) {
-    const l = new THREE.PointLight(0xffa860, 0, 14, 2);
-    l.position.set(x + Math.sin(r) * 5.2 * s, 1.4, z + Math.cos(r) * 5.2 * s);
-    scene.add(l);
-    doorLights.push(l);
-  }
+  // doors face roughly toward the south (+z), like real gers
+  opts.layout.gers.forEach(addGer);
+
+  const postMat = new THREE.MeshStandardMaterial({ color: "#6b4426" });
 
   /* hitching line (уяа) */
-  const postMat = new THREE.MeshStandardMaterial({ color: "#6b4426" });
+  const postMatH = postMat;
   const postGeo = new THREE.CylinderGeometry(0.12, 0.14, 2.2, 6);
   for (const x of [14, 22]) {
-    const p = new THREE.Mesh(postGeo, postMat);
+    const p = new THREE.Mesh(postGeo, postMatH);
     p.position.set(x, 1.1, 12);
     scene.add(p);
   }
-  const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 8, 4), postMat);
+  const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 8, 4), postMatH);
   rope.rotation.z = Math.PI / 2;
   rope.position.set(18, 1.9, 12);
   scene.add(rope);
 
-  /* ovoo with blue khadag */
-  const ovooY = groundHeight(OVOO.x, OVOO.y);
-  const stoneGeo = new THREE.DodecahedronGeometry(0.9, 0);
-  const stones = new THREE.InstancedMesh(stoneGeo, new THREE.MeshStandardMaterial({ color: "#9a9590", flatShading: true }), 46);
-  const m4 = new THREE.Matrix4();
-  for (let i = 0; i < 46; i++) {
-    const layer = i / 46;
-    const a = i * 2.4;
-    const rad = (1 - layer) * 3.4;
-    const sc = 0.8 + ((i * 7) % 5) * 0.12;
-    m4.compose(
-      new THREE.Vector3(OVOO.x + Math.cos(a) * rad, ovooY + layer * 3.6, OVOO.y + Math.sin(a) * rad),
-      new THREE.Quaternion().setFromEuler(new THREE.Euler(a, a * 0.7, 0)),
-      new THREE.Vector3(sc, sc * 0.8, sc),
-    );
-    stones.setMatrixAt(i, m4);
-  }
-  scene.add(stones);
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 7, 6), postMat);
-  pole.position.set(OVOO.x, ovooY + 5.5, OVOO.y);
-  scene.add(pole);
-  const khadag: THREE.Mesh[] = [];
-  const khadagGeo = new THREE.PlaneGeometry(0.32, 2.4);
-  khadagGeo.translate(0, -1.2, 0);
-  const khadagMats = [P.mist, "#a9bcc4", P.mist, P.blush, P.mist].map((c) => new THREE.MeshStandardMaterial({ color: c, side: THREE.DoubleSide, roughness: 0.7 }));
-  for (let i = 0; i < 14; i++) {
-    const k = new THREE.Mesh(khadagGeo, khadagMats[i % khadagMats.length]);
-    const a = (i / 14) * Math.PI * 2;
-    k.position.set(OVOO.x + Math.cos(a) * 0.25, ovooY + 8.6 - (i % 3) * 0.5, OVOO.y + Math.sin(a) * 0.25);
-    k.rotation.y = a;
-    k.rotation.x = 0.55;
-    khadag.push(k);
-    scene.add(k);
-  }
+  /* ovoo with blue khadag, camp life, animals, chimney smoke */
+  const ovoo = makeOvoo();
+  const camp = makeCampProps();
+  const animals = makeAnimals(opts.mobile);
+  const smoke = makeSmoke(kit.chimneys, opts.mobile);
+  scene.add(ovoo.group, camp.group, animals.group, smoke.points);
 
-  /* glowing street signs */
-  const signs: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial }[] = [];
-  const signDefs: [string, string, string, [number, number, number], number, { stripe?: [string, string]; cross?: boolean }?][] = [
-    ["ЭМИЙН САН", "#5e6b42", "#ffffff", [-4.5, 3.4, 5.5], 0.5, { cross: true }],
-    ["ДЭЛГҮҮР", "#6b4426", "#ffffff", [5.5, 3.2, 3], -0.35, { stripe: [P.sage, P.felt] }],
-    ["ТАКСИ", "#dab692", "#3a2a1f", [-9, 2.6, -3.5], 0.9, { stripe: ["#3a2a1f", P.felt] }],
-    ["КАФЕ", "#8f5b34", "#ffffff", [9, 2.8, -6], -0.7],
-    ["АВТОБУС", "#4e5f69", "#ffffff", [1, 4.6, -9.5], 0.1],
-  ];
+  /* glowing street signs (from the layout file) */
+  const signMats = new Set<THREE.MeshBasicMaterial>();
   const boardGeo = new THREE.PlaneGeometry(4, 1);
-  for (const [text, bg, fg, [x, y, z], rot, o] of signDefs) {
-    const mat = new THREE.MeshBasicMaterial({ map: signTexture(text, bg, fg, o), toneMapped: false, side: THREE.DoubleSide });
-    const mesh = new THREE.Mesh(boardGeo, mat);
-    mesh.position.set(x, y, z);
-    mesh.rotation.y = rot;
-    scene.add(mesh);
-    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, y - 0.5, 6), postMat);
-    post.position.set(x, (y - 0.5) / 2, z);
-    scene.add(post);
-    signs.push({ mesh, mat });
+  function addSign(d: SignDef) {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshBasicMaterial({ map: signTexture(d.text, d.bg, d.fg, { cross: d.cross, stripe: d.stripe }), toneMapped: false, side: THREE.DoubleSide });
+    const board = new THREE.Mesh(boardGeo, mat);
+    board.position.y = d.y;
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, Math.max(0.2, d.y - 0.5), 6), postMat);
+    post.position.y = Math.max(0.2, d.y - 0.5) / 2;
+    g.add(board, post);
+    g.position.set(d.x, groundHeight(d.x, d.z), d.z);
+    g.rotation.y = d.rot;
+    g.userData = { kind: "sign", id: d.id };
+    scene.add(g);
+    byId.set(d.id, g);
+    signMats.add(mat);
+    return g;
   }
+  function remove(id: string) {
+    const o = byId.get(id);
+    if (!o) return;
+    kit.forget(o);
+    scene.remove(o);
+    byId.delete(id);
+    o.traverse((c) => {
+      const m = c as THREE.Mesh;
+      if (m.material instanceof THREE.MeshBasicMaterial) {
+        signMats.delete(m.material);
+        m.material.map?.dispose();
+        m.material.dispose();
+      }
+    });
+  }
+  opts.layout.signs.forEach(addSign);
 
   /* Cyrillic letters rising into the sky */
   const ABC = "АБВГДЕЁЖЗИЙКЛМНОӨПРСТУҮФХЦЧШЩЪЫЬЭЮЯ".split("");
@@ -486,8 +353,18 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   composer.addPass(new OutputPass());
 
   /* camera path */
-  const posCurve = new THREE.CatmullRomCurve3(SHOTS.map((s) => new THREE.Vector3(...s[0])), false, "centripetal");
-  const lookCurve = new THREE.CatmullRomCurve3(SHOTS.map((s) => new THREE.Vector3(...s[1])), false, "centripetal");
+  let posCurve: THREE.CatmullRomCurve3;
+  let lookCurve: THREE.CatmullRomCurve3;
+  function setShots(next: Shot[]) {
+    shots = next;
+    posCurve = new THREE.CatmullRomCurve3(shots.map((s) => new THREE.Vector3(...s.pos)), false, "centripetal");
+    lookCurve = new THREE.CatmullRomCurve3(shots.map((s) => new THREE.Vector3(...s.look)), false, "centripetal");
+  }
+  setShots(shots);
+  let freeCamera = false;
+  let todOverride: number | null = null;
+  let lastTod = 0;
+  const frameHooks: ((dt: number) => void)[] = [];
 
   let target = 0;
   let current = 0;
@@ -504,8 +381,8 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   const col = new THREE.Color();
 
   function todAt(t: number) {
-    const i = Math.min(Math.floor(t), SHOT_TOD.length - 2);
-    return lerp(SHOT_TOD[i], SHOT_TOD[i + 1], clamp01(t - i));
+    const i = Math.min(Math.floor(t), shots.length - 2);
+    return lerp(shots[i].tod, shots[i + 1].tod, clamp01(t - i));
   }
 
   function frame(now: number) {
@@ -517,18 +394,22 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
 
     current += (target - current) * (1 - Math.exp(-dt * 3.2));
     pointerSmooth.lerp(pointer, 1 - Math.exp(-dt * 2.5));
-    const u = clamp01(current / (SHOTS.length - 1));
-    const tod = todAt(current);
+    const u = clamp01(current / (shots.length - 1));
+    const tod = todOverride ?? todAt(current);
+    lastTod = tod;
     const glow = smooth(0.2, 0.62, tod);
 
-    /* camera */
-    posCurve.getPoint(u, tmpA);
-    lookCurve.getPoint(u, tmpB);
-    right.subVectors(tmpB, tmpA).cross(camera.up).normalize();
-    tmpA.addScaledVector(right, pointerSmooth.x * 1.6);
-    tmpA.y += -pointerSmooth.y * 0.9 + Math.sin(elapsed * 0.35) * 0.15;
-    camera.position.copy(tmpA);
-    camera.lookAt(tmpB);
+    /* camera (in the studio's free mode, the orbit controls move it instead) */
+    if (!freeCamera) {
+      posCurve.getPoint(u, tmpA);
+      lookCurve.getPoint(u, tmpB);
+      right.subVectors(tmpB, tmpA).cross(camera.up).normalize();
+      tmpA.addScaledVector(right, pointerSmooth.x * 1.6);
+      tmpA.y += -pointerSmooth.y * 0.9 + Math.sin(elapsed * 0.35) * 0.15;
+      camera.position.copy(tmpA);
+      camera.lookAt(tmpB);
+    }
+    for (const fn of frameHooks) fn(dt);
 
     /* sky and light */
     const su = sky.material.uniforms;
@@ -554,27 +435,34 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
     moon.intensity = ramp([0, 0, 0.4, 0.65], tod);
 
     /* camp lights */
-    kit.glow.mats[0].emissiveIntensity = glow * 3.2; // crown (toono)
-    kit.glow.mats[1].emissiveIntensity = glow * 1.6; // door
-    doorLights.forEach((l, i) => (l.intensity = glow * (5 + Math.sin(elapsed * 6 + i * 2) * 0.5)));
-    for (const s of signs) s.mat.color.setScalar(0.85 + glow * 0.45);
+    kit.glow.mats[0].emissiveIntensity = glow * 3.2 * settings.lights; // crown (toono)
+    kit.glow.mats[1].emissiveIntensity = glow * 1.6 * settings.lights; // door
+    kit.glow.lights.forEach((l, i) => (l.intensity = glow * settings.lights * (5 + Math.sin(elapsed * 6 + i * 2) * 0.5)));
+    for (const m of signMats) m.color.setScalar(0.85 + glow * 0.45);
 
-    /* letters: rise in chapter 4, stay as a faint constellation for the method chapter, then fade */
-    const lv = smooth(2.25, 3, current) * (1 - smooth(3.9, 4.6, current) * 0.6) * (1 - smooth(5.15, 5.75, current));
+    /* letters: rise in the alphabet chapter (03), stay as a faint constellation through method (05), then fade */
+    const lv = (settings.letters ? 1 : 0) * smooth(1.25, 2, current) * (1 - smooth(2.9, 3.6, current) * 0.82) * (1 - smooth(4.15, 4.75, current));
     for (const L of letters) {
       L.mat.opacity = lv;
       L.mat.color.setScalar(1 + glow * 0.6);
       L.s.position.set(L.base.x, L.base.y - (1 - lv) * 18 + Math.sin(elapsed * 0.8 + L.phase) * 0.8, L.base.z);
     }
 
-    /* khadag in the wind */
-    khadag.forEach((k, i) => {
-      k.rotation.x = 0.5 + Math.sin(elapsed * 2.4 + i) * 0.22;
-      k.rotation.z = Math.sin(elapsed * 1.7 + i * 1.3) * 0.18;
-    });
+    /* wind, smoke, animals, river */
+    ovoo.update(elapsed);
+    camp.update(elapsed);
+    grass.update(elapsed);
+    animals.update(dt, elapsed);
+    smoke.update(dt, elapsed);
+    smoke.mat.uniforms.uColor.value.copy(rampColor(["#ddd5cf", "#c9b9b4", "#5d5a63", "#3a3f48"], tod, col));
+    smoke.mat.uniforms.uOpacity.value = ramp([0.35, 0.38, 0.32, 0.28], tod);
+    smoke.mat.uniforms.uScale.value = renderer.domElement.height / 900;
+    // the water mirrors the sky: warm at sunset, dark blue with a moon sheen at night
+    river.mat.color.copy(WATER_DEEP);
+    river.mat.emissive.copy(su.uTop.value).lerp(su.uHorizon.value, 0.4).multiplyScalar(ramp([0.16, 0.14, 0.07, 0.04], tod));
 
     /* snow follows the camera */
-    snowMat.opacity = smooth(0.55, 0.9, tod) * 0.85;
+    snowMat.opacity = Math.min(1, smooth(0.55, 0.9, tod) * 0.85 * settings.snow);
     if (snowMat.opacity > 0.01) {
       const arr = snowGeo.attributes.position as THREE.BufferAttribute;
       for (let i = 0; i < snowCount; i++) {
@@ -592,7 +480,7 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
       arr.needsUpdate = true;
     }
 
-    bloom.strength = lerp(0.3, 0.7, glow);
+    bloom.strength = lerp(0.3, 0.7, glow) * settings.bloom;
     composer.render(dt);
   }
   raf = requestAnimationFrame(frame);
@@ -608,7 +496,7 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   }
 
   return {
-    setTarget: (t) => (target = Math.max(0, Math.min(SHOTS.length - 1, t))),
+    setTarget: (t) => (target = Math.max(0, Math.min(shots.length - 1, t))),
     setPointer: (x, y) => pointer.set(x, y),
     resize,
     setActive: (on) => {
@@ -628,6 +516,27 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
       });
       composer.dispose();
       renderer.dispose();
+    },
+    studio: {
+      THREE,
+      scene,
+      camera,
+      canvas,
+      pickables: () => [...byId.values()],
+      setFreeCamera: (on) => (freeCamera = on),
+      setTodOverride: (t) => (todOverride = t),
+      setShots,
+      setSettings: (next) => (settings = { ...next }),
+      addGer,
+      addSign,
+      updateSign: (d) => {
+        remove(d.id);
+        return addSign(d);
+      },
+      remove,
+      groundHeight,
+      onFrame: (fn) => frameHooks.push(fn),
+      getTod: () => lastTod,
     },
   };
 }
