@@ -3,12 +3,12 @@
 function Sign({ children, en, note, compact }: { children: React.ReactNode; en: string; note: string; compact?: boolean }) {
   return (
     <figure className="flex flex-col">
-      <div className={`flex items-center justify-center overflow-hidden bg-white/70 ${compact ? "h-28 rounded-2xl p-2 sm:h-32" : "min-h-48 rounded-3xl p-6"}`}>
-        <div className={compact ? "origin-center scale-[0.62] sm:scale-[0.7]" : ""}>{children}</div>
+      <div className={`flex items-center justify-center overflow-hidden bg-white/70 ${compact ? "h-20 rounded-xl p-1 sm:h-24" : "min-h-48 rounded-3xl p-6"}`}>
+        <div className={compact ? "origin-center scale-[0.48] sm:scale-[0.52]" : ""}>{children}</div>
       </div>
-      <figcaption className={compact ? "mt-2" : "mt-4"}>
-        <span className={`block font-display font-bold ${compact ? "text-lg" : "text-xl"}`}>{en}</span>
-        <span className={`text-ink-soft ${compact ? "text-sm" : ""}`}>{note}</span>
+      <figcaption className={compact ? "mt-1.5 leading-tight" : "mt-4"}>
+        <span className={`block font-display font-bold ${compact ? "text-base" : "text-xl"}`}>{en}</span>
+        <span className={`text-ink-soft ${compact ? "text-xs" : ""}`}>{note}</span>
       </figcaption>
     </figure>
   );
@@ -31,7 +31,7 @@ export function StreetSigns() {
 
 export function SignGrid({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={compact ? "grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3" : "grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3"}>
+    <div className={compact ? "grid grid-cols-2 gap-x-2.5 gap-y-3.5 sm:grid-cols-3" : "grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3"}>
       <Sign compact={compact} en="Pharmacy" note="emiin san">
         <div className="flex items-center gap-4 rounded-xl bg-[#5e6b42] px-5 py-4 text-white shadow-lg">
           <span className="relative block h-12 w-12" aria-hidden>

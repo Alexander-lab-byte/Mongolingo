@@ -378,7 +378,7 @@ export function ScrollWorld() {
             <p className="mt-4 text-xl text-[#f1e6dc]/90 sm:text-2xl">35 letters rise over the camp. You already know 5.</p>
             <AlphabetLegend className="mt-7 text-[#f6ece0]" />
           </div>
-          <div className="glass-card snap-center p-3 sm:p-5">
+          <div className="glass-card snap-center w-full max-w-[25rem] justify-self-center p-3 sm:p-4 lg:justify-self-end">
             <AlphabetGrid compact />
           </div>
         </div>
@@ -394,7 +394,7 @@ export function ScrollWorld() {
             </h2>
             <p className="mt-4 text-xl text-[#f1e6dc]/90 sm:text-2xl">Pharmacy, shop, taxi. The signs you pass every day, lit up at night.</p>
           </div>
-          <div className="glass-card snap-center p-4 sm:p-6">
+          <div className="glass-card snap-center w-full max-w-[27rem] justify-self-center p-4 sm:p-5 lg:justify-self-end">
             <SignGrid compact />
           </div>
         </div>

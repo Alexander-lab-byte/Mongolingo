@@ -31,7 +31,7 @@ export function AlphabetGrid({ compact = false }: { compact?: boolean }) {
   for (const l of LESSONS) for (const it of l.items) if (l.kind === "letters") info.set(it.show, { group: l.id, say: it.say });
 
   return (
-    <ul className={`grid grid-cols-5 sm:grid-cols-7 ${compact ? "gap-1.5 sm:gap-2" : "gap-2 sm:gap-3"}`}>
+    <ul className={`grid grid-cols-5 sm:grid-cols-7 ${compact ? "gap-1 sm:gap-1.5" : "gap-2 sm:gap-3"}`}>
       {ORDER.map((ch) => {
         const i = info.get(ch);
         const g = i ? GROUPS[i.group] : undefined;
@@ -39,12 +39,12 @@ export function AlphabetGrid({ compact = false }: { compact?: boolean }) {
         return (
           <li
             key={ch}
-            className={`flex aspect-square flex-col items-center justify-center ${compact ? "rounded-xl" : "rounded-2xl"} ${
+            className={`flex aspect-square flex-col items-center justify-center ${compact ? "rounded-lg" : "rounded-2xl"} ${
               g ? g.cls : "border border-line bg-white text-ink"
             } ${isUnique ? "ring-4 ring-wood/40" : ""}`}
           >
-            <span className={`font-display font-bold ${compact ? "text-2xl sm:text-3xl" : "text-3xl sm:text-4xl"}`}>{ch}</span>
-            <span className={`font-semibold ${compact ? "text-xs sm:text-sm" : "mt-0.5 text-sm sm:text-base"}`}>{i?.say}</span>
+            <span className={`font-display font-bold ${compact ? "text-xl" : "text-3xl sm:text-4xl"}`}>{ch}</span>
+            <span className={`font-semibold ${compact ? "text-[0.6rem] leading-tight opacity-80" : "mt-0.5 text-sm sm:text-base"}`}>{i?.say}</span>
             <span className="sr-only">{g ? `, ${g.label}` : ""}</span>
           </li>
         );
