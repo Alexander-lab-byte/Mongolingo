@@ -73,8 +73,10 @@ function HeroChapter({ reduce }: { reduce: boolean }) {
   return (
     <div className="sticky top-0 flex h-svh flex-col">
       <div data-fade className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-5 pt-[calc(var(--nav-h)+1.5rem)] sm:px-8 lg:pr-24">
-        <Kicker i={0} />
-        <h1 className="mt-6">
+        <p className="w-fit rounded-full bg-white/70 px-4 py-1.5 text-base font-semibold text-ink ring-1 ring-white/80 backdrop-blur">
+          Mongolian lessons for foreigners in Mongolia
+        </p>
+        <h1 className="mt-6 [@media(max-height:620px)]:mt-3">
           <span className="sr-only">Learn Mongolian for life in Mongolia.</span>
           <span aria-hidden className="block">
             <span className="block text-2xl font-bold text-ink-soft sm:text-3xl">
@@ -88,8 +90,16 @@ function HeroChapter({ reduce }: { reduce: boolean }) {
             <span className="mt-3 block font-mono text-lg font-semibold tracking-wide text-wood-dark sm:text-xl">/ {word.say} /</span>
           </span>
         </h1>
-        <p className="mt-6 max-w-xl text-xl text-ink sm:text-2xl [@media(max-height:700px)]:mt-3 [@media(max-height:700px)]:text-lg">Learn Mongolian for real life in Mongolia, one small piece at a time.</p>
-        <div className="mt-8 flex flex-wrap items-center gap-3 max-sm:hidden [@media(max-height:820px)]:hidden">
+        <p className="mt-6 max-w-xl text-xl text-ink sm:text-2xl [@media(max-height:700px)]:mt-3 [@media(max-height:700px)]:text-lg">Read the letters, say everyday phrases, and translate when you get stuck.</p>
+        <div className="mt-7 flex flex-wrap gap-3 [@media(max-height:700px)]:mt-4">
+          <a href="#try" className="btn btn-primary text-lg">
+            Try a free lesson
+          </a>
+          <Link href="/translate" className="btn btn-line bg-white/40 text-lg text-ink backdrop-blur">
+            Translate now
+          </Link>
+        </div>
+        <div className="mt-8 flex flex-wrap items-center gap-3 max-lg:hidden [@media(max-height:900px)]:hidden">
           <ul className="flex gap-1.5" aria-label="Letters you already know: А, К, М, О, Т">
             {KNOWN.map((c) => (
               <li key={c} aria-hidden className="grid h-11 w-11 place-items-center rounded-xl bg-gold font-display text-xl font-extrabold text-night shadow-[0_2px_0_#b8946f]">
@@ -114,7 +124,7 @@ function HeroChapter({ reduce }: { reduce: boolean }) {
         Scroll to see how it works
       </a>
 
-      <div data-fade className="relative -mx-6 mb-6 shrink-0 -rotate-[1.4deg] bg-blend py-3.5 shadow-[0_24px_40px_-28px_rgba(30,20,12,0.7)]" aria-hidden>
+      <div data-fade className="relative -mx-6 mb-6 shrink-0 -rotate-[1.4deg] overflow-hidden bg-blend py-3.5 shadow-[0_24px_40px_-28px_rgba(30,20,12,0.7)]" aria-hidden>
         <div className="flex w-max whitespace-nowrap font-display text-2xl font-bold sm:text-3xl" style={{ animation: "marquee 70s linear infinite" }}>
           {[0, 1].map((k) => (
             <span key={k} className="flex">
@@ -220,11 +230,13 @@ export function ScrollWorld() {
     const els = Array.from(wrapRef.current?.querySelectorAll<HTMLElement>("[data-ch]") ?? []);
     let tops: number[] = [];
     let hs: number[] = [];
+    let pinned: boolean[] = [];
     let lastActive = -1;
     let frame = 0;
     const measure = () => {
       tops = els.map((e) => e.getBoundingClientRect().top + window.scrollY);
       hs = els.map((e) => e.offsetHeight);
+      pinned = els.map((e) => !!e.firstElementChild && getComputedStyle(e.firstElementChild).position === "sticky");
     };
     const update = () => {
       frame = 0;
@@ -247,7 +259,7 @@ export function ScrollWorld() {
       els.forEach((el, i) => {
         if (el.dataset.mode !== "sticky") return;
         const q = (y - tops[i]) / Math.max(1, hs[i] - vh);
-        const o = reduce ? 1 : i === 0 ? 1 - smooth(0.55, 0.95, q) : i === LAST ? smooth(-0.6, -0.05, q) : smooth(-0.55, -0.05, q) * (1 - smooth(0.6, 0.95, q));
+        const o = reduce || !pinned[i] ? 1 : i === 0 ? 1 - smooth(0.55, 0.95, q) : i === LAST ? smooth(-0.6, -0.05, q) : smooth(-0.55, -0.05, q) * (1 - smooth(0.6, 0.95, q));
         el.querySelectorAll<HTMLElement>("[data-fade]").forEach((f) => {
           f.style.opacity = o > 0.999 ? "" : String(o);
           f.style.transform = o > 0.999 ? "" : `translateY(${(1 - o) * 36}px)`;
@@ -298,9 +310,15 @@ export function ScrollWorld() {
   useEffect(() => {
     const html = document.documentElement;
     const prev = [html.style.scrollSnapType, html.style.scrollPaddingTop];
-    html.style.scrollSnapType = "y proximity";
-    html.style.scrollPaddingTop = "84px";
+    const mq = window.matchMedia("(min-width: 1024px) and (min-height: 761px) and (pointer: fine)");
+    const apply = () => {
+      html.style.scrollSnapType = mq.matches ? "y proximity" : "";
+      html.style.scrollPaddingTop = mq.matches ? "84px" : "";
+    };
+    apply();
+    mq.addEventListener("change", apply);
     return () => {
+      mq.removeEventListener("change", apply);
       html.style.scrollSnapType = prev[0];
       html.style.scrollPaddingTop = prev[1];
     };

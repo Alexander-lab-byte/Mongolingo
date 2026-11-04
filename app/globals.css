@@ -61,6 +61,7 @@ html {
 }
 
 body {
+  overflow-x: clip;
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
@@ -202,3 +203,21 @@ p { text-wrap: pretty; }
 }
 .world-text { text-shadow: 0 1px 24px rgba(240, 230, 226, 0.9); }
 .night-text { color: #f6ece0; text-shadow: 0 2px 30px rgba(8, 10, 14, 0.6); }
+
+/* Story chapters are pinned only on big, tall screens.
+   On phones, tablets and small or short windows they flow like normal sections,
+   so tall content is never cut off and the page is not too long. */
+@media (max-width: 1023px), (max-height: 760px) {
+  [data-mode="sticky"] { height: auto; }
+  [data-mode="sticky"] > .sticky {
+    position: relative;
+    height: auto;
+    min-height: 100svh;
+  }
+  [data-mode="sticky"]:not([data-ch="0"]) > .sticky {
+    padding-top: calc(var(--nav-h, 72px) + 2rem);
+    padding-bottom: 4rem;
+  }
+  [data-mode="sticky"] > .sticky [data-fade] { opacity: 1; transform: none; filter: none; visibility: visible; }
+  [data-ch]:not([data-mode]) { min-height: 100svh; padding-top: 14svh; padding-bottom: 14svh; }
+}

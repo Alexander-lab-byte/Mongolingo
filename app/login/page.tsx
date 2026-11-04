@@ -208,5 +208,8 @@ function friendly(msg: string) {
   if (m.includes("already registered")) return "This email already has an account. Please log in instead.";
   if (m.includes("email not confirmed")) return "Please open the email we sent you and tap the link first.";
   if (m.includes("valid email") || m.includes("invalid email")) return "Please check your email address.";
+  if (m.includes("rate limit") || m.includes("too many"))
+    return "Too many sign-ups right now. Please wait a few minutes and try again, or tap “See a demo” below.";
+  if (m.includes("only request this after") || m.includes("once every 60 seconds")) return "Please wait one minute, then try again.";
   return msg;
 }
