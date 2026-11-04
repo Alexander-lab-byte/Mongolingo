@@ -381,7 +381,8 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   const col = new THREE.Color();
 
   function todAt(t: number) {
-    const i = Math.min(Math.floor(t), shots.length - 2);
+    if (!Number.isFinite(t)) t = 0;
+    const i = Math.max(0, Math.min(Math.floor(t), shots.length - 2));
     return lerp(shots[i].tod, shots[i + 1].tod, clamp01(t - i));
   }
 
@@ -393,6 +394,7 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
     elapsed += dt;
 
     current += (target - current) * (1 - Math.exp(-dt * 3.2));
+    if (!Number.isFinite(current)) current = target;
     pointerSmooth.lerp(pointer, 1 - Math.exp(-dt * 2.5));
     const u = clamp01(current / (shots.length - 1));
     const tod = todOverride ?? todAt(current);
@@ -496,7 +498,9 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   }
 
   return {
-    setTarget: (t) => (target = Math.max(0, Math.min(shots.length - 1, t))),
+    setTarget: (t) => {
+      if (Number.isFinite(t)) target = Math.max(0, Math.min(shots.length - 1, t));
+    },
     setPointer: (x, y) => pointer.set(x, y),
     resize,
     setActive: (on) => {

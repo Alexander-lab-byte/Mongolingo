@@ -247,7 +247,7 @@ export function ScrollWorld() {
       // camera: hold during the first part of a chapter, fly to the next shot in the second part
       let t = 0;
       for (let i = 0; i < els.length; i++) {
-        if (mid >= tops[i]) t = i + (i === LAST ? 0 : smooth(0.45, 1, (mid - tops[i]) / hs[i]));
+        if (mid >= tops[i]) t = i + (i === LAST ? 0 : smooth(0.45, 1, (mid - tops[i]) / Math.max(1, hs[i])));
       }
       worldRef.current?.setTarget(t);
 
