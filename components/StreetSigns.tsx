@@ -2,9 +2,9 @@
 
 function Sign({ children, en, note, compact }: { children: React.ReactNode; en: string; note: string; compact?: boolean }) {
   return (
-    <figure className="flex flex-col">
+    <figure className={`flex flex-col ${compact ? "rv-sign" : ""}`}>
       <div className={`flex items-center justify-center overflow-hidden bg-white/70 ${compact ? "h-20 rounded-xl p-1 sm:h-24" : "min-h-48 rounded-3xl p-6"}`}>
-        <div className={compact ? "origin-center scale-[0.48] sm:scale-[0.52]" : ""}>{children}</div>
+        <div className={compact ? "rv-lamp origin-center scale-[0.48] sm:scale-[0.52]" : ""}>{children}</div>
       </div>
       <figcaption className={compact ? "mt-1.5 leading-tight" : "mt-4"}>
         <span className={`block font-display font-bold ${compact ? "text-base" : "text-xl"}`}>{en}</span>

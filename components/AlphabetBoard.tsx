@@ -32,14 +32,15 @@ export function AlphabetGrid({ compact = false }: { compact?: boolean }) {
 
   return (
     <ul className={`grid grid-cols-5 sm:grid-cols-7 ${compact ? "gap-1 sm:gap-1.5" : "gap-2 sm:gap-3"}`}>
-      {ORDER.map((ch) => {
+      {ORDER.map((ch, idx) => {
         const i = info.get(ch);
         const g = i ? GROUPS[i.group] : undefined;
         const isUnique = ch === "Ө" || ch === "Ү";
         return (
           <li
             key={ch}
-            className={`flex aspect-square flex-col items-center justify-center ${compact ? "rounded-lg" : "rounded-2xl"} ${
+            style={compact ? ({ "--d": Math.floor(idx / 7) + (idx % 7) } as React.CSSProperties) : undefined}
+            className={`flex aspect-square flex-col items-center justify-center ${compact ? "rv-tile rounded-lg" : "rounded-2xl"} ${
               g ? g.cls : "border border-line bg-white text-ink"
             } ${isUnique ? "ring-4 ring-wood/40" : ""}`}
           >

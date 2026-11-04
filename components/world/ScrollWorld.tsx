@@ -306,6 +306,28 @@ export function ScrollWorld() {
     return () => ro.disconnect();
   }, []);
 
+  /* Alphabet and signs animate in when they scroll into view (and again next time you come back) */
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const items = wrap.querySelectorAll<HTMLElement>("[data-reveal]");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && e.intersectionRatio >= 0.3) e.target.setAttribute("data-in", "");
+          else if (!e.isIntersecting) e.target.removeAttribute("data-in");
+        }
+      },
+      { threshold: [0, 0.3] },
+    );
+    items.forEach((el) => io.observe(el));
+    wrap.classList.add("rv-ready");
+    return () => {
+      io.disconnect();
+      wrap.classList.remove("rv-ready");
+    };
+  }, []);
+
   /* Gentle snapping to the cards you can use (translator, demo, alphabet, signs) */
   useEffect(() => {
     const html = document.documentElement;
@@ -369,16 +391,16 @@ export function ScrollWorld() {
 
       {/* 03 — alphabet */}
       <section id={CHAPTERS[2].id} data-ch="2" className="relative flex min-h-[175svh] items-center px-4 py-[24svh] sm:px-8 lg:pr-24" aria-labelledby="alphabet">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
-          <div className="night-text">
+        <div data-reveal className="mx-auto grid w-full max-w-6xl items-center gap-8 md:grid-cols-[0.9fr_1.1fr] lg:gap-12">
+          <div className="rv-text night-text">
             <Kicker i={2} night />
-            <h2 id="alphabet" className="mt-5 text-5xl font-bold sm:text-6xl">
+            <h2 id="alphabet" className="mt-5 text-4xl font-bold sm:text-5xl lg:text-6xl">
               The whole alphabet.
             </h2>
-            <p className="mt-4 text-xl text-[#f1e6dc]/90 sm:text-2xl">35 letters rise over the camp. You already know 5.</p>
+            <p className="mt-4 text-lg text-[#f1e6dc]/90 sm:text-xl lg:text-2xl">35 letters rise over the camp. You already know 5.</p>
             <AlphabetLegend className="mt-7 text-[#f6ece0]" />
           </div>
-          <div className="glass-card snap-center w-full max-w-[25rem] justify-self-center p-3 sm:p-4 lg:justify-self-end">
+          <div className="glass-card snap-center w-full max-w-[25rem] justify-self-center p-3 sm:p-4 md:justify-self-end">
             <AlphabetGrid compact />
           </div>
         </div>
@@ -386,15 +408,15 @@ export function ScrollWorld() {
 
       {/* 04 — street signs */}
       <section id={CHAPTERS[3].id} data-ch="3" className="relative flex min-h-[175svh] items-center px-4 py-[24svh] sm:px-8 lg:pr-24" aria-labelledby="signs">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
-          <div className="night-text">
+        <div data-reveal className="mx-auto grid w-full max-w-6xl items-center gap-8 md:grid-cols-[0.9fr_1.1fr] lg:gap-12">
+          <div className="rv-text night-text">
             <Kicker i={3} night />
-            <h2 id="signs" className="mt-5 text-5xl font-bold sm:text-6xl">
+            <h2 id="signs" className="mt-5 text-4xl font-bold sm:text-5xl lg:text-6xl">
               Read the signs around you.
             </h2>
-            <p className="mt-4 text-xl text-[#f1e6dc]/90 sm:text-2xl">Pharmacy, shop, taxi. The signs you pass every day, lit up at night.</p>
+            <p className="mt-4 text-lg text-[#f1e6dc]/90 sm:text-xl lg:text-2xl">Pharmacy, shop, taxi. The signs you pass every day, lit up at night.</p>
           </div>
-          <div className="glass-card snap-center w-full max-w-[27rem] justify-self-center p-4 sm:p-5 lg:justify-self-end">
+          <div className="glass-card snap-center w-full max-w-[27rem] justify-self-center p-4 sm:p-5 md:justify-self-end">
             <SignGrid compact />
           </div>
         </div>
