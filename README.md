@@ -1,4 +1,4 @@
-# Mongolingo 🇲🇳
+# Yarii 🇲🇳
 
 **Learn Mongolian for life in Mongolia.** Easy lessons for foreigners living in Mongolia: kids, adults and grandparents.
 

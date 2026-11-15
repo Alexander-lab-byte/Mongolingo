@@ -400,7 +400,7 @@ export function SteppeScene() {
   if (reduce) return <StaticStory />;
 
   return (
-    <section ref={ref} className="relative h-[380vh] bg-paper" aria-label="The Mongolingo story">
+    <section ref={ref} className="relative h-[380vh] bg-paper" aria-label="The Yarii story">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <Scene p={scrollYProgress} />
         {STEPS.map((_, i) => (

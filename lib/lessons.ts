@@ -1,3 +1,5 @@
+import { CURRICULUM } from "./curriculum";
+
 // All learning content lives here so it is easy to check and fix.
 // "trick" = a picture memory trick (keyword/mnemonic method, Atkinson & Raugh 1975).
 // Every item has picture + sound + word = dual coding (Paivio; Mayer).
@@ -21,6 +23,9 @@ export type Lesson = {
   emoji: string;
   kind: "letters" | "words";
   items: Item[];
+  ger?: string; // curriculum lessons belong to a ger in the town
+  dialogue?: { mn: string; en: string }[];
+  note?: { text: string; source: string };
 };
 
 const L = (
@@ -41,7 +46,7 @@ const L = (
   word: { mn: word[0], latin: word[1], en: word[2] },
 });
 
-export const LESSONS: Lesson[] = [
+export const BASE_LESSONS: Lesson[] = [
   {
     id: "friends",
     title: "Letters you already know",
@@ -208,6 +213,9 @@ export const LESSONS: Lesson[] = [
     ],
   },
 ];
+
+/** Alphabet and basics first, then the 48 ger-town lessons. */
+export const LESSONS: Lesson[] = [...BASE_LESSONS, ...CURRICULUM];
 
 export const TOTAL_LETTERS = LESSONS.filter((l) => l.kind === "letters").reduce(
   (n, l) => n + l.items.length,
