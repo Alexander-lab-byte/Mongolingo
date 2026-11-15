@@ -17,7 +17,10 @@ export async function POST(request: Request) {
   if (text.length > MAX) return Response.json({ error: `Please keep it under ${MAX} characters.` }, { status: 400 });
 
   try {
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+    // With a contact email MyMemory allows 50,000 characters a day instead of 5,000 (shared by all visitors,
+    // because every request comes from our server). Set MYMEMORY_EMAIL in Vercel → Environment Variables.
+    const de = process.env.MYMEMORY_EMAIL ? `&de=${encodeURIComponent(process.env.MYMEMORY_EMAIL)}` : "";
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}${de}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     const data = await res.json();
     const translated: string | undefined = data?.responseData?.translatedText;
