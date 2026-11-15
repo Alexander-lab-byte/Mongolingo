@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BookOpen, Check, ChevronLeft, ChevronRight, List, Lock, LogOut, Play, Wrench, X } from "lucide-react";
-import { usePass } from "@/components/usePass";
-import { isFreeGer } from "@/lib/plans";
+import { BookOpen, Check, ChevronLeft, ChevronRight, LibraryBig, List, LogOut, Play, Sparkles, Wrench, X } from "lucide-react";
 import { useAuth } from "@/components/Providers";
 import { useLearner } from "@/components/useLearner";
 import { useReduced } from "@/components/useDecode";
@@ -32,8 +30,6 @@ const lessonsOf = (g: GerSpec) => CURRICULUM.filter((l) => l.ger === g.id);
 
 export function Town() {
   const { progress, ready, guest, update } = useLearner();
-  const { pass, active: hasPass, daysLeft: passDays, ready: passReady } = usePass();
-  const lockedGer = (g: GerSpec) => passReady && !hasPass && !isFreeGer(g.id);
   const { signOut } = useAuth();
   const router = useRouter();
   const reduced = useReduced();
@@ -243,11 +239,8 @@ export function Town() {
               {GERS.find((g) => g.id === id)!.emoji}
             </button>
           ))}
-          {passReady && (
-            <Link href="/pricing" className={`${BTN} min-h-11 px-3 text-sm ${hasPass ? "hover:bg-white/10" : "bg-[var(--ac)] text-[#10161b]"}`}>
-              {hasPass && pass ? `${pass.plan === "trial" ? "Trial" : "Pass"}: ${passDays}d` : "Get Pass"}
-            </Link>
-          )}
+          <Link href="/learn/packs" aria-label="All lessons" title="100 more lessons" className={`${IBTN} hover:bg-white/10`}><LibraryBig size={18} aria-hidden /></Link>
+          <Link href="/ai" className={`${BTN} min-h-11 bg-[var(--ac)] px-3 text-sm text-[#10161b]`}><Sparkles size={16} aria-hidden /> Yarii AI</Link>
           <button type="button" aria-label="Guide" title="Guide" className={`${IBTN} hover:bg-white/10`} onClick={() => setGuide(true)}><BookOpen size={18} aria-hidden /></button>
           <button type="button" aria-label={view === "3d" ? "Switch to list view" : "Switch to town view"} title={view === "3d" ? "List view" : "Town view"} className={`${IBTN} hover:bg-white/10`} onClick={() => setView(view === "3d" ? "list" : "3d")}><List size={18} aria-hidden /></button>
           <Link href="/learn/tools" aria-label={`Alphabet and tools${reviews.length ? `, ${reviews.length} reviews due` : ""}`} title="Alphabet & tools" className={`${IBTN} relative hover:bg-white/10`}>
@@ -297,7 +290,7 @@ export function Town() {
                           <li key={l.id}>
                             <Link href={`/learn/${l.id}`} className="flex min-h-11 items-center justify-between gap-3 rounded-xl px-2 text-cobalt hover:bg-paper">
                               <span>{l.title}</span>
-                              <span className="flex items-center gap-1 text-ink-soft">{progress.completed.includes(l.id) ? <><Check size={16} aria-hidden /> Done</> : lockedGer(g) ? <><Lock size={16} aria-hidden /> Pass</> : "Start"}</span>
+                              <span className="flex items-center gap-1 text-ink-soft">{progress.completed.includes(l.id) ? <><Check size={16} aria-hidden /> Done</> : "Start"}</span>
                             </Link>
                           </li>
                         ))}
@@ -345,7 +338,7 @@ export function Town() {
                     ))}
                   </ul>
                   <Link href={`/learn/${l.id}`} className={`${BTN} mt-3 bg-[var(--ac)] text-[#10161b]`}>
-                    {lockedGer(sel) ? <><Lock size={16} aria-hidden /> Unlock with a Pass</> : <><Play size={16} fill="currentColor" aria-hidden /> {isDone ? "Review lesson" : `${label} lesson`}</>}
+                    <Play size={16} fill="currentColor" aria-hidden /> {isDone ? "Review lesson" : `${label} lesson`}
                   </Link>
                 </li>
               );

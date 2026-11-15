@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "./Providers";
 import { DEMO_KEY, EMPTY, GUEST_ID, freezeStreak, isGuest, loadProgress, saveProgress, type Progress } from "@/lib/progress";
-import { isActive, loadPass } from "@/lib/pass";
 
 const PROGRESS_EVENT = "mongolingo-progress";
 
@@ -29,10 +28,10 @@ export function useLearner() {
     }
     const id = userId ?? GUEST_ID;
     let stale = false;
-    Promise.all([loadProgress(id, name), loadPass(userId ?? null)]).then(([p0, pass]) => {
+    loadProgress(id, name).then((p0) => {
       if (stale) return;
-      // Pass perk: one missed day a month does not break the streak.
-      const p = freezeStreak(p0, isActive(pass));
+      // Free streak freeze: one missed day a month does not break the streak.
+      const p = freezeStreak(p0);
       if (p !== p0) saveProgress(id, p);
       // Carry over the free mini lesson: they already met 5 friendly letters (endowed progress).
       let next = p;

@@ -5,7 +5,7 @@ import { Pricing } from "@/components/Pricing";
 export const metadata: Metadata = {
   title: "Plans · Yarii",
   description:
-    "Free translator, alphabet and safety phrases forever. Unlock all 48 lessons with a 30-day or 1-year Pass. Pay once with QPay, no auto-renew.",
+    "Every lesson and game is free. Yarii AI (talk practice, photo reader, say-it-for-me) is a 30-day or 1-year pass, paid once with QPay. No auto-renew.",
 };
 
 export default function PricingPage() {

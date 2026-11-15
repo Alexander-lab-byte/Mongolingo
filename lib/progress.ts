@@ -112,13 +112,13 @@ export async function saveProgress(userId: string, p: Progress) {
 }
 
 /**
- * Streak freeze (a Pass perk, like Duolingo's monthly streak repair): if exactly one day was missed,
+ * Streak freeze (free for everyone, like Duolingo's monthly streak repair): if exactly one day was missed,
  * the streak is kept once per calendar month.
  */
-export function freezeStreak(p: Progress, hasPass: boolean): Progress {
+export function freezeStreak(p: Progress): Progress {
   const t = today();
   const month = t.slice(0, 7);
-  if (!hasPass || p.streak < 1 || p.lastActive !== addDays(t, -2) || p.freezeMonth === month) return p;
+  if (p.streak < 1 || p.lastActive !== addDays(t, -2) || p.freezeMonth === month) return p;
   return { ...p, lastActive: addDays(t, -1), freezeMonth: month };
 }
 

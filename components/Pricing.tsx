@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Check, Minus, ShieldCheck, X } from "lucide-react";
-import { FREE_LESSON_COUNT, PLANS, TRIAL_DAYS, tugrik, type Plan, type PlanId } from "@/lib/plans";
+import { LESSON_COUNT, PLANS, TRIAL_DAYS, tugrik, type Plan, type PlanId } from "@/lib/plans";
 import { requestPass } from "@/lib/pass";
 import { useAuth } from "./Providers";
 import { usePass } from "./usePass";
@@ -11,22 +11,23 @@ import { usePass } from "./usePass";
 type Paid = Exclude<PlanId, "free">;
 
 const COMPARE: { label: string; free: boolean | string; pass: boolean | string }[] = [
+  { label: "Lessons", free: `All ${LESSON_COUNT}`, pass: `All ${LESSON_COUNT}` },
+  { label: "Word herd + Sign rush games", free: true, pass: true },
   { label: "Translator + ready phrases", free: true, pass: true },
-  { label: "All 35 letters, signs, numbers, money", free: true, pass: true },
-  { label: "Greetings, Emergency, Doctor, Pharmacy", free: true, pass: true },
-  { label: "Streaks, flashcards, spaced review", free: true, pass: true },
-  { label: "Lessons", free: `${FREE_LESSON_COUNT}`, pass: "All 59" },
-  { label: "Taxi, shopping, restaurant, work, culture… (20 gers)", free: false, pass: true },
-  { label: "Streak freeze", free: false, pass: true },
+  { label: "Streaks, flashcards, streak freeze", free: true, pass: true },
+  { label: "AI talk practice (taxi, landlord, herder family…)", free: false, pass: true },
+  { label: "Photo reader: signs, menus, notices", free: false, pass: true },
+  { label: "Say it for me (polite + casual)", free: false, pass: true },
+  { label: "Lessons made for your job or hobby", free: false, pass: true },
   { label: "Renews by itself", free: "—", pass: "Never" },
 ];
 
 const FAQ = [
+  ["What is free?", "Everything you need to learn: every lesson, both games, the translator, flashcards and streaks. Free for everyone, forever."],
+  ["What does Yarii AI add?", "A Mongolian friend in your pocket: practise real conversations, photograph a sign or menu to have it read, get the exact words for your situation, and make lessons about your own life."],
   ["Why no subscription?", "Most visitors stay for a few weeks. A pass that simply ends is fairer than a subscription you have to remember to cancel."],
   ["How do I pay?", "Choose a pass and leave your email or phone. We send a QPay invoice: pay with any Mongolian bank app, or a foreign Visa or Mastercard. Your pass starts as soon as it is paid."],
-  ["Is anything always free?", "Yes. The translator, the alphabet, street signs and the Emergency, Doctor and Pharmacy phrases stay free for everyone. Safety is never behind a paywall."],
-  ["What happens when my pass ends?", "Nothing is lost. Your stars, streak and finished lessons stay. Pass lessons lock again until you get a new pass."],
-  ["Can my company or university pay?", "Yes. The Teams plan gives every person a 1-year Pass on one invoice, from 5 people."],
+  ["Can my company or university pay?", "Yes. The Teams plan gives every person a 1-year Yarii AI pass on one invoice, from 5 people."],
 ];
 
 function Cell({ v }: { v: boolean | string }) {
@@ -50,16 +51,16 @@ export function Pricing() {
 
   async function startTrial() {
     const res = await trial();
-    setTrialMsg(res.error ?? `Your ${TRIAL_DAYS}-day trial has started. Every lesson is open.`);
+    setTrialMsg(res.error ?? `Your ${TRIAL_DAYS}-day Yarii AI trial has started.`);
   }
 
   return (
     <main className="bg-gradient-to-b from-white to-paper px-4 pb-24 pt-10">
       <div className="mx-auto max-w-6xl">
         <header className="max-w-3xl">
-          <h1 className="text-4xl font-bold sm:text-6xl">Pay once. Learn all of it.</h1>
+          <h1 className="text-4xl font-bold sm:text-6xl">Learn free. Pay for a friend.</h1>
           <p className="mt-4 text-xl text-ink-soft">
-            The translator and safety phrases are free forever. A Pass opens all 24 gers. No subscription, no auto-renew.
+            Every lesson and game is free forever. Yarii AI talks with you, reads signs for you and writes what you need to say. Pay once, no auto-renew.
           </p>
           {active && pass && (
             <p className="mt-4 inline-flex rounded-full bg-ok-soft px-4 py-2 font-semibold text-ok">
@@ -77,7 +78,7 @@ export function Pricing() {
         {!pass && (
           <div className="panel mt-6 flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
             <div>
-              <p className="text-xl font-bold">Not sure yet? Try every lesson free for {TRIAL_DAYS} days.</p>
+              <p className="text-xl font-bold">Try Yarii AI free for {TRIAL_DAYS} days.</p>
               <p className="text-ink-soft">No payment details. It ends by itself.</p>
             </div>
             <button type="button" className="btn btn-gold" onClick={startTrial}>
@@ -88,15 +89,15 @@ export function Pricing() {
         {trialMsg && (
           <p role="status" className="mt-3 rounded-2xl bg-white p-4 ring-1 ring-line">
             {trialMsg}{" "}
-            <Link href="/learn" className="font-semibold text-cobalt underline">
-              Go to my lessons
+            <Link href="/ai" className="font-semibold text-cobalt underline">
+              Open Yarii AI
             </Link>
           </p>
         )}
 
         <section className="mt-16" aria-labelledby="cmp">
           <h2 id="cmp" className="text-3xl font-bold">
-            Free vs Pass
+            Free vs Yarii AI
           </h2>
           <div className="panel mt-6 overflow-x-auto">
             <table className="w-full min-w-[34rem] text-left">
@@ -109,7 +110,7 @@ export function Pricing() {
                     Free
                   </th>
                   <th className="p-4 text-center" scope="col">
-                    Pass
+                    Yarii AI
                   </th>
                 </tr>
               </thead>
@@ -175,7 +176,7 @@ function PlanCard({ p, onPick, signedIn }: { p: Plan; onPick: () => void; signed
         </Link>
       ) : (
         <button type="button" onClick={onPick} className={`btn mt-6 ${p.best ? "btn-primary" : "btn-gold"}`}>
-          {p.id === "team" ? "Get a team quote" : `Get the ${p.name}`}
+          {p.id === "team" ? "Get a team quote" : p.id === "year" ? "Get 1 year" : "Get 30 days"}
         </button>
       )}
     </li>

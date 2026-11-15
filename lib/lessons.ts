@@ -1,4 +1,5 @@
 import { CURRICULUM } from "./curriculum";
+import { PACK_LESSONS } from "./packs";
 
 // All learning content lives here so it is easy to check and fix.
 // "trick" = a picture memory trick (keyword/mnemonic method, Atkinson & Raugh 1975).
@@ -214,8 +215,8 @@ export const BASE_LESSONS: Lesson[] = [
   },
 ];
 
-/** Alphabet and basics first, then the 48 ger-town lessons. */
-export const LESSONS: Lesson[] = [...BASE_LESSONS, ...CURRICULUM];
+/** Alphabet and basics first, then the 48 ger-town lessons, then 100 topic-pack lessons. */
+export const LESSONS: Lesson[] = [...BASE_LESSONS, ...CURRICULUM, ...PACK_LESSONS];
 
 export const TOTAL_LETTERS = LESSONS.filter((l) => l.kind === "letters").reduce(
   (n, l) => n + l.items.length,

@@ -8,7 +8,11 @@
 
 Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, Motion, Supabase (auth + database).
 
-- **Plans (`/pricing`):** free forever for the translator, alphabet, signs and the Greetings, Emergency, Doctor and Pharmacy gers. A 30-day Pass (24,900₮) or 1-year Pass (149,000₮) opens all 48 ger lessons; both are paid once with QPay and never renew. 7-day free trial, once per account. Prices, costs and break-even: `docs/BUSINESS.md`.
+- **100 more lessons (`/learn/packs`):** 20 topics × 5 lessons (colours, body, days, food, drinks, home, jobs, feelings, city signs, travel, nature, animals, bank and post, hospital, friends, customs, winter…). Content: `lib/packs.ts`.
+- **Word herd (`/learn/herd`):** spaced review drawn as a nomad's herd. Every word is one of the five livestock; remembered words graze by the ger, forgotten ones wander off, and after a week a wolf comes. Uses the same Leitner boxes as the flashcards.
+- **Sign rush (`/learn/rush`):** real signs slide past a bus window; tap the one you're told to find. Trains fast reading. A still grid for reduced motion.
+- **Yarii AI (`/ai`, paid):** talk practice with AI characters, photo reader for signs and menus, say-it-for-me, your own lessons, and Ask Yarii. Everything else is free.
+- **Plans (`/pricing`):** all learning free; Yarii AI is a 30-day (24,900₮) or 1-year (149,000₮) pass, paid once with QPay, never renews. 7-day free trial. Prices, costs and break-even: `docs/BUSINESS.md`.
 
 ## Run it
 
@@ -16,6 +20,7 @@ Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, Motion, Supaba
 npm install
 cp .env.example .env.local   # skip if .env.local already exists
 npm run dev                  # http://localhost:3000
+npx tsx --test tests/*.test.ts   # content and AI-helper checks
 ```
 
 ## Deploy to Vercel
@@ -26,6 +31,12 @@ npm run dev                  # http://localhost:3000
 4. Click **Deploy**.
 5. In Supabase (project `mongolingo`), go to **Authentication → URL Configuration** and set **Site URL** to your Vercel URL.
 6. Optional for demo day: **Authentication → Sign In / Providers → Email → turn off "Confirm email"**, so people can sign up and start right away without checking their email.
+
+## Yarii AI setup
+
+1. In Vercel → Settings → Environment Variables add `ANTHROPIC_API_KEY` (from console.anthropic.com). Without it, `/ai` says "not switched on yet".
+2. Run `supabase/ai.sql` once in the Supabase SQL editor. It adds `ai_usage` and `use_ai()`, which checks the pass and the daily limit (60 a day, 15 on the trial).
+3. Model: Claude Haiku 5.5. Set a monthly spend limit in the Anthropic console.
 
 ## Passes (payments)
 

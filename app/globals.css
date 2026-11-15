@@ -340,3 +340,10 @@ p { text-wrap: pretty; }
   0%, 100% { filter: brightness(1) saturate(1) drop-shadow(0 0 10px rgba(255, 214, 160, 0.35)); }
   50% { filter: brightness(1.08) saturate(1.05) drop-shadow(0 0 18px rgba(255, 214, 160, 0.5)); }
 }
+
+/* Sign rush: signs slide past the bus window (right → left). */
+@keyframes drive {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - 70rem)); }
+}
+.rush-board { animation: drive linear forwards; }

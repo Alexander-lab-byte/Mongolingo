@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { ArrowLeft, CalendarClock, Star, X } from "lucide-react";
 import { useState } from "react";
-import { getLesson, LESSONS, type Item, type Lesson } from "@/lib/lessons";
+import { BASE_LESSONS, getLesson, LESSONS, type Item, type Lesson } from "@/lib/lessons";
+
+const BASE_IDS = new Set(BASE_LESSONS.map((l) => l.id));
 import { finishLesson } from "@/lib/progress";
 import { transliterate } from "@/lib/translit";
 import { Confetti, Feedback, OptionButton } from "./QuizBits";
@@ -11,9 +13,6 @@ import { Loading } from "./Loading";
 import { Speak } from "./Speak";
 import { TextSizeControl } from "./Nav";
 import { useLearner } from "./useLearner";
-import { usePass } from "./usePass";
-import { Paywall } from "./Paywall";
-import { isFreeLesson } from "@/lib/plans";
 
 type Question = {
   key: string;
@@ -52,6 +51,9 @@ function buildQuestions(lesson: Lesson): Question[] {
   let pool = LESSONS.slice(0, idx + 1)
     .filter((l) => l.kind === lesson.kind && isNum(l.id) === isNum(lesson.id))
     .flatMap((l) => l.items);
+  // Topic-pack lessons draw wrong answers from their own topic (colours with colours), so the quiz stays a real test.
+  const pack = lesson.id.match(/^(.+)-p\d+$/)?.[1];
+  if (pack) pool = LESSONS.filter((l) => l.id.startsWith(`${pack}-p`)).flatMap((l) => l.items);
   if (lesson.kind === "words") {
     // Never offer another item with the same text or meaning as a wrong answer.
     const own = new Set(lesson.items.flatMap((i) => [i.show, i.meaning]));
@@ -116,9 +118,9 @@ function buildQuestions(lesson: Lesson): Question[] {
 export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const lesson = getLesson(lessonId)!;
   const { progress, ready, update } = useLearner();
-  const { active: hasPass, ready: passReady } = usePass();
-  const locked = !isFreeLesson(lesson.id);
   const isReview = !!progress?.completed.includes(lesson.id);
+  // Topic-pack lessons go back to the pack list; the rest to the ger-town.
+  const home = lesson.ger || BASE_IDS.has(lesson.id) ? "/learn" : "/learn/packs";
 
   const [phase, setPhase] = useState<"learn" | "quiz" | "done">("learn");
   const [card, setCard] = useState(0);
@@ -132,8 +134,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const [result, setResult] = useState<{ stars: number; firstTry: number; wasReview: boolean } | null>(null);
   const [showReviewIntro, setShowReviewIntro] = useState(true);
 
-  if (!ready || !progress || (locked && !passReady)) return <Loading />;
-  if (locked && !hasPass) return <Paywall lesson={lesson} />;
+  if (!ready || !progress) return <Loading />;
 
   // Review = skip the teaching cards and go straight to questions (testing effect).
   const startPhase = isReview && phase === "learn" && showReviewIntro ? "review-intro" : phase;
@@ -190,7 +191,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
       <header className="sticky top-0 z-20 border-b border-line bg-white">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
           <Link
-            href="/learn"
+            href={home}
             className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-ink ring-1 ring-line hover:bg-paper"
             aria-label="Close lesson and go back"
           >
@@ -392,7 +393,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
               We&apos;ll bring this lesson back for a short review soon. Reviews on different days help you remember for months.
             </p>
             <div className="mt-8 flex justify-center">
-              <Link href="/learn" className="btn btn-gold text-lg">
+              <Link href={home} className="btn btn-gold text-lg">
                 Continue
               </Link>
             </div>
