@@ -5,6 +5,7 @@ import { ArrowLeft, CalendarClock, Star, X } from "lucide-react";
 import { useState } from "react";
 import { getLesson, LESSONS, type Item, type Lesson } from "@/lib/lessons";
 import { finishLesson } from "@/lib/progress";
+import { transliterate } from "@/lib/translit";
 import { Confetti, Feedback, OptionButton } from "./QuizBits";
 import { Loading } from "./Loading";
 import { Speak } from "./Speak";
@@ -34,7 +35,7 @@ function shuffle<T>(arr: T[], _seed?: number) {
 
 function pickWrong(pool: string[], answer: string, seed: number) {
   return shuffle(
-    pool.filter((x) => x !== answer),
+    [...new Set(pool)].filter((x) => x !== answer),
     seed,
   ).slice(0, 3);
 }
@@ -45,9 +46,14 @@ function buildQuestions(lesson: Lesson): Question[] {
   const idx = LESSONS.findIndex((l) => l.id === lesson.id);
   // Numbers are only mixed with numbers, so wrong answers are believable.
   const isNum = (id: string) => id.startsWith("numbers") || id === "money";
-  const pool = LESSONS.slice(0, idx + 1)
+  let pool = LESSONS.slice(0, idx + 1)
     .filter((l) => l.kind === lesson.kind && isNum(l.id) === isNum(lesson.id))
     .flatMap((l) => l.items);
+  if (lesson.kind === "words") {
+    // Never offer another item with the same text or meaning as a wrong answer.
+    const own = new Set(lesson.items.flatMap((i) => [i.show, i.meaning]));
+    pool = pool.filter((p) => lesson.items.includes(p) || !(own.has(p.show) || own.has(p.meaning)));
+  }
   const qs: Question[] = [];
   lesson.items.forEach((it, i) => {
     if (lesson.kind === "letters") {
@@ -127,9 +133,9 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const startPhase = isReview && phase === "learn" && showReviewIntro ? "review-intro" : phase;
 
   const questionCount = lesson.items.length * 2;
-  const totalSteps = lesson.items.length + questionCount;
-  const doneSteps =
-    phase === "learn" ? card : phase === "quiz" ? lesson.items.length + correctAnswers : totalSteps;
+  const steps = lesson.items.length + (lesson.dialogue ? 1 : 0); // phrase cards, then one dialogue card
+  const totalSteps = steps + questionCount;
+  const doneSteps = phase === "learn" ? card : phase === "quiz" ? steps + correctAnswers : totalSteps;
   const pct = Math.round((doneSteps / totalSteps) * 100);
 
   function startQuiz() {
@@ -224,12 +230,43 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
           </div>
         )}
 
+        {startPhase === "learn" && !item && lesson.dialogue && (
+          <div className="panel mt-4 overflow-hidden">
+            <div className="p-7 sm:p-9">
+              <p className="text-ink-soft">Card {card + 1} of {steps}</p>
+              <h1 className="mt-1 text-3xl font-bold sm:text-4xl">In a real conversation</h1>
+              <ul className="mt-5 space-y-3">
+                {lesson.dialogue.map((l, i) => (
+                  <li key={i} className={`max-w-xl rounded-2xl p-4 ${i % 2 ? "ml-auto bg-sky-soft" : "bg-blend-soft"}`}>
+                    <p className="font-display text-xl font-bold">{l.mn}</p>
+                    <p className="text-ink-soft">“{transliterate(l.mn).toLowerCase()}”</p>
+                    <p className="mt-1">{l.en}</p>
+                  </li>
+                ))}
+              </ul>
+              {lesson.note && (
+                <p className="mt-6 rounded-2xl bg-paper p-4 text-lg ring-1 ring-line">
+                  <strong>Culture note. </strong>{lesson.note.text} <span className="text-ink-soft">Source: {lesson.note.source}.</span>
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line px-6 py-4 sm:px-9">
+              <button type="button" className="btn btn-line text-ink" onClick={() => setCard(card - 1)}>
+                <ArrowLeft size={18} aria-hidden /> Back
+              </button>
+              <button type="button" className="btn btn-primary" onClick={startQuiz}>
+                I'm ready, quiz me
+              </button>
+            </div>
+          </div>
+        )}
+
         {startPhase === "learn" && item && (
           <div className="panel mt-4 overflow-hidden" key={item.id}>
             <div className="grid md:grid-cols-[1.05fr_1fr]">
               <div className="bg-blend flex flex-col items-center justify-center px-6 py-10">
                 <p className="text-white">
-                  Card {card + 1} of {lesson.items.length}
+                  Card {card + 1} of {steps}
                 </p>
                 {lesson.kind === "letters" ? (
                   <div className="pop mt-3 flex items-end gap-5">
@@ -254,12 +291,14 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
                     <p className="mt-2 text-xl text-ink-soft">Say it: “{item.say}”</p>
                   </>
                 )}
-                <div className="bg-blend-soft mt-6 flex items-center gap-4 rounded-2xl p-4">
-                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-white text-3xl" aria-hidden>
-                    {item.emoji}
-                  </span>
-                  <p className="text-lg font-medium">{item.trick}</p>
-                </div>
+                {item.trick && (
+                  <div className="bg-blend-soft mt-6 flex items-center gap-4 rounded-2xl p-4">
+                    <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-white text-3xl" aria-hidden>
+                      {item.emoji}
+                    </span>
+                    <p className="text-lg font-medium">{item.trick}</p>
+                  </div>
+                )}
                 {item.word && (
                   <p className="mt-5 text-lg">
                     <span className="text-ink-soft">Example: </span>
@@ -278,9 +317,9 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => (card + 1 < lesson.items.length ? setCard(card + 1) : startQuiz())}
+                onClick={() => (card + 1 < steps ? setCard(card + 1) : startQuiz())}
               >
-                {card + 1 < lesson.items.length ? "Next card" : "I'm ready, quiz me"}
+                {card + 1 < steps ? "Next card" : "I'm ready, quiz me"}
               </button>
             </div>
           </div>

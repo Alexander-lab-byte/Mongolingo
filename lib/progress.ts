@@ -14,6 +14,7 @@ export type Progress = {
   reviewed: number;
   bestStreak: number;
   talks: string[]; // finished conversations
+  seasonSeen: number; // highest season whose cultural note was dismissed (0 = summer)
 };
 
 // Spaced review gaps in days (spacing effect, Cepeda et al. 2006).
@@ -32,6 +33,7 @@ export const EMPTY: Progress = {
   reviewed: 0,
   bestStreak: 0,
   talks: [],
+  seasonSeen: 0,
 };
 
 export function today(d = new Date()) {
@@ -101,7 +103,7 @@ export async function saveProgress(userId: string, p: Progress) {
     streak: p.streak,
     last_active: p.lastActive,
     review_due: p.reviewDue,
-    extra: { cards: p.cards, goal: p.goal, day: p.day, reviewed: p.reviewed, bestStreak: p.bestStreak, talks: p.talks },
+    extra: { cards: p.cards, goal: p.goal, day: p.day, reviewed: p.reviewed, bestStreak: p.bestStreak, talks: p.talks, seasonSeen: p.seasonSeen },
     updated_at: new Date().toISOString(),
   });
   if (error) console.error("Could not save progress:", error.message);
@@ -127,7 +129,7 @@ export function finishLesson(p0: Progress, lessonId: string, correctFirstTry: nu
   const step = isReview ? (good ? Math.min((prev?.step ?? 0) + 1, REVIEW_GAPS.length - 1) : 0) : 0;
   return {
     ...p,
-    completed: isReview ? p.completed : [...p.completed, lessonId],
+    completed: p.completed.includes(lessonId) ? p.completed : [...p.completed, lessonId],
     xp: p.xp + 10 + correctFirstTry,
     streak,
     lastActive: t,

@@ -5,9 +5,9 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Mongolingo — Learn Mongolian, one piece at a time",
+  title: "Yarii — Speak Mongolian, discover nomadic life",
   description:
-    "Easy Mongolian lessons for foreigners living in Mongolia. Learn the Cyrillic letters, read real street signs and speak everyday words. For kids, adults and grandparents.",
+    "Help foreigners speak Mongolian while exploring nomadic life: 48 short lessons in a seasonal ger-town, Cyrillic letters, street signs and everyday phrases.",
 };
 
 export const viewport: Viewport = {

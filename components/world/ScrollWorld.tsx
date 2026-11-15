@@ -14,7 +14,7 @@ import { WORLD_LAYOUT } from "@/lib/worldLayout";
 /*
   The starting page as one scroll story (inspired by scroll-driven 3D sites like Kage).
   A 3D ger camp sits behind the page; scrolling moves the camera through 8 shots, from sunset to night.
-  First it explains what Mongolingo is and how it helps; the things you can use (quiz, translator) come after.
+  First it explains what Yarii is and how it helps; the things you can use (quiz, translator) come after.
   Each section is a chapter on top of the scene:
   - "sticky" chapters (hero, what, method, start) hold still and fade while the camera flies,
   - "flow" chapters (translator, demo, alphabet, signs) are normal glass cards you can use; the page snaps to them.
@@ -24,7 +24,7 @@ import { WORLD_LAYOUT } from "@/lib/worldLayout";
 // Story order: first explain what Mongolingo is and how it helps, then let people try it.
 const CHAPTERS = [
   { id: "ch-hello", label: "Hello", mn: "Сайн уу" },
-  { id: "ch-what", label: "What is Mongolingo", mn: "Монголинго гэж юу вэ?" },
+  { id: "ch-what", label: "What is Yarii", mn: "Яриа гэж юу вэ?" },
   { id: "ch-alphabet", label: "Alphabet", mn: "Цагаан толгой" },
   { id: "ch-signs", label: "Signs", mn: "Гудамжинд" },
   { id: "ch-method", label: "Method", mn: "Арга" },
@@ -374,7 +374,7 @@ export function ScrollWorld() {
               Your Mongolian helper for everyday life.
             </h2>
             <p className="mt-4 max-w-2xl text-lg text-ink sm:text-2xl">
-              Mongolingo is for foreigners living in Mongolia. Short lessons, big clear text, and help the moment you need it. For every age.
+              Yarii is for foreigners living in Mongolia. Short lessons, big clear text, and help the moment you need it. For every age.
             </p>
             <ul className="mt-7 grid gap-4 sm:mt-10 md:grid-cols-3 md:gap-6">
               {HELPS.map((h) => (

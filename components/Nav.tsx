@@ -9,7 +9,7 @@ export function Logo({ dark = false }: { dark?: boolean }) {
     <Link
       href="/"
       className={`flex items-center gap-2.5 font-display text-[19px] font-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}
-      aria-label="Mongolingo home"
+      aria-label="Yarii home"
     >
       <svg width="44" height="44" viewBox="0 0 40 40" aria-hidden>
         <rect width="40" height="40" rx="12" fill="#8d9b6a" />
@@ -18,7 +18,7 @@ export function Logo({ dark = false }: { dark?: boolean }) {
         <rect x="7" y="20" width="26" height="3" fill="#8a9ea7" />
         <rect x="17" y="24" width="6" height="7" rx="1" fill="#8f5b34" />
       </svg>
-      <span className="hidden min-[420px]:inline">Mongolingo</span>
+      <span className="hidden min-[420px]:inline">Yarii</span>
     </Link>
   );
 }

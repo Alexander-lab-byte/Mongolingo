@@ -4,7 +4,7 @@ import { Translator } from "@/components/Translator";
 import { Phrasebook } from "@/components/Phrasebook";
 
 export const metadata: Metadata = {
-  title: "Translate English ⇄ Mongolian · Mongolingo",
+  title: "Translate English ⇄ Mongolian · Yarii",
   description: "Free English–Mongolian translator with pronunciation, plus ready phrases for taxis, shops, cafés and doctors.",
 };
 

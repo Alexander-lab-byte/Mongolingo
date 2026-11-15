@@ -36,10 +36,12 @@ export type WorldStudio = {
 };
 
 export type World = {
-  setTarget: (t: number) => void;
+  setTarget: (t: number, snap?: boolean) => void;
   setPointer: (x: number, y: number) => void;
   resize: (w: number, h: number) => void;
   setActive: (on: boolean) => void;
+  setSeason: (i: number) => void;
+  weather: () => number;
   dispose: () => void;
   studio: WorldStudio;
 };
@@ -242,7 +244,10 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   const river = makeRiver();
   const WATER_DEEP = new THREE.Color("#121a1f");
   const grass = makeGrass(opts.mobile);
-  scene.add(makeGround(opts.mobile), makeRanges(opts.mobile), river.mesh, makeTracks(), grass.mesh, makeRocks(opts.mobile), makeFlowers(opts.mobile));
+  const groundMesh = makeGround(opts.mobile);
+  const flowers = makeFlowers(opts.mobile);
+  const grassTotal = grass.mesh.count;
+  scene.add(groundMesh, makeRanges(opts.mobile), river.mesh, makeTracks(), grass.mesh, makeRocks(opts.mobile), flowers);
 
   /* ger camp (from the layout file) */
   const kit = makeGerKit();
@@ -344,6 +349,54 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   const snow = new THREE.Points(snowGeo, snowMat);
   snow.frustumCulled = false;
   scene.add(snow);
+
+  /* seasons (used by /learn): eased tint of land and grass, grass density, wind, and intermittent weather.
+     fall = null keeps the landing page's night snow. rate = how often the weather comes and goes (0 = steady). */
+  type Fall = { n: number; color: string; size: number; speed: number; op: number; rate: number; ph: number; frost?: boolean };
+  const SEASON: { ground: string; glow: string; grass: string; d: number; wind: number; flowers: boolean; fall: Fall }[] = [
+    { ground: "#e6ffd0", glow: "#000000", grass: "#d8ffb0", d: 1, wind: 1, flowers: true, fall: { n: 0.12, color: "#a8c4d8", size: 0.18, speed: 6, op: 0.55, rate: 0.07, ph: 0 } },
+    { ground: "#e8c070", glow: "#cfe0ea", grass: "#e6b850", d: 0.85, wind: 1.3, flowers: false, fall: { n: 0.05, color: "#d98a1c", size: 0.55, speed: 0.6, op: 0.95, rate: 0, ph: 0, frost: true } },
+    { ground: "#f2f6fa", glow: "#ffffff", grass: "#e6ecf0", d: 0.1, wind: 0.8, flowers: false, fall: { n: 0.4, color: "#ffffff", size: 0.4, speed: 1, op: 0.85, rate: 0.06, ph: 2 } },
+    { ground: "#b89874", glow: "#000000", grass: "#a8d060", d: 0.2, wind: 2.2, flowers: false, fall: { n: 0.1, color: "#b6c8d4", size: 0.2, speed: 5, op: 0.6, rate: 0.09, ph: 1 } },
+  ];
+  const gm = groundMesh.material as THREE.MeshStandardMaterial;
+  const grm = grass.mesh.material as THREE.MeshStandardMaterial;
+  let fx: Fall | null = null;
+  let fxOp = 0;
+  let windK = 1;
+  let windT = 1;
+  let hooked = false;
+  let bt = 0;
+  const tG = new THREE.Color(), tE = new THREE.Color(), tR = new THREE.Color();
+  function setSeason(i: number) {
+    const S = SEASON[Math.max(0, Math.min(3, i | 0))];
+    const first = !hooked;
+    tG.set(S.ground); tE.set(S.glow); tR.set(S.grass);
+    if (first) {
+      gm.color.copy(tG); gm.emissive.copy(tE).multiplyScalar(0); grm.color.copy(tR);
+      windK = S.wind;
+      hooked = true;
+      frameHooks.push((dt) => {
+        bt += dt;
+        const k = 1 - Math.exp(-dt * 1.2);
+        gm.color.lerp(tG, k);
+        grm.color.lerp(tR, k);
+        windK += (windT - windK) * k;
+        const gate = fx ? (fx.rate ? smooth(0.35, 0.75, 0.5 + 0.5 * Math.sin(bt * fx.rate + fx.ph)) : 1) : 0;
+        fxOp += ((fx ? fx.op * gate : 0) - fxOp) * k;
+        // occasional frost whitens the ground; winter snow is the ground colour itself
+        const frost = fx?.frost ? smooth(0.6, 0.95, 0.5 + 0.5 * Math.sin(bt * 0.05)) * 0.12 : fx && fx.color === "#ffffff" ? 0.3 : 0;
+        gm.emissive.copy(tE).multiplyScalar(frost);
+      });
+    }
+    grass.mesh.count = Math.floor(grassTotal * S.d);
+    flowers.visible = S.flowers;
+    windT = S.wind;
+    fx = S.fall;
+    snowGeo.setDrawRange(0, Math.floor(snowCount * S.fall.n));
+    snowMat.color.set(S.fall.color);
+    snowMat.size = S.fall.size;
+  }
 
   /* post-processing: soft bloom so lights glow */
   const composer = new EffectComposer(renderer);
@@ -453,7 +506,7 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
     /* wind, smoke, animals, river */
     ovoo.update(elapsed);
     camp.update(elapsed);
-    grass.update(elapsed);
+    grass.update(elapsed * windK);
     animals.update(dt, elapsed);
     smoke.update(dt, elapsed);
     smoke.mat.uniforms.uColor.value.copy(rampColor(["#ddd5cf", "#c9b9b4", "#5d5a63", "#3a3f48"], tod, col));
@@ -464,11 +517,13 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
     river.mat.emissive.copy(su.uTop.value).lerp(su.uHorizon.value, 0.4).multiplyScalar(ramp([0.16, 0.14, 0.07, 0.04], tod));
 
     /* snow follows the camera */
-    snowMat.opacity = Math.min(1, smooth(0.55, 0.9, tod) * 0.85 * settings.snow);
+    snowMat.opacity = fx ? fxOp : Math.min(1, smooth(0.55, 0.9, tod) * 0.85 * settings.snow);
     if (snowMat.opacity > 0.01) {
       const arr = snowGeo.attributes.position as THREE.BufferAttribute;
-      for (let i = 0; i < snowCount; i++) {
-        let y = arr.getY(i) - snowSpeed[i] * dt;
+      const fallN = Math.floor(snowCount * (fx?.n ?? 1));
+      const fallK = fx?.speed ?? 1;
+      for (let i = 0; i < fallN; i++) {
+        let y = arr.getY(i) - snowSpeed[i] * fallK * dt;
         let x = arr.getX(i) + Math.sin(elapsed + i) * 0.01;
         let z = arr.getZ(i);
         if (y < camera.position.y - 25) y += 60;
@@ -498,10 +553,13 @@ export async function createWorld(canvas: HTMLCanvasElement, opts: { mobile: boo
   }
 
   return {
-    setTarget: (t) => {
+    setTarget: (t, snap) => {
       if (Number.isFinite(t)) target = Math.max(0, Math.min(shots.length - 1, t));
+      if (snap) current = target;
     },
     setPointer: (x, y) => pointer.set(x, y),
+    setSeason,
+    weather: () => fxOp,
     resize,
     setActive: (on) => {
       active = on;

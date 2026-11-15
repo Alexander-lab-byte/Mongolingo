@@ -1,4 +1,4 @@
-# The psychology behind Mongolingo
+# The psychology behind Yarii
 
 Every choice below is backed by a published study or an official standard. We also list what we chose **not** to rely on, because the evidence is weak.
 
