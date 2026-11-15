@@ -8,6 +8,8 @@
 
 Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, Motion, Supabase (auth + database).
 
+- **Plans (`/pricing`):** free forever for the translator, alphabet, signs and the Greetings, Emergency, Doctor and Pharmacy gers. A 30-day Pass (24,900₮) or 1-year Pass (149,000₮) opens all 48 ger lessons; both are paid once with QPay and never renew. 7-day free trial, once per account. Prices, costs and break-even: `docs/BUSINESS.md`.
+
 ## Run it
 
 ```bash
@@ -24,6 +26,17 @@ npm run dev                  # http://localhost:3000
 4. Click **Deploy**.
 5. In Supabase (project `mongolingo`), go to **Authentication → URL Configuration** and set **Site URL** to your Vercel URL.
 6. Optional for demo day: **Authentication → Sign In / Providers → Email → turn off "Confirm email"**, so people can sign up and start right away without checking their email.
+
+## Passes (payments)
+
+Run `supabase/passes.sql` once in the Supabase SQL editor (already applied to project `mongolingo`). It adds:
+
+- `passes`: one row per learner (`plan`, `valid_until`). Learners can read their own row but never write it.
+- `start_trial()`: gives a 7-day trial, once per account.
+- `pass_requests`: "send me a QPay invoice" requests from `/pricing`.
+
+When an invoice is paid, open Supabase → Table editor → `passes` and add or edit the learner's row:
+`plan` = `month` / `year` / `team`, `valid_until` = today + 30 or 365 days. Lessons in locked gers then open.
 
 ## Database
 

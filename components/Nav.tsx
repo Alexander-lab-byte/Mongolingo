@@ -68,6 +68,12 @@ export function Nav() {
             <Languages size={20} aria-hidden />
             <span className="hidden sm:inline">Translate</span>
           </Link>
+          <Link
+            href="/pricing"
+            className="hidden h-[44px] items-center rounded-full px-4 font-semibold text-ink ring-1 ring-line hover:bg-sky-soft md:flex"
+          >
+            Plans
+          </Link>
           <TextSizeControl />
           <Link href={!loading && user ? "/learn" : "/login"} className="btn btn-primary px-4 text-[16px] sm:px-6">
             {!loading && user ? "My lessons" : "Log in"}

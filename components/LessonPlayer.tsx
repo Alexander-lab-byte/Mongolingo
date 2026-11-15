@@ -11,6 +11,9 @@ import { Loading } from "./Loading";
 import { Speak } from "./Speak";
 import { TextSizeControl } from "./Nav";
 import { useLearner } from "./useLearner";
+import { usePass } from "./usePass";
+import { Paywall } from "./Paywall";
+import { isFreeLesson } from "@/lib/plans";
 
 type Question = {
   key: string;
@@ -113,6 +116,8 @@ function buildQuestions(lesson: Lesson): Question[] {
 export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const lesson = getLesson(lessonId)!;
   const { progress, ready, update } = useLearner();
+  const { active: hasPass, ready: passReady } = usePass();
+  const locked = !isFreeLesson(lesson.id);
   const isReview = !!progress?.completed.includes(lesson.id);
 
   const [phase, setPhase] = useState<"learn" | "quiz" | "done">("learn");
@@ -127,7 +132,8 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const [result, setResult] = useState<{ stars: number; firstTry: number; wasReview: boolean } | null>(null);
   const [showReviewIntro, setShowReviewIntro] = useState(true);
 
-  if (!ready || !progress) return <Loading />;
+  if (!ready || !progress || (locked && !passReady)) return <Loading />;
+  if (locked && !hasPass) return <Paywall lesson={lesson} />;
 
   // Review = skip the teaching cards and go straight to questions (testing effect).
   const startPhase = isReview && phase === "learn" && showReviewIntro ? "review-intro" : phase;
