@@ -145,9 +145,9 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     x.roundRect(4, 4, 120, 120, 24);
     x.fill();
     x.fillStyle = "#3a2a1f";
-    x.font = "800 72px 'Montserrat Variable', sans-serif";
     x.textAlign = "center";
     x.textBaseline = "middle";
+    x.font = "800 72px 'Montserrat Variable', sans-serif";
     x.fillText(String(d.number), 64, 70);
     const m = new THREE.Mesh(plateGeo, new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), toneMapped: false, transparent: true }));
     m.rotation.set(0, d.rot, 0); // upright marker clears even the winter snow cap

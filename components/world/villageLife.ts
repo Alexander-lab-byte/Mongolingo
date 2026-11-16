@@ -91,12 +91,16 @@ export function createVillageLife(scene: THREE.Scene, low: boolean, reduced: boo
     fire(porch, -3.2, 4.9, true, i);
     fire(porch, 3.2, 4.9, true, i + 1);
     if (i % 4 === 0) fire(porch, -7.5, 0, false, i + 2);
-    if (d.path === "conversation" && i % 4 === 3 && i !== 3) return;
-    if (i === 2) return; // 18 vignettes, including the shopping stall.
     const vignette = new THREE.Group();
     // Place beside the ger on its outer edge; the central road and doorway stay clear.
     vignette.position.set(x + 7.8, groundHeight(x + 7.8, z), z);
     vignette.rotation.y = d.rot; root.add(vignette);
+    if ((d.path === "conversation" && i % 4 === 3 && i !== 3) || i === 2) {
+      // every ger still gets its name sign, without a scene around it
+      for (const sx of [-1, 1]) b(vignette, "#634b35", [sx, 1.1, 0], [.12, 2.2, .12]);
+      label(vignette, captions[i], 2, 3);
+      return;
+    }
     const stall = [3, 4, 13, 15, 20, 23, 28].includes(i);
     if (stall) {
       b(vignette, "#835434", [0, .8, 0], [3.1, .2, 1.5]);

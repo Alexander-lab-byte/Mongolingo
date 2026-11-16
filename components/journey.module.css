@@ -50,8 +50,9 @@
 .iconButton:hover, .arrows button:hover { background: var(--color-gold-soft); }
 .toolDot { position: absolute; width: .45rem; height: .45rem; border-radius: 50%; top: .42rem; right: .42rem; background: var(--color-cobalt); }
 .journeyMain { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; align-items: start; gap: .8rem; min-width: 0; }
-.intro { max-width: 100%; border-radius: 1.35rem; padding: clamp(.8rem, 1.65vw, 1.35rem); }
-.intro h1 { font-size: clamp(1.85rem, 4.5vw, 3.75rem); letter-spacing: -.055em; font-weight: 800; }
+.intro { max-width: 100%; width: fit-content; display: flex; align-items: center; gap: .6rem; border-radius: 1.35rem; padding: clamp(.8rem, 1.65vw, 1.35rem); }
+.intro h1 { display: flex; align-items: center; gap: .35rem; font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em; }
+.pick { min-height: 40px; border: 1px solid var(--glass-border); border-radius: 2rem; background: #fbf8f8cc; padding: .3rem .8rem; font-size: .8rem; font-weight: 700; color: var(--ink); cursor: pointer; }
 .eyebrow { display: flex; align-items: center; gap: .35rem; font-size: .67rem; font-weight: 750; letter-spacing: .10em; text-transform: uppercase; }
 .intro .eyebrow { color: var(--color-cobalt); margin-bottom: .35rem; }
 .overall { display: grid; gap: .24rem; color: var(--quiet); font-size: .76rem; margin-inline-start: auto; }

@@ -34,6 +34,8 @@ function nextStop(path: LearningPathId, completed: string[]) {
 }
 
 
+const PART: Record<string, string> = { everyday: "Daily life: hello, family, food, room", around: "Travel: taxi, bus, directions", practical: "Help: doctor, pharmacy, emergency", culture: "Culture: ger, animals, holidays" };
+
 export function Town() {
   const { progress, ready, guest, update } = useLearner();
   if (!ready || !progress) return <Loading />;
@@ -68,7 +70,6 @@ function Journey({ progress, guest, update }: { progress: Progress; guest: boole
   const conversationCurrent = nextStop("conversation", progress.completed);
   const [index, setIndex] = useState(() => initialStop(conversationCurrent, searchParams.get("path"), searchParams.get("stop"), progress.completed));
   const [seasonChoice, setSeasonChoice] = useState<number | null>(null);
-  const [showWorld, setShowWorld] = useState(true);
   const [time, setTime] = useState<"auto" | "day" | "night">("auto");
   const heroRef = useRef<HTMLElement>(null);
   const navigationRef = useRef({ index, last: 0, delta: 0 });
@@ -171,7 +172,7 @@ function Journey({ progress, guest, update }: { progress: Progress; guest: boole
       <main>
         <section ref={heroRef} className={styles.hero} id="selected-stop" aria-labelledby="journey-title">
           <div className={styles.worldPane}>
-            {showWorld && <TownScene stop={index} season={seasonIndex} reduced={reduced} onSelect={goTo} time={time} />}
+            {<TownScene stop={index} season={seasonIndex} reduced={reduced} onSelect={goTo} time={time} />}
             <div className={styles.worldShade} />
           </div>
           <header className={styles.siteHeader}>
@@ -199,34 +200,21 @@ function Journey({ progress, guest, update }: { progress: Progress; guest: boole
 
           <div className={styles.journeyMain}>
             <div className={styles.intro}>
-              <p className={styles.eyebrow}><Compass size={16} /> {guest ? "Demo journey" : "Your journey"}</p>
               <h1 id="journey-title">Explore ger town</h1>
-              <nav className={styles.pathChoices} aria-label="Choose a learning path">
-                {(["conversation", "vocabulary"] as const).map(id => {
-                  const entry = LEARNING_PATHS[id];
-                  const count = stopIndices(id).length;
-                  const Icon = id === "conversation" ? ArrowLeft : ArrowRight;
-                  return <button type="button" key={id} aria-pressed={activePath === id} onClick={() => choosePath(id)}>
-                    <Icon size={19} aria-hidden /><span><strong>{entry.title}</strong><small>{count} gers · <span lang="mn">{entry.mn}</span></small></span>
-                  </button>;
-                })}
-              </nav>
-              {activePath === "conversation" && <nav className={styles.chapters} aria-label="Journey chapters">
-                {CLUSTERS.map((entry, i) => {
-                  const Icon = CHAPTER_ICONS[i];
-                  const active = selected.cluster === entry.id;
-                  return <button type="button" key={entry.id} aria-pressed={active} onClick={() => {
-                    const chapterStops = STOPS.filter((stop) => stop.path === "conversation" && stop.cluster === entry.id);
-                    const unfinished = chapterStops.find((stop) => stop.units.some((lesson) => !progress.completed.includes(lesson.id)));
-                    goTo(STOPS.indexOf(unfinished ?? chapterStops[0]));
-                  }}><Icon size={19} aria-hidden /><span>{CHAPTERS[entry.id].title}</span></button>;
-                })}
-              </nav>}
-              {activePath === "vocabulary" && <p className={styles.pathHint}>{path.description} · Lessons 7–11 from Your path</p>}
+              <select className={styles.pick} aria-label="Choose a road" value={activePath === "vocabulary" ? "vocabulary" : selected.cluster} onChange={(e) => {
+                const v = e.target.value;
+                if (v === "vocabulary" || v === "conversation") return choosePath(v);
+                const chapterStops = STOPS.filter((s) => s.path === "conversation" && s.cluster === v);
+                const unfinished = chapterStops.find((s) => s.units.some((l) => !progress.completed.includes(l.id)));
+                goTo(STOPS.indexOf(unfinished ?? chapterStops[0]));
+              }}>
+                <option value="conversation">{LEARNING_PATHS.conversation.title} (all 24)</option>
+                {CLUSTERS.map((c, i) => <option key={c.id} value={c.id}>{`  ${i + 1}. ${PART[c.id]}`}</option>)}
+                <option value="vocabulary">{LEARNING_PATHS.vocabulary.title}</option>
+              </select>
             </div>
             <div className={styles.feature}>
               <div className={styles.worldControls}>
-                <button type="button" className={styles.worldTag} onClick={() => setShowWorld((visible) => !visible)}>{showWorld ? "Hide 3D" : "Show 3D"}</button>
                 <div className={styles.worldBottom}>
                   <div aria-live="polite">
                     <p><Mountain size={16} aria-hidden /> {season.en} camp</p>
@@ -315,6 +303,8 @@ function TownScene({ stop, season, reduced, onSelect, time }: { stop: number; se
     };
 
     async function load(target: HTMLCanvasElement) {
+      setState("loading"); // coming back to the page builds a new world, which must be placed again
+      placedSeason.current = null;
       try {
         const { createTown } = await import("./world/createTown");
         if (disposed) return;
