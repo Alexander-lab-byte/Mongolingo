@@ -1,9 +1,34 @@
-export type LearningPathId = "conversation" | "vocabulary";
+export type LearningPathId = "foundations" | "conversation" | "vocabulary";
+
+export const PATH_ORDER: LearningPathId[] = ["foundations", "conversation", "vocabulary"];
+export const DEFAULT_PATH: LearningPathId = "foundations";
 
 export const LEARNING_PATHS = {
+  foundations: { title: "Alphabet & numbers", mn: "Үсэг, тоо", description: "Learn Cyrillic letters and practice numbers", direction: "right" },
   conversation: { title: "Conversation road", mn: "Ярианы зам", description: "Everyday situations & Mongolian life", direction: "left" },
-  vocabulary: { title: "Words & numbers", mn: "Үг, тооны зам", description: "Street signs, useful words & counting", direction: "right" },
+  vocabulary: { title: "Words & sentences", mn: "Үг, өгүүлбэр", description: "Use words in familiar summer-camp sentences", direction: "forward" },
 } as const;
+
+// Five foundation gers: all six alphabet lessons and the three number sets.
+export const FOUNDATION_GERS = [
+  { id: "alphabet-familiar", name: "Meet the alphabet", mn: "Цагаан толгой", emoji: "Аа", caption: "А · К · М · О · Т", lessonIds: ["friends", "tricksters"], description: "Start with familiar letters, then learn the ones that look familiar but sound different." },
+  { id: "alphabet-shapes", name: "New letter shapes", mn: "Шинэ үсгүүд", emoji: "Бб", caption: "Б · Г · Д · Ж · Ц", lessonIds: ["shapes1", "shapes2"], description: "Recognize new Cyrillic shapes and match each letter to its sound." },
+  { id: "alphabet-specials", name: "Finish the alphabet", mn: "Ө · Ү · Э · Ё · Ю · Я", emoji: "Өө", caption: "Ө · Ү · Э · Ё · Ю · Я", lessonIds: ["specials", "yletters"], description: "Practice Mongolian special letters and the Y-family to complete the alphabet." },
+  { id: "foundation-counting", name: "Numbers 1–10", mn: "Тоо 1–10", emoji: "🔢", caption: "1 · 2 · 3 · … · 10", lessonIds: ["numbers1", "numbers2"], description: "Match Mongolian number words to the digits 1–10, in both directions." },
+  { id: "foundation-larger", name: "Larger numbers", mn: "Их тоонууд", emoji: "💯", caption: "20 · 50 · 100 · 1,000", lessonIds: ["money"], description: "Recognize 20, 50, 100, 500, 1,000, 5,000 and 10,000 as numbers." },
+] as const;
+
+export function foundationGerForLesson(lessonId: string) {
+  return FOUNDATION_GERS.find(ger => (ger.lessonIds as readonly string[]).includes(lessonId));
+}
+
+export function foundationRoadHref(lessonId?: string) {
+  return `/learn?path=foundations${lessonId ? `&stop=${encodeURIComponent(lessonId)}` : ""}`;
+}
+
+export function foundationLessonHref(lessonId: string) {
+  return `/learn/${encodeURIComponent(lessonId)}?path=foundations`;
+}
 
 // Stable lesson IDs reuse lessons 7–11 from Tools → Your path, including saved progress.
 export const VOCABULARY_GERS = [

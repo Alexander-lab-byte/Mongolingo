@@ -2,7 +2,7 @@
 // Everything is derived from the saved lesson IDs, so reloads and replays can never change it.
 import { CURRICULUM_IDS, GERS } from "./curriculum";
 import { transliterate } from "./translit";
-import { VOCABULARY_GERS, type LearningPathId } from "./learningPaths";
+import { FOUNDATION_GERS, VOCABULARY_GERS, type LearningPathId } from "./learningPaths";
 
 export const PER_SEASON = 12;
 export const TOTAL_CURRICULUM = CURRICULUM_IDS.size; // 48
@@ -73,18 +73,35 @@ const CONVERSATION_TOWN = GERS.map((ger, i) => {
   };
 });
 
-// The original road heads west. The word road heads east from the same junction.
-const VOCABULARY_TOWN = VOCABULARY_GERS.map((ger, i) => {
+// Conversation heads west; alphabet/number foundations head east.
+const FOUNDATION_TOWN = FOUNDATION_GERS.map((ger, i) => {
   const x = 42 + i * 24;
   const z = trailZ(x) - (i % 2 ? 15 : 11);
   const cameraX = x - 17;
   const cameraZ = trailZ(cameraX);
   return {
     id: ger.id, i: GERS.length + i, x, z, cameraX, cameraZ,
-    path: "vocabulary" as LearningPathId, number: i + 1,
+    path: "foundations" as LearningPathId, number: i + 1,
     cameraHeight: 6.2,
     rot: Math.atan2(cameraX - x, cameraZ - z),
   };
 });
 
-export const TOWN = [...CONVERSATION_TOWN, ...VOCABULARY_TOWN];
+// The separate word/sentence road branches north, clear of the foundation gers.
+export const vocabularyTrailZ = (x: number) => {
+  const t = Math.max(0, Math.min(1, (x - 22) / 20));
+  return trailZ(x) - 52 * t * t * (3 - 2 * t);
+};
+const VOCABULARY_TOWN = VOCABULARY_GERS.map((ger, i) => {
+  const x = 42 + i * 24;
+  const z = vocabularyTrailZ(x) - (i % 2 ? 15 : 11);
+  const cameraX = x - 17;
+  const cameraZ = vocabularyTrailZ(x);
+  return {
+    id: ger.id, i: GERS.length + FOUNDATION_GERS.length + i, x, z, cameraX, cameraZ,
+    path: "vocabulary" as LearningPathId, number: i + 1,
+    cameraHeight: 6.2, rot: Math.atan2(cameraX - x, cameraZ - z),
+  };
+});
+
+export const TOWN = [...CONVERSATION_TOWN, ...FOUNDATION_TOWN, ...VOCABULARY_TOWN];

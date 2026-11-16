@@ -2,7 +2,8 @@ import type { MeshStandardMaterial, SpriteMaterial, Vector3 } from "three";
 import { createWorld, type World } from "./createWorld";
 import { groundHeight } from "./terrain";
 import { createVillageLife, platformHeight } from "./villageLife";
-import { SITES, TOWN, trailZ } from "@/lib/journey";
+import { SITES, TOWN, trailZ, vocabularyTrailZ } from "@/lib/journey";
+import { PATH_ORDER } from "@/lib/learningPaths";
 import { CHAPTERS } from "@/lib/fieldLessons";
 import { CLUSTERS } from "@/lib/curriculum";
 
@@ -107,21 +108,31 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
   const approach = new THREE.Mesh(forkGeo, trMat);
   approach.frustumCulled = false;
   scene.add(approach);
+  const wordSegments = 80;
+  const wordGeo = new THREE.BufferGeometry();
+  const wordPos = new Float32Array(wordSegments * 6);
+  const wordIdx: number[] = [];
+  for (let i = 0; i < wordSegments - 1; i++) wordIdx.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
+  wordGeo.setAttribute("position", new THREE.BufferAttribute(wordPos, 3));
+  wordGeo.setIndex(wordIdx);
+  const wordRoad = new THREE.Mesh(wordGeo, trMat);
+  wordRoad.frustumCulled = false;
+  scene.add(wordRoad);
   const junctionX = SITES[0].x + 22, junctionZ = SITES[0].z + trailZ(22) + 3;
   const signY = groundHeight(junctionX, junctionZ);
-  const post = new THREE.Mesh(new THREE.CylinderGeometry(.12, .16, 3.4, 8), new THREE.MeshStandardMaterial({ color: "#695039", roughness: 1 }));
-  post.position.set(junctionX, signY + 1.7, junctionZ);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(.12, .16, 3.9, 8), new THREE.MeshStandardMaterial({ color: "#695039", roughness: 1 }));
+  post.position.set(junctionX, signY + 1.95, junctionZ);
   scene.add(post);
-  const pathSigns = (["conversation", "vocabulary"] as const).map((path, i) => {
+  const pathSigns = PATH_ORDER.map((path, i) => {
     const cv = document.createElement("canvas"); cv.width = 640; cv.height = 128;
     const ctx = cv.getContext("2d")!;
-    ctx.fillStyle = path === "conversation" ? "#735037" : "#315b48";
+    ctx.fillStyle = path === "conversation" ? "#735037" : path === "foundations" ? "#6e7148" : "#315b48";
     ctx.beginPath(); ctx.roundRect(4, 4, 632, 120, 12); ctx.fill();
     ctx.strokeStyle = "#dfbd7a"; ctx.lineWidth = 4; ctx.stroke();
     ctx.fillStyle = "#fff1cd"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "700 43px sans-serif";
-    ctx.fillText(i === 0 ? "← Conversation road" : "Words & numbers →", 320, 66, 600);
+    ctx.fillText(path === "conversation" ? "← Conversation road" : path === "foundations" ? "Alphabet & numbers →" : "Words & sentences ↑", 320, 66, 600);
     const board = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), toneMapped: false }));
-    board.position.set(junctionX, signY + 3.2 - i * .85, junctionZ);
+    board.position.set(junctionX, signY + 3.4 - i, junctionZ);
     board.scale.set(5.2, 1.04, 1); board.userData.path = path; scene.add(board);
     return board;
   });
@@ -140,14 +151,14 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     const c = document.createElement("canvas");
     c.width = c.height = 128;
     const x = c.getContext("2d")!;
-    x.fillStyle = d.path === "vocabulary" ? "#a9c7aa" : CHAPTERS[CLUSTERS[Math.floor(d.i / 6)].id].color;
+    x.fillStyle = d.path === "conversation" ? CHAPTERS[CLUSTERS[Math.floor(d.i / 6)].id].color : d.path === "foundations" ? "#ead5a1" : "#a9c7aa";
     x.beginPath();
     x.roundRect(4, 4, 120, 120, 24);
     x.fill();
     x.fillStyle = "#3a2a1f";
+    x.font = "800 72px 'Montserrat Variable', sans-serif";
     x.textAlign = "center";
     x.textBaseline = "middle";
-    x.font = "800 72px 'Montserrat Variable', sans-serif";
     x.fillText(String(d.number), 64, 70);
     const m = new THREE.Mesh(plateGeo, new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), toneMapped: false, transparent: true }));
     m.rotation.set(0, d.rot, 0); // upright marker clears even the winter snow cap
@@ -182,6 +193,18 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     }
     forkGeo.attributes.position.needsUpdate = true;
     forkGeo.computeVertexNormals();
+    for (let i = 0; i < wordSegments; i++) {
+      const localX = 22 + i / (wordSegments - 1) * 144;
+      const slope = (vocabularyTrailZ(localX + .1) - vocabularyTrailZ(localX - .1)) / .2;
+      const normalLength = Math.hypot(1, slope);
+      for (const sg of [-1, 1]) {
+        const x = S.x + localX - sg * slope / normalLength * 1.4;
+        const z = S.z + vocabularyTrailZ(localX) + sg / normalLength * 1.4;
+        wordPos.set([x, groundHeight(x, z) + .13, z], i * 6 + (sg < 0 ? 0 : 3));
+      }
+    }
+    wordGeo.attributes.position.needsUpdate = true;
+    wordGeo.computeVertexNormals();
     treeAt.length = 0;
     for (let i = 0; i < treeN; i++) {
       const x = S.x + 154 - i * (655 / treeN), z = S.z + trailZ(x - S.x) - 29 - (i % 3) * 5;

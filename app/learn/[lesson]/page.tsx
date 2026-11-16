@@ -5,8 +5,8 @@ import { FieldLesson } from "@/components/FieldLesson";
 import { GERS } from "@/lib/curriculum";
 import { Suspense } from "react";
 import { Loading } from "@/components/Loading";
-import { vocabularyGerForLesson } from "@/lib/learningPaths";
-import { vocabularySentenceLesson } from "@/lib/wordSentences";
+import { foundationGerForLesson, foundationRoadHref, vocabularyGerForLesson } from "@/lib/learningPaths";
+import { PathLesson } from "@/components/PathLesson";
 
 export function generateStaticParams() {
   return LESSONS.map((l) => ({ lesson: l.id }));
@@ -20,13 +20,16 @@ async function LessonContent({ params }: Pick<PageProps<"/learn/[lesson]">, "par
   const { lesson } = await params;
   const entry = getLesson(lesson);
   if (!entry) notFound();
-  const vocabularyGer = vocabularyGerForLesson(lesson);
-  if (vocabularyGer) return <FieldLesson
-    key={lesson}
-    lesson={vocabularySentenceLesson({ ...entry, ger: vocabularyGer.id, subtitle: vocabularyGer.name, note: { text: vocabularyGer.note, source: "Summer camp · Familiar phrases in new sentences" } })}
-    cluster="everyday"
-    path="vocabulary"
+  const foundationGer = foundationGerForLesson(lesson);
+  if (foundationGer && entry.kind === "letters") return <LessonPlayer
+    key={`foundations-${lesson}`}
+    lessonId={lesson}
+    lessonTitle={lesson === "money" ? "Larger numbers" : undefined}
+    backHref={foundationRoadHref(lesson)}
+    continueHref={foundationRoadHref()}
   />;
+  const vocabularyGer = vocabularyGerForLesson(lesson);
+  if (vocabularyGer) return <PathLesson key={lesson} lesson={entry} />;
   const ger = entry.ger && GERS.find((stop) => stop.id === entry.ger);
   return ger ? <FieldLesson key={lesson} lesson={entry} cluster={ger.cluster} /> : <LessonPlayer key={lesson} lessonId={lesson} />;
 }

@@ -71,8 +71,6 @@
 .phrases li p, .dialogue li p { font-size: .97rem; font-weight: 750; overflow-wrap: anywhere; }
 .phrases small, .dialogue small { display: block; font-size: .68rem; color: var(--quiet); }
 .phrases li div > span, .dialogue li span { display: block; font-size: .76rem; margin-top: .15rem; }
-.phrases button { border-radius: 50%; min-width: 42px; min-height: 42px; font-size: 0; background: #edf0e5; }
-.phrases button svg { width: 16px; }
 .context { display: grid; gap: 1rem; }
 .cultureNote { position: relative; overflow: hidden; background: #e8eddf; border-color: #d8dfca; }
 .cultureNote h2 { color: #3b5a42; }
