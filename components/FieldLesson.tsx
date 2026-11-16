@@ -47,6 +47,7 @@ function AnswerFeedback({ correct, item, onContinue }: { correct: boolean; item:
       <h3 lang="mn">{correct ? "Сайн байна!" : "Дахиад оролдоорой"}</h3>
       <small>{correct ? "Well done. You’ve got it!" : "You’re learning. We’ll practice this one again."}</small>
       <p lang="mn">{item.show}</p><small>{item.meaning}</small>
+      <Speak text={item.show} label="Listen to the sentence" />
     </div>
     <button ref={buttonRef} type="button" className={styles.primary} onClick={onContinue}>Continue <ArrowRight size={17} /></button>
   </motion.div>;
@@ -84,7 +85,7 @@ function Activity({ challenge, mission, retry, position, total, onContinue }: {
       {kind === "reply" && <p className={styles.sceneLine}>{mission.scene}</p>}
       {challenge.context && kind !== "reply" && <p className={styles.sceneLine}>{kind === "meaning" ? "Read the complete sentence and match its meaning. It uses a familiar summer-camp phrase." : challenge.context.scene}</p>}
       {challenge.context && <Link className={styles.sourceLesson} href={`/learn/${challenge.context.lessonId}`}><BookOpen size={13} /> From summer camp: {challenge.context.title}</Link>}
-      {kind === "meaning" && <p className={styles.promptPhrase} lang="mn">{item.show}</p>}
+      {kind === "meaning" && <><p className={styles.promptPhrase} lang="mn">{item.show}</p><Speak text={item.show} /></>}
       {kind === "sentence" && <p className={styles.promptPhrase}>{item.meaning}</p>}
       {kind === "order" && <>
         <p className={styles.sceneLine}>{item.meaning}</p>
@@ -242,7 +243,7 @@ export function FieldLesson({ lesson, cluster, path = "conversation" }: { lesson
                       <h2 id="dialogue-heading"><MessageCircle size={17} /> Try the conversation</h2>
                       <button type="button" className={styles.inlineButton} aria-pressed={translations} onClick={() => setTranslations((visible) => !visible)}><Languages size={16} /> {translations ? "Hide translations" : "Show translations"}</button>
                       <ol>{lesson.dialogue.map((line, index) => (
-                        <li key={index}><p lang="mn">{line.mn}</p><small>{transliterate(line.mn).toLowerCase()}</small>{translations && <span>{line.en}</span>}</li>
+                        <li key={index}><p lang="mn">{line.mn}</p><small>{transliterate(line.mn).toLowerCase()}</small>{translations && <span>{line.en}</span>}<Speak text={line.mn} /></li>
                       ))}</ol>
                     </section>}
                   </div>

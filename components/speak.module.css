@@ -1,0 +1,9 @@
+.control { display: inline-flex; flex-direction: column; align-items: flex-start; gap: .3rem; vertical-align: middle; }
+.control .button { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: 44px; padding: .55rem .85rem; border: 1px solid var(--border, #cfc8b8); border-radius: 999px; background: #fffaf0; color: #244b50; font: inherit; font-size: .8rem; font-weight: 750; cursor: pointer; white-space: nowrap; }
+.button:hover { background: #f0e8d7; }
+.button:focus-visible { outline: 3px solid #b98938; outline-offset: 3px; }
+.button[aria-pressed="true"] { background: #e3eeeb; }
+.control small { max-width: 22rem; font-size: .72rem; color: #805133; }
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

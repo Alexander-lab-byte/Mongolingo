@@ -18,6 +18,12 @@ cp .env.example .env.local   # skip if .env.local already exists
 npm run dev                  # http://localhost:3000
 ```
 
+## Lesson pronunciation
+
+Lesson audio is included in [public/audio/mn](./public/audio/mn), with the text-to-file index in [lib/pronunciations.json](./lib/pronunciations.json). Playback uses these MP3 files and needs no speech API key or installed device voice. The Mongolian Yesui voice reads at a slightly slower pace; the soft and hard signs and Щ are spoken by name (see the [Mongolian spelling dictionary](https://toli.gov.mn/r)).
+
+After changing lesson text, run `npm run audio:generate` with internet access to create missing recordings. Existing clips are reused. Run `npm test`, `npm run lint`, and `npm run build` before publishing. The audio check verifies that every lesson letter, example word, sentence, and dialogue line has a valid recording.
+
 ## Deploy to Vercel
 
 1. Push this repo to GitHub as `Mongolingo`.

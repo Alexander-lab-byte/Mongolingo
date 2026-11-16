@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Check, Compass, HeartPulse, House, Lock, LogOut, Mountain, Route, Wrench } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Check, Lock, LogOut, Mountain, Wrench } from "lucide-react";
 import { useAuth } from "./Providers";
 import { usePass } from "./usePass";
 import { isFreeGer } from "@/lib/plans";
@@ -15,14 +15,14 @@ import { CLUSTERS, CURRICULUM, GERS } from "@/lib/curriculum";
 import { CHAPTERS, MISSIONS } from "@/lib/fieldLessons";
 import { PER_SEASON, SEASONS, TOTAL_CURRICULUM, curriculumDone, freeExplore, say, seasonOf } from "@/lib/journey";
 import { BASE_LESSONS, LESSONS } from "@/lib/lessons";
-import { LEARNING_PATHS, VOCABULARY_GERS, type LearningPathId } from "@/lib/learningPaths";
+import { DEFAULT_PATH, FOUNDATION_GERS, foundationLessonHref, LEARNING_PATHS, VOCABULARY_GERS, type LearningPathId } from "@/lib/learningPaths";
 import { dueReviews, endGuest, type Progress } from "@/lib/progress";
 import type { Town as TownWorld } from "./world/createTown";
 import styles from "./journey.module.css";
 
-const CHAPTER_ICONS = [House, Route, HeartPulse, Mountain];
 const STOPS = [
   ...GERS.map((ger) => ({ ...ger, path: "conversation" as LearningPathId, units: CURRICULUM.filter((lesson) => lesson.ger === ger.id) })),
+  ...FOUNDATION_GERS.map((ger) => ({ ...ger, path: "foundations" as LearningPathId, cluster: "everyday" as const, units: BASE_LESSONS.filter(lesson => (ger.lessonIds as readonly string[]).includes(lesson.id)) })),
   ...VOCABULARY_GERS.map((ger) => ({ ...ger, path: "vocabulary" as LearningPathId, cluster: "everyday" as const, units: BASE_LESSONS.filter(lesson => lesson.id === ger.lessonId) })),
 ];
 
@@ -49,16 +49,8 @@ function initialStop(current: number, requestedPath: string | null, requestedSto
     const found = STOPS.findIndex(stop => (stop.id === requestedStop || stop.units.some(lesson => lesson.id === requestedStop)) && (!requestedPath || stop.path === requestedPath));
     if (found >= 0) return found;
   }
-  if (requestedPath === "vocabulary" || requestedPath === "conversation") return nextStop(requestedPath, completed);
-  try {
-    const saved = sessionStorage.getItem("yarii_stop");
-    const previousCurrent = Number(sessionStorage.getItem("yarii_der") ?? current);
-    const index = Number(saved);
-    if (current > previousCurrent || saved === null || !Number.isInteger(index) || !STOPS[index]) return current;
-    return index;
-  } catch {
-    return current;
-  }
+  if (requestedPath === "foundations" || requestedPath === "vocabulary" || requestedPath === "conversation") return nextStop(requestedPath, completed);
+  return current;
 }
 
 function Journey({ progress, guest, update }: { progress: Progress; guest: boolean; update: (progress: Progress) => Promise<void> }) {
@@ -72,7 +64,7 @@ function Journey({ progress, guest, update }: { progress: Progress; guest: boole
   const reached = seasonOf(done);
   const free = freeExplore(done);
   const conversationCurrent = nextStop("conversation", progress.completed);
-  const [index, setIndex] = useState(() => initialStop(conversationCurrent, searchParams.get("path"), searchParams.get("stop"), progress.completed));
+  const [index, setIndex] = useState(() => initialStop(nextStop(DEFAULT_PATH, progress.completed), searchParams.get("path"), searchParams.get("stop"), progress.completed));
   const [seasonChoice, setSeasonChoice] = useState<number | null>(null);
   const [time, setTime] = useState<"auto" | "day" | "night">("auto");
   const heroRef = useRef<HTMLElement>(null);
@@ -82,7 +74,6 @@ function Journey({ progress, guest, update }: { progress: Progress; guest: boole
   const seasonRef = useRef<HTMLDialogElement>(null);
   const selected = STOPS[index];
   const activePath = selected.path;
-  const path = LEARNING_PATHS[activePath];
   const indices = stopIndices(activePath);
   const localIndex = indices.indexOf(index);
   const current = nextStop(activePath, progress.completed);
@@ -206,13 +197,14 @@ function Journey({ progress, guest, update }: { progress: Progress; guest: boole
           <div className={styles.journeyMain}>
             <div className={styles.intro}>
               <h1 id="journey-title">Explore ger town</h1>
-              <select className={styles.pick} aria-label="Choose a road" value={activePath === "vocabulary" ? "vocabulary" : selected.cluster} onChange={(e) => {
+              <select className={styles.pick} aria-label="Choose a road" value={activePath === "conversation" ? selected.cluster : activePath} onChange={(e) => {
                 const v = e.target.value;
-                if (v === "vocabulary" || v === "conversation") return choosePath(v);
+                if (v === "foundations" || v === "vocabulary" || v === "conversation") return choosePath(v);
                 const chapterStops = STOPS.filter((s) => s.path === "conversation" && s.cluster === v);
                 const unfinished = chapterStops.find((s) => s.units.some((l) => !progress.completed.includes(l.id)));
                 goTo(STOPS.indexOf(unfinished ?? chapterStops[0]));
               }}>
+                <option value="foundations">{LEARNING_PATHS.foundations.title}</option>
                 <option value="conversation">{LEARNING_PATHS.conversation.title} (all 24)</option>
                 {CLUSTERS.map((c, i) => <option key={c.id} value={c.id}>{`  ${i + 1}. ${PART[c.id]}`}</option>)}
                 <option value="vocabulary">{LEARNING_PATHS.vocabulary.title}</option>
@@ -234,16 +226,16 @@ function Journey({ progress, guest, update }: { progress: Progress; guest: boole
               </div>
 
               <section className={styles.stopPanel} aria-labelledby="stop-heading" key={selected.id}>
-                <p className={styles.eyebrow}>{activePath === "vocabulary" ? "WORD GER" : "GER"} {localIndex + 1} <span aria-hidden> · </span><span lang="mn">{selected.mn}</span></p>
+                <p className={styles.eyebrow}>{activePath === "foundations" ? "BASICS GER" : activePath === "vocabulary" ? "WORD GER" : "GER"} {localIndex + 1} <span aria-hidden> · </span><span lang="mn">{selected.mn}</span></p>
                 <h2 id="stop-heading">{selected.name}</h2>
-                <p className={styles.stopDescription}>{MISSIONS[selected.units[0].id].scene}</p>
+                <p className={styles.stopDescription}>{activePath === "foundations" ? FOUNDATION_GERS.find(ger => ger.id === selected.id)?.description : MISSIONS[selected.units[0].id].scene}</p>
                 <ul className={styles.units}>
                   {selected.units.map((lesson) => {
                     const complete = progress.completed.includes(lesson.id);
                     return <li key={lesson.id}>
-                      <Link href={locked(selected.id) && !complete ? "/pricing" : `/learn/${lesson.id}`}>
-                        <span className={styles.lessonIcon} aria-hidden>{complete ? <Check size={18} /> : locked(selected.id) ? <Lock size={18} /> : <BookOpen size={18} />}</span>
-                        <span><strong>{lesson.title}</strong><small>{MISSIONS[lesson.id].goal}</small></span>
+                      <Link href={activePath !== "foundations" && locked(selected.id) && !complete ? "/pricing" : activePath === "foundations" ? foundationLessonHref(lesson.id) : `/learn/${lesson.id}`}>
+                        <span className={styles.lessonIcon} aria-hidden>{complete ? <Check size={18} /> : activePath !== "foundations" && locked(selected.id) ? <Lock size={18} /> : <BookOpen size={18} />}</span>
+                        <span><strong>{lesson.title}</strong><small>{activePath === "foundations" ? lesson.subtitle : MISSIONS[lesson.id].goal}</small></span>
                         <ArrowUpRight className={styles.unitArrow} size={19} aria-hidden />
                       </Link>
                     </li>;
@@ -265,7 +257,7 @@ function Journey({ progress, guest, update }: { progress: Progress; guest: boole
       <dialog className={styles.dialog} ref={guideRef} aria-labelledby="guide-heading">
         <div className={styles.dialogHeader}><h2 id="guide-heading">Journey guide</h2><button type="button" className={styles.inlineButton} onClick={() => guideRef.current?.close()}>Close</button></div>
         <p>Click a ger to visit it. Scroll down for the next ger, or up for the previous one. You can also use the arrow keys, swipe, or choose a chapter. Each ger has its own lesson card.</p>
-        <p>Choose Conversation road for the original 24 gers, or Words &amp; numbers for five gers along the opposite road. Scrolling stays on your chosen path. The word road shares progress with lessons 7–11 in Learning tools.</p>
+        <p>Start with Alphabet &amp; numbers: five gers for all 35 letters and number practice. Choose Conversation road for the original 24 gers, or Words &amp; sentences for five gers on their own road. Scrolling stays on your chosen path. Progress is shared with Learning tools.</p>
         <p>Finish {PER_SEASON} different lessons to reach the next camp season. After all {TOTAL_CURRICULUM}, you can choose any season. In the demo each chapter previews a season.</p>
         <ul>{SEASONS.slice(0, guest || free ? SEASONS.length : reached + 1).map((entry) => <li key={entry.id}><strong>{entry.en} · <span lang="mn">{entry.mn}</span></strong><p>{entry.note}</p><p><span lang="mn">{entry.phrase.mn}</span> · {entry.phrase.en}</p><small>{entry.source}</small></li>)}</ul>
         {reviews.length > 0 && <><h3>Reviews due</h3><ul>{reviews.map((id) => <li key={id}><Link href={`/learn/${id}`}>{LESSONS.find((lesson) => lesson.id === id)?.title ?? id}</Link></li>)}</ul></>}
@@ -288,6 +280,7 @@ function TownScene({ stop, season, reduced, onSelect, time }: { stop: number; se
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<TownWorld | null>(null);
   const seasonRef = useRef(season);
+  const placedSeason = useRef<number | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "unavailable">("loading");
 
   useEffect(() => {
@@ -345,7 +338,6 @@ function TownScene({ stop, season, reduced, onSelect, time }: { stop: number; se
     };
   }, [reduced]);
 
-  const placedSeason = useRef<number | null>(null);
   useEffect(() => {
     if (state !== "ready" || !worldRef.current) return;
     worldRef.current.setSeason(season);

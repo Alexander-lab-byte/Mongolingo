@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { TOWN, SITES, trailZ } from "@/lib/journey";
+import { TOWN, SITES, trailZ, vocabularyTrailZ } from "@/lib/journey";
 import { groundHeight } from "./terrain";
-import { VOCABULARY_GERS } from "@/lib/learningPaths";
+import { FOUNDATION_GERS, VOCABULARY_GERS } from "@/lib/learningPaths";
 
 // A foundation must clear the highest ground under its entire footprint.
 const platformTops = new Map<string, number>();
@@ -77,7 +77,7 @@ export function createVillageLife(scene: THREE.Scene, low: boolean, reduced: boo
   const foundations: { x: number; z: number; top: number }[] = [];
   const colors = ["#387b80", "#b4513d", "#706394", "#46644b"];
   // Exactly 18 of 24 gers have a small, lesson-specific vignette.
-  const captions = ["Тавтай морил", "Ярилцъя", "Төгрөг", "Бэлэг дурсгал", "Цайны газар", "Зочид буудал", "Такси", "Автобус", "Газрын зураг", "Аян зам", "Холбоо", "Сургууль", "Эмнэлэг", "Эмийн сан", "Тусламж", "Дулаан хувцас", "Уулзах газар", "Мэдээлэл", "Зочлох ёс", "Мал сүрэг", "Цагаан идээ", "Нүүдэл", "Наадам", "Цагаан сар", ...VOCABULARY_GERS.map(ger => ger.caption)];
+  const captions = ["Тавтай морил", "Ярилцъя", "Төгрөг", "Бэлэг дурсгал", "Цайны газар", "Зочид буудал", "Такси", "Автобус", "Газрын зураг", "Аян зам", "Холбоо", "Сургууль", "Эмнэлэг", "Эмийн сан", "Тусламж", "Дулаан хувцас", "Уулзах газар", "Мэдээлэл", "Зочлох ёс", "Мал сүрэг", "Цагаан идээ", "Нүүдэл", "Наадам", "Цагаан сар", ...FOUNDATION_GERS.map(ger => ger.caption), ...VOCABULARY_GERS.map(ger => ger.caption)];
   TOWN.forEach((d, i) => {
     const x = site.x + d.x, z = site.z + d.z, top = platformHeight(x, z);
     foundations.push({ x, z, top });
@@ -101,7 +101,7 @@ export function createVillageLife(scene: THREE.Scene, low: boolean, reduced: boo
       label(vignette, captions[i], 2, 3);
       return;
     }
-    const stall = [3, 4, 13, 15, 20, 23, 28].includes(i);
+    const stall = [3, 4, 13, 15, 20, 23].includes(i) || d.id === "foundation-larger" || d.id === "vocab-money";
     if (stall) {
       b(vignette, "#835434", [0, .8, 0], [3.1, .2, 1.5]);
       for (const sx of [-1.4, 1.4]) for (const sz of [-.6, .6]) b(vignette, "#795136", [sx, 1.25, sz], [.1, 2.5, .1]);
@@ -127,10 +127,10 @@ export function createVillageLife(scene: THREE.Scene, low: boolean, reduced: boo
       } else if ([12, 14, 17].includes(i)) {
         b(vignette, "#f1ead8", [0, .65, -.3], [1.4, 1.1, .7]);
         b(vignette, "#a84c40", [0, .7, .07], [.2, .65, .03]); b(vignette, "#a84c40", [0, .7, .07], [.65, .2, .03]);
-      } else if (i === 26 || i === 27) {
+      } else if (["foundation-counting", "vocab-numbers1", "vocab-numbers2"].includes(d.id)) {
         // A counting rack identifies the two number gers from the road.
         for (const sx of [-1.2, 1.2]) b(vignette, "#795136", [sx, .7, -.3], [.12, 1.4, .12]);
-        for (let row = 0; row < (i === 26 ? 1 : 2); row++) {
+        for (let row = 0; row < (d.id === "vocab-numbers1" ? 1 : 2); row++) {
           b(vignette, "#c4a36b", [0, .65 + row * .35, -.3], [2.4, .06, .06]);
           for (let bead = 0; bead < 5; bead++) mesh(vignette, ball, row ? "#c48c42" : "#a95f49", [-.9 + bead * .45, .65 + row * .35, -.3], [.16, .18, .16]);
         }
@@ -143,7 +143,7 @@ export function createVillageLife(scene: THREE.Scene, low: boolean, reduced: boo
   });
   const walkers = Array.from({ length: low ? 8 : 16 }, (_, i) => {
     const p = person(colors[i % 4]); root.add(p.g);
-    return { ...p, base: i * (650 / (low ? 8 : 16)), direction: i % 2 ? 1 : -1, phase: i * 1.7 };
+    return { ...p, base: i * (650 / (low ? 8 : 16)), direction: i % 2 ? 1 : -1, phase: i * 1.7, wordRoad: i % 4 === 0 };
   });
   // Small steppe animals: sheep, goats and marmots, grazing away from doors and stalls.
   const animals = Array.from({ length: low ? 14 : 30 }, (_, i) => {
@@ -184,10 +184,11 @@ export function createVillageLife(scene: THREE.Scene, low: boolean, reduced: boo
         l.intensity = night * 38 * (1 + .07 * Math.sin(time * 9 + f.phase));
       });
       walkers.forEach((p) => {
-        const localX = ((p.base + time * p.direction * .6 + 650) % 650 + 650) % 650 - 500;
-        const x = site.x + localX, z = site.z + trailZ(localX) + p.direction * .65;
+        const localX = p.wordRoad ? 22 + ((p.base + time * p.direction * .6) % 144 + 144) % 144 : ((p.base + time * p.direction * .6 + 650) % 650 + 650) % 650 - 500;
+        const pathZ = p.wordRoad ? vocabularyTrailZ : trailZ;
+        const x = site.x + localX, z = site.z + pathZ(localX) + p.direction * .65;
         p.g.position.set(x, groundHeight(x, z) + .04, z);
-        p.g.rotation.y = p.direction * Math.PI / 2;
+        p.g.rotation.y = Math.atan2(p.direction, (pathZ(localX + .1) - pathZ(localX - .1)) * 5 * p.direction);
         p.legs.forEach((leg, j) => { leg.rotation.x = Math.sin(time * 3.8 + p.phase + j * Math.PI) * .38; });
         p.arms.forEach((arm, j) => { arm.rotation.x = -Math.sin(time * 3.8 + p.phase + j * Math.PI) * .25; });
       });

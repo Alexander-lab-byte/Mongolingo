@@ -113,8 +113,9 @@ function buildQuestions(lesson: Lesson): Question[] {
   return [...first, ...second];
 }
 
-export function LessonPlayer({ lessonId }: { lessonId: string }) {
-  const lesson = getLesson(lessonId)!;
+export function LessonPlayer({ lessonId, lessonTitle, backHref = "/learn", continueHref = "/learn" }: { lessonId: string; lessonTitle?: string; backHref?: string; continueHref?: string }) {
+  const entry = getLesson(lessonId)!;
+  const lesson = lessonTitle ? { ...entry, title: lessonTitle } : entry;
   const { progress, ready, update } = useLearner();
   const { active: hasPass, ready: passReady } = usePass();
   const locked = !isFreeLesson(lesson.id);
@@ -190,7 +191,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
       <header className="sticky top-0 z-20 border-b border-line bg-white">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
           <Link
-            href="/learn"
+            href={backHref}
             className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-ink ring-1 ring-line hover:bg-paper"
             aria-label="Close lesson and go back"
           >
@@ -247,6 +248,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
                     <p className="font-display text-xl font-bold">{l.mn}</p>
                     <p className="text-ink-soft">“{transliterate(l.mn).toLowerCase()}”</p>
                     <p className="mt-1">{l.en}</p>
+                    <Speak text={l.mn} />
                   </li>
                 ))}
               </ul>
@@ -261,7 +263,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
                 <ArrowLeft size={18} aria-hidden /> Back
               </button>
               <button type="button" className="btn btn-primary" onClick={startQuiz}>
-                I'm ready, quiz me
+                I&apos;m ready, quiz me
               </button>
             </div>
           </div>
@@ -314,7 +316,8 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
               </div>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line px-6 py-4 sm:px-9">
-              <Speak text={item.word?.mn ?? item.show} />
+              <Speak text={item.show} label={lesson.kind === "letters" ? "Listen to letter" : "Listen"} />
+              {item.word && <Speak text={item.word.mn} label="Listen to example" />}
               {card >= 1 && (
                 <button type="button" className="btn btn-line text-ink" onClick={() => setCard(card - 1)}>
                   <ArrowLeft size={18} aria-hidden /> Back
@@ -348,6 +351,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
                 )}
               </div>
             )}
+            {q.big && <Speak text={q.big} />}
             <div className="mt-5 grid gap-3 sm:grid-cols-2" key={q.key}>
               {q.options.map((o) => (
                 <OptionButton
@@ -392,7 +396,7 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
               We&apos;ll bring this lesson back for a short review soon. Reviews on different days help you remember for months.
             </p>
             <div className="mt-8 flex justify-center">
-              <Link href="/learn" className="btn btn-gold text-lg">
+              <Link href={continueHref} className="btn btn-gold text-lg">
                 Continue
               </Link>
             </div>

@@ -22,16 +22,38 @@ const { TOWN, SITES } = require('../lib/journey.ts');
 const { platformHeight } = require('../components/world/villageLife.ts');
 const { groundHeight } = require('../components/world/terrain.ts');
 const { BASE_LESSONS } = require('../lib/lessons.ts');
-const { VOCABULARY_GERS } = require('../lib/learningPaths.ts');
+const { isFreeLesson, isFreeGer } = require('../lib/plans.ts');
+const { DEFAULT_PATH, PATH_ORDER, FOUNDATION_GERS, VOCABULARY_GERS, foundationGerForLesson, foundationLessonHref } = require('../lib/learningPaths.ts');
 const { WORD_SENTENCES, vocabularySentenceLesson, summerSource } = require('../lib/wordSentences.ts');
 assert.equal(GERS.length, 24);
 assert.equal(CURRICULUM.length, 48);
 assert.equal(new Set(CURRICULUM.map(l => l.id)).size, 48);
-assert.equal(TOWN.length, 29);
+assert.equal(TOWN.length, 34);
+assert.equal(DEFAULT_PATH, 'foundations');
+assert.equal(PATH_ORDER[0], DEFAULT_PATH);
+assert.equal(FOUNDATION_GERS.length, 5);
+const foundationIds = FOUNDATION_GERS.flatMap(g => g.lessonIds);
+assert.deepEqual(foundationIds, ['friends', 'tricksters', 'shapes1', 'shapes2', 'specials', 'yletters', 'numbers1', 'numbers2', 'money']);
+assert.equal(new Set(foundationIds).size, 9);
+assert(!foundationIds.includes('hello') && !foundationIds.includes('signs'));
+assert.deepEqual(foundationIds.filter(id => BASE_LESSONS.find(l => l.id === id).kind === 'letters'), BASE_LESSONS.filter(l => l.kind === 'letters').map(l => l.id));
+for (const id of foundationIds) {
+  assert(isFreeLesson(id), 'Foundation lessons must retain main-branch free access');
+  assert(foundationGerForLesson(id));
+  assert(foundationLessonHref(id).endsWith('?path=foundations'));
+}
+assert(isFreeGer('greet') && isFreeGer('emergency'));
+assert(!isFreeGer('shop'), 'Paid conversation access must retain main-branch rules');
 assert.equal(VOCABULARY_GERS.length, 5);
 assert.deepEqual(VOCABULARY_GERS.map(g => g.lessonId), BASE_LESSONS.slice(6).map(l => l.id));
 assert(TOWN.filter(g => g.path === 'conversation').every(g => g.x <= 0));
-assert(TOWN.filter(g => g.path === 'vocabulary').every(g => g.x > 0));
+assert(TOWN.filter(g => g.path === 'foundations').every(g => g.x > 0));
+assert.equal(TOWN.filter(g => g.path === 'foundations').length, 5);
+for (let i = 0; i < 5; i++) {
+  const basic = TOWN.find(g => g.id === FOUNDATION_GERS[i].id);
+  const words = TOWN.find(g => g.id === VOCABULARY_GERS[i].id);
+  assert(Math.abs(basic.z - words.z) >= 50, 'Word road should be separate from alphabet/number road');
+}
 assert.deepEqual(TOWN.filter(g => g.path === 'vocabulary').map(g => g.number), [1, 2, 3, 4, 5]);
 for (const stop of VOCABULARY_GERS) {
   const lesson = BASE_LESSONS.find(l => l.id === stop.lessonId);
@@ -113,4 +135,4 @@ for (const ger of TOWN) {
     assert(top > groundHeight(x + Math.cos(a) * r, z + Math.sin(a) * r), `${ger.id}: foundation intersects terrain`);
   }
 }
-console.log('PASS: 31 contextual sentences across 5 gers, summer-camp sources, 1,700 randomized practice rounds, preserved vocabulary IDs and 29 foundations.');
+console.log('PASS: five default alphabet/number gers, nine basic lessons, separate word/sentence and conversation roads, 31 preserved sentences, 1,700 practice rounds and 34 raised ger foundations.');
