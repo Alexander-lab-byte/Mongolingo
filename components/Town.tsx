@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { BookOpen, Check, ChevronLeft, ChevronRight, List, Lock, LogOut, Play, Wrench, X } from "lucide-react";
-import { usePass } from "@/components/usePass";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Check, Compass, HeartPulse, House, Lock, LogOut, Mountain, Route, Wrench } from "lucide-react";
+import { useAuth } from "./Providers";
+import { usePass } from "./usePass";
 import { isFreeGer } from "@/lib/plans";
-import { useAuth } from "@/components/Providers";
-import { useLearner } from "@/components/useLearner";
-import { useReduced } from "@/components/useDecode";
-import { Loading } from "@/components/Loading";
-import { CLUSTERS, CURRICULUM, GERS, type GerSpec } from "@/lib/curriculum";
+import { useLearner } from "./useLearner";
+import { useReduced } from "./useDecode";
+import { Loading } from "./Loading";
+import { Logo, TextSizeControl } from "./Nav";
+import { CLUSTERS, CURRICULUM, GERS } from "@/lib/curriculum";
+import { CHAPTERS, MISSIONS } from "@/lib/fieldLessons";
 import { PER_SEASON, SEASONS, TOTAL_CURRICULUM, curriculumDone, freeExplore, say, seasonOf } from "@/lib/journey";
 import { BASE_LESSONS, LESSONS } from "@/lib/lessons";
 import { LEARNING_PATHS, VOCABULARY_GERS, type LearningPathId } from "@/lib/learningPaths";
@@ -38,9 +40,31 @@ const PART: Record<string, string> = { everyday: "Daily life: hello, family, foo
 
 export function Town() {
   const { progress, ready, guest, update } = useLearner();
-  const { pass, active: hasPass, daysLeft: passDays, ready: passReady } = usePass();
-  const lockedGer = (g: GerSpec) => passReady && !hasPass && !isFreeGer(g.id);
+  if (!ready || !progress) return <Loading />;
+  return <Suspense fallback={<Loading />}><Journey progress={progress} guest={guest} update={update} /></Suspense>;
+}
+
+function initialStop(current: number, requestedPath: string | null, requestedStop: string | null, completed: string[]) {
+  if (requestedStop) {
+    const found = STOPS.findIndex(stop => (stop.id === requestedStop || stop.units.some(lesson => lesson.id === requestedStop)) && (!requestedPath || stop.path === requestedPath));
+    if (found >= 0) return found;
+  }
+  if (requestedPath === "vocabulary" || requestedPath === "conversation") return nextStop(requestedPath, completed);
+  try {
+    const saved = sessionStorage.getItem("yarii_stop");
+    const previousCurrent = Number(sessionStorage.getItem("yarii_der") ?? current);
+    const index = Number(saved);
+    if (current > previousCurrent || saved === null || !Number.isInteger(index) || !STOPS[index]) return current;
+    return index;
+  } catch {
+    return current;
+  }
+}
+
+function Journey({ progress, guest, update }: { progress: Progress; guest: boolean; update: (progress: Progress) => Promise<void> }) {
   const { signOut } = useAuth();
+  const { pass, active: hasPass, daysLeft: passDays, ready: passReady } = usePass();
+  const locked = (gerId: string) => passReady && !hasPass && !isFreeGer(gerId);
   const router = useRouter();
   const searchParams = useSearchParams();
   const reduced = useReduced();
@@ -155,34 +179,29 @@ export function Town() {
             {<TownScene stop={index} season={seasonIndex} reduced={reduced} onSelect={goTo} time={time} />}
             <div className={styles.worldShade} />
           </div>
-        )}
-        <div className="flex items-center gap-0.5">
-          {QUICK.map((id) => (
-            <button key={id} type="button" aria-label={`${GERS.find((g) => g.id === id)!.name} lessons`} title={GERS.find((g) => g.id === id)!.name} className={`${IBTN} ${id === "emergency" ? "bg-[#b4452f]" : "hover:bg-white/10"}`} onClick={() => open(id)}>
-              {GERS.find((g) => g.id === id)!.emoji}
-            </button>
-          ))}
-          {passReady && (
-            <Link href="/pricing" className={`${BTN} min-h-11 px-3 text-sm ${hasPass ? "hover:bg-white/10" : "bg-[var(--ac)] text-[#10161b]"}`}>
-              {hasPass && pass ? `${pass.plan === "trial" ? "Trial" : "Pass"}: ${passDays}d` : "Get Pass"}
-            </Link>
-          )}
-          <button type="button" aria-label="Guide" title="Guide" className={`${IBTN} hover:bg-white/10`} onClick={() => setGuide(true)}><BookOpen size={18} aria-hidden /></button>
-          <button type="button" aria-label={view === "3d" ? "Switch to list view" : "Switch to town view"} title={view === "3d" ? "List view" : "Town view"} className={`${IBTN} hover:bg-white/10`} onClick={() => setView(view === "3d" ? "list" : "3d")}><List size={18} aria-hidden /></button>
-          <Link href="/learn/tools" aria-label={`Alphabet and tools${reviews.length ? `, ${reviews.length} reviews due` : ""}`} title="Alphabet & tools" className={`${IBTN} relative hover:bg-white/10`}>
-            <Wrench size={18} aria-hidden />
-            {reviews.length > 0 && <span className="absolute -right-0.5 -top-0.5 rounded-full bg-[var(--ac)] px-1.5 text-[10px] font-bold text-[#10161b]">{reviews.length}</span>}
-          </Link>
-          <button type="button" aria-label={guest ? "Exit demo" : "Log out"} title={guest ? "Exit demo" : "Log out"} className={`${IBTN} hover:bg-white/10`} onClick={() => { if (guest) { endGuest(); router.push("/login"); } else signOut(); }}><LogOut size={18} aria-hidden /></button>
-        </div>
-        {free && (
-          <div className="flex w-full gap-1" role="group" aria-label="Visit a season">
-            {SEASONS.map((x, i) => (
-              <button key={x.id} type="button" aria-pressed={shown === i} className={`${BTN} min-h-9 flex-1 text-sm ${shown === i ? "bg-[var(--ac)] text-[#10161b]" : "bg-white/10"}`} onClick={() => setViewSeason(i)}>{x.en}</button>
-            ))}
-          </div>
-        )}
-      </header>
+          <header className={styles.siteHeader}>
+            <div className={styles.headerInner}>
+              <Logo />
+              <div className={styles.overall}>
+                <span><strong>{pathDone}</strong> / {pathLessons.length} lessons complete</span>
+                <progress max={pathLessons.length} value={pathDone} aria-label="Lessons complete" />
+              </div>
+              <div className={styles.headerActions}>
+                <TextSizeControl />
+                {passReady && <Link href="/pricing" className={styles.inlineButton}>{hasPass && pass ? `${pass.plan === "trial" ? "Trial" : "Pass"}: ${passDays}d` : "Get Pass"}</Link>}
+                <button type="button" className={styles.iconButton} onClick={() => guideRef.current?.showModal()} aria-label="Journey guide"><BookOpen size={19} /></button>
+                <Link href="/learn/tools" className={styles.iconButton} aria-label={`Learning tools${reviews.length ? `, ${reviews.length} reviews due` : ""}`}><Wrench size={19} />{reviews.length > 0 && <span className={styles.toolDot} />}</Link>
+                <button type="button" className={styles.iconButton} aria-label={guest ? "Exit demo" : "Log out"} onClick={() => {
+                  if (guest) {
+                    endGuest();
+                    router.push("/login");
+                  } else {
+                    void signOut();
+                  }
+                }}><LogOut size={19} /></button>
+              </div>
+            </div>
+          </header>
 
           <div className={styles.journeyMain}>
             <div className={styles.intro}>
@@ -214,34 +233,21 @@ export function Town() {
                 </div>
               </div>
 
-      {/* lightweight list (no WebGL, or by choice) */}
-      {view === "list" && (
-        <main className="absolute inset-0 z-20 overflow-y-auto bg-paper px-4 pb-10 pt-28 sm:px-8">
-          <div className="mx-auto max-w-4xl space-y-8">
-            <p className="text-lg text-ink-soft">The same 24 gers as a simple list. Every ger has two short lessons.</p>
-            {CLUSTERS.map((c) => (
-              <section key={c.id} aria-labelledby={`c-${c.id}`}>
-                <h2 id={`c-${c.id}`} className="text-2xl font-bold">
-                  {c.name} <span className="text-ink-soft">{c.mn}</span>
-                </h2>
-                <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-                  {GERS.filter((g) => g.cluster === c.id).map((g) => (
-                    <li key={g.id} className="rounded-2xl bg-white p-4 ring-1 ring-line">
-                      <p className="font-bold">
-                        {g.emoji} {g.name} <span className="font-normal text-ink-soft">{g.mn}</span>
-                      </p>
-                      <ul className="mt-2 space-y-1">
-                        {lessonsOf(g).map((l) => (
-                          <li key={l.id}>
-                            <Link href={`/learn/${l.id}`} className="flex min-h-11 items-center justify-between gap-3 rounded-xl px-2 text-cobalt hover:bg-paper">
-                              <span>{l.title}</span>
-                              <span className="flex items-center gap-1 text-ink-soft">{progress.completed.includes(l.id) ? <><Check size={16} aria-hidden /> Done</> : lockedGer(g) ? <><Lock size={16} aria-hidden /> Pass</> : "Start"}</span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
-                  ))}
+              <section className={styles.stopPanel} aria-labelledby="stop-heading" key={selected.id}>
+                <p className={styles.eyebrow}>{activePath === "vocabulary" ? "WORD GER" : "GER"} {localIndex + 1} <span aria-hidden> · </span><span lang="mn">{selected.mn}</span></p>
+                <h2 id="stop-heading">{selected.name}</h2>
+                <p className={styles.stopDescription}>{MISSIONS[selected.units[0].id].scene}</p>
+                <ul className={styles.units}>
+                  {selected.units.map((lesson) => {
+                    const complete = progress.completed.includes(lesson.id);
+                    return <li key={lesson.id}>
+                      <Link href={locked(selected.id) && !complete ? "/pricing" : `/learn/${lesson.id}`}>
+                        <span className={styles.lessonIcon} aria-hidden>{complete ? <Check size={18} /> : locked(selected.id) ? <Lock size={18} /> : <BookOpen size={18} />}</span>
+                        <span><strong>{lesson.title}</strong><small>{MISSIONS[lesson.id].goal}</small></span>
+                        <ArrowUpRight className={styles.unitArrow} size={19} aria-hidden />
+                      </Link>
+                    </li>;
+                  })}
                 </ul>
                 {index !== current && !allDone && <button type="button" className={styles.inlineButton} onClick={() => goTo(current)}>Go to my next stop <ArrowRight size={15} /></button>}
                 {free && <label className={styles.seasonPicker}>Camp season
@@ -253,34 +259,8 @@ export function Town() {
             </div>
 
           </div>
-          <ul className="mt-4 space-y-3">
-            {lessonsOf(sel).map((l) => {
-              const isDone = progress.completed.includes(l.id);
-              const firstOpen = lessonsOf(sel).find((x) => !progress.completed.includes(x.id))?.id === l.id;
-              const label = isDone ? "Review" : firstOpen && gerDone(sel) > 0 ? "Continue" : "Start";
-              return (
-                <li key={l.id} className="rounded-2xl bg-white/10 p-4">
-                  <p className="flex items-center justify-between gap-2 font-bold">
-                    {l.title}
-                    {isDone && <span className="flex items-center gap-1 text-sm text-[#b9d58a]"><Check size={16} aria-hidden /> Done</span>}
-                  </p>
-                  <p className="text-sm text-[#f3eadf]/70">{l.items.length} phrases · dialogue · quiz</p>
-                  <ul className="mt-2 space-y-1 text-sm">
-                    {l.items.map((it) => (
-                      <li key={it.id}>
-                        <span className="font-semibold">{it.show}</span> <span className="text-[#f3eadf]/70">({say(it.show)})</span> {it.meaning}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href={`/learn/${l.id}`} className={`${BTN} mt-3 bg-[var(--ac)] text-[#10161b]`}>
-                    {lockedGer(sel) ? <><Lock size={16} aria-hidden /> Unlock with a Pass</> : <><Play size={16} fill="currentColor" aria-hidden /> {isDone ? "Review lesson" : `${label} lesson`}</>}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </aside>
-      )}
+        </section>
+      </main>
 
       <dialog className={styles.dialog} ref={guideRef} aria-labelledby="guide-heading">
         <div className={styles.dialogHeader}><h2 id="guide-heading">Journey guide</h2><button type="button" className={styles.inlineButton} onClick={() => guideRef.current?.close()}>Close</button></div>
