@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     // A stray package-lock.json in a parent folder must not be mistaken for the project root.
     root: __dirname,
     rules: {
-      "*.css": {
+      "globals.css": {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
