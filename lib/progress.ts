@@ -15,6 +15,7 @@ export type Progress = {
   bestStreak: number;
   talks: string[]; // finished conversations
   seasonSeen: number; // highest season whose cultural note was dismissed (0 = summer)
+  freezeMonth: string; // YYYY-MM when the pass's monthly streak freeze was last used
 };
 
 // Spaced review gaps in days (spacing effect, Cepeda et al. 2006).
@@ -34,6 +35,7 @@ export const EMPTY: Progress = {
   bestStreak: 0,
   talks: [],
   seasonSeen: 0,
+  freezeMonth: "",
 };
 
 export function today(d = new Date()) {
@@ -103,10 +105,21 @@ export async function saveProgress(userId: string, p: Progress) {
     streak: p.streak,
     last_active: p.lastActive,
     review_due: p.reviewDue,
-    extra: { cards: p.cards, goal: p.goal, day: p.day, reviewed: p.reviewed, bestStreak: p.bestStreak, talks: p.talks, seasonSeen: p.seasonSeen },
+    extra: { cards: p.cards, goal: p.goal, day: p.day, reviewed: p.reviewed, bestStreak: p.bestStreak, talks: p.talks, seasonSeen: p.seasonSeen, freezeMonth: p.freezeMonth },
     updated_at: new Date().toISOString(),
   });
   if (error) console.error("Could not save progress:", error.message);
+}
+
+/**
+ * Streak freeze (a Pass perk, like Duolingo's monthly streak repair): if exactly one day was missed,
+ * the streak is kept once per calendar month.
+ */
+export function freezeStreak(p: Progress, hasPass: boolean): Progress {
+  const t = today();
+  const month = t.slice(0, 7);
+  if (!hasPass || p.streak < 1 || p.lastActive !== addDays(t, -2) || p.freezeMonth === month) return p;
+  return { ...p, lastActive: addDays(t, -1), freezeMonth: month };
 }
 
 /** Marks today as active and updates the streak. */
