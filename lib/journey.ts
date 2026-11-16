@@ -2,6 +2,7 @@
 // Everything is derived from the saved lesson IDs, so reloads and replays can never change it.
 import { CURRICULUM_IDS, GERS } from "./curriculum";
 import { transliterate } from "./translit";
+import { VOCABULARY_GERS, type LearningPathId } from "./learningPaths";
 
 export const PER_SEASON = 12;
 export const TOTAL_CURRICULUM = CURRICULUM_IDS.size; // 48
@@ -40,18 +41,50 @@ export const freeExplore = (done: number) => done >= TOTAL_CURRICULUM;
 
 export const say = (mn: string) => transliterate(mn).toLowerCase();
 
-/* ---- town layout: 4 clusters of 6 gers; the whole camp moves to the season's site ---- */
-// Trail start per season (x, z); the trail runs forward along -x through the valley. Flat, river-free lines chosen
-// from the terrain function: summer near the river, autumn open pasture, winter in the sheltered foothills, spring a sunny slope.
-// Regional pattern from Fernández-Giménez 2000 (a regional example, not a universal rule).
-export const SITES: { x: number; z: number }[] = [
-  { x: 250, z: 10 },
+/* Each chapter uses a different arrangement along the valley trail. */
+export const SITES = [
+  { x: 250, z: 4 },
   { x: 250, z: -20 },
   { x: 250, z: -105 },
   { x: 250, z: -70 },
 ];
 
-// One row of gers beside a gently curving road (-x). The camera drives forward along the road; each door faces the oncoming camera.
-export const trailZ = (lx: number) => 9 * Math.sin(lx * 0.013);
-export const DOOR = 1.17; // door turned toward +x (oncoming) and the road side
-export const TOWN = GERS.map((g, i) => ({ id: g.id, i, x: -i * 21, z: trailZ(-i * 21) - 9, rot: DOOR }));
+const SETBACKS = [
+  [-9, -14, -9, 10, -8, -13],
+  [11, -10, 12, -10, 11, -13],
+  [-10, -15, -11, -16, -11, -14],
+  [13, 9, -11, -9, 10, -14],
+];
+const CAMERA_DISTANCES = [16, 18, 16, 17, 20, 15];
+const CAMERA_HEIGHTS = [5.3, 6.6, 5.6, 7.3, 6.5, 5.7];
+
+export const trailZ = (x: number) => 7 * Math.sin(x * 0.016) + 3 * Math.sin(x * 0.037);
+const CONVERSATION_TOWN = GERS.map((ger, i) => {
+  const chapter = Math.floor(i / 6);
+  const stop = i % 6;
+  const x = -i * 21;
+  const z = trailZ(x) + SETBACKS[chapter][stop];
+  const cameraX = x + CAMERA_DISTANCES[stop];
+  const cameraZ = trailZ(cameraX);
+  return {
+    id: ger.id, i, x, z, cameraX, cameraZ, path: "conversation" as LearningPathId, number: i + 1,
+    cameraHeight: CAMERA_HEIGHTS[stop],
+    rot: Math.atan2(cameraX - x, cameraZ - z),
+  };
+});
+
+// The original road heads west. The word road heads east from the same junction.
+const VOCABULARY_TOWN = VOCABULARY_GERS.map((ger, i) => {
+  const x = 42 + i * 24;
+  const z = trailZ(x) - (i % 2 ? 15 : 11);
+  const cameraX = x - 17;
+  const cameraZ = trailZ(cameraX);
+  return {
+    id: ger.id, i: GERS.length + i, x, z, cameraX, cameraZ,
+    path: "vocabulary" as LearningPathId, number: i + 1,
+    cameraHeight: 6.2,
+    rot: Math.atan2(cameraX - x, cameraZ - z),
+  };
+});
+
+export const TOWN = [...CONVERSATION_TOWN, ...VOCABULARY_TOWN];

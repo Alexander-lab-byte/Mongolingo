@@ -1,415 +1,378 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { BookOpen, Check, ChevronLeft, ChevronRight, List, LogOut, Play, Wrench, X } from "lucide-react";
-import { useAuth } from "@/components/Providers";
-import { useLearner } from "@/components/useLearner";
-import { useReduced } from "@/components/useDecode";
-import { Loading } from "@/components/Loading";
-import { CLUSTERS, CURRICULUM, GERS, type GerSpec } from "@/lib/curriculum";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Check, Compass, HeartPulse, House, LogOut, Mountain, Route, Wrench } from "lucide-react";
+import { useAuth } from "./Providers";
+import { useLearner } from "./useLearner";
+import { useReduced } from "./useDecode";
+import { Loading } from "./Loading";
+import { Logo, TextSizeControl } from "./Nav";
+import { CLUSTERS, CURRICULUM, GERS } from "@/lib/curriculum";
+import { CHAPTERS, MISSIONS } from "@/lib/fieldLessons";
 import { PER_SEASON, SEASONS, TOTAL_CURRICULUM, curriculumDone, freeExplore, say, seasonOf } from "@/lib/journey";
-import { LESSONS } from "@/lib/lessons";
-import { dueReviews, endGuest } from "@/lib/progress";
-import type { Town as TownWorld, TownLabel } from "@/components/world/createTown";
+import { BASE_LESSONS, LESSONS } from "@/lib/lessons";
+import { LEARNING_PATHS, VOCABULARY_GERS, type LearningPathId } from "@/lib/learningPaths";
+import { dueReviews, endGuest, type Progress } from "@/lib/progress";
+import type { Town as TownWorld } from "./world/createTown";
+import styles from "./journey.module.css";
 
-const GLASS = "bg-[color-mix(in_srgb,var(--bg)_82%,transparent)] text-[#f3eadf] ring-1 ring-white/10 backdrop-blur-md";
-const BTN = "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 font-semibold transition";
-const QUICK = ["emergency", "doctor", "pharmacy"]; // practical packs, always one tap away
-const SHORT: Record<string, string> = { greet: "Hello", family: "Family", "time-money": "Numbers", shopping: "Shopping", restaurant: "Food", lodging: "Rooms", taxi: "Taxi", bus: "Bus", directions: "Directions", countryside: "Countryside", phone: "Phone", work: "Work", doctor: "Doctor", pharmacy: "Pharmacy", emergency: "Emergency", weather: "Weather", plans: "Plans", help: "Help", etiquette: "Ger manners", livestock: "Animals", food: "Dairy", migration: "Migration", naadam: "Naadam", "tsagaan-sar": "Tsagaan Sar" };
-// Each season re-themes the interface: climate and mood change with the camp.
-const PAL = [
-  { ac: "#9ad06a", bg: "#0f2010" },
-  { ac: "#f2a33a", bg: "#251708" },
-  { ac: "#9fd4f0", bg: "#0e1a26" },
-  { ac: "#d4e36a", bg: "#1a2110" },
+const CHAPTER_ICONS = [House, Route, HeartPulse, Mountain];
+const STOPS = [
+  ...GERS.map((ger) => ({ ...ger, path: "conversation" as LearningPathId, units: CURRICULUM.filter((lesson) => lesson.ger === ger.id) })),
+  ...VOCABULARY_GERS.map((ger) => ({ ...ger, path: "vocabulary" as LearningPathId, cluster: "everyday" as const, units: BASE_LESSONS.filter(lesson => lesson.id === ger.lessonId) })),
 ];
-const IBTN = "grid h-11 w-11 place-items-center rounded-full";
-const lessonsOf = (g: GerSpec) => CURRICULUM.filter((l) => l.ger === g.id);
+
+function stopIndices(path: LearningPathId) {
+  return STOPS.flatMap((stop, i) => stop.path === path ? [i] : []);
+}
+
+function nextStop(path: LearningPathId, completed: string[]) {
+  const indices = stopIndices(path);
+  return indices.find(i => STOPS[i].units.some(lesson => !completed.includes(lesson.id))) ?? indices[indices.length - 1];
+}
+
 
 export function Town() {
   const { progress, ready, guest, update } = useLearner();
+  if (!ready || !progress) return <Loading />;
+  return <Suspense fallback={<Loading />}><Journey progress={progress} guest={guest} update={update} /></Suspense>;
+}
+
+function initialStop(current: number, requestedPath: string | null, requestedStop: string | null, completed: string[]) {
+  if (requestedStop) {
+    const found = STOPS.findIndex(stop => (stop.id === requestedStop || stop.units.some(lesson => lesson.id === requestedStop)) && (!requestedPath || stop.path === requestedPath));
+    if (found >= 0) return found;
+  }
+  if (requestedPath === "vocabulary" || requestedPath === "conversation") return nextStop(requestedPath, completed);
+  try {
+    const saved = sessionStorage.getItem("yarii_stop");
+    const previousCurrent = Number(sessionStorage.getItem("yarii_der") ?? current);
+    const index = Number(saved);
+    if (current > previousCurrent || saved === null || !Number.isInteger(index) || !STOPS[index]) return current;
+    return index;
+  } catch {
+    return current;
+  }
+}
+
+function Journey({ progress, guest, update }: { progress: Progress; guest: boolean; update: (progress: Progress) => Promise<void> }) {
   const { signOut } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const reduced = useReduced();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const worldRef = useRef<TownWorld | null>(null);
-  const labelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const [view, setView] = useState<"3d" | "list">("3d");
-  const [loaded, setLoaded] = useState(false);
-  const [arrived, setArrived] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const [guide, setGuide] = useState(false);
-  const [viewSeason, setViewSeason] = useState<number | null>(null);
-  const [stop, setStop] = useState<number | null>(null); // the ger we are standing in front of
-  const first = useRef(true); // first camera placement snaps; later ones glide
-  const glide = useRef(false); // a pack was finished since last visit: glide to the next ger
-
-  const done = progress ? curriculumDone(progress.completed) : 0;
+  const done = curriculumDone(progress.completed);
   const reached = seasonOf(done);
   const free = freeExplore(done);
-  const shown = free && viewSeason !== null ? viewSeason : reached;
-  const shownRef = useRef(shown);
-  shownRef.current = shown;
-  const newNote = progress && reached > progress.seasonSeen ? SEASONS[reached] : null;
-  const nextGer = progress ? GERS.find((g) => !lessonsOf(g).every((l) => progress.completed.includes(l.id))) : undefined;
-  const gerDone = (g: GerSpec) => lessonsOf(g).filter((l) => progress?.completed.includes(l.id)).length;
-
-  /* 3D: loaded lazily, paused when hidden, cleaned up on leave */
-  useEffect(() => {
-    if (!ready || view !== "3d") return;
-    const canvas = canvasRef.current;
-    const stage = stageRef.current;
-    if (!canvas || !stage) return;
-    let disposed = false;
-    let ro: ResizeObserver | null = null;
-    let io: IntersectionObserver | null = null;
-    const onVis = () => worldRef.current?.setActive(document.visibilityState === "visible");
-    const place = (labels: TownLabel[]) => {
-      for (const L of labels) {
-        const el = labelRefs.current[L.id];
-        if (!el) continue;
-        el.style.display = L.v ? "" : "none";
-        el.style.transform = `translate3d(${L.x.toFixed(1)}px,${L.y.toFixed(1)}px,0) translate(-50%,-100%)`;
-      }
-    };
-    (async () => {
-      try {
-        const t = document.createElement("canvas");
-        if (!t.getContext("webgl2") && !t.getContext("webgl")) throw new Error("no webgl");
-        const { createTown } = await import("./world/createTown");
-        const nav = navigator as Navigator & { deviceMemory?: number };
-        const low = window.innerWidth < 768 || (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4;
-        const world = await createTown(canvas, { low, reduced, season: shownRef.current, onLabels: place });
-        if (disposed) return world.dispose();
-        worldRef.current = world;
-        const r = stage.getBoundingClientRect();
-        world.resize(r.width, r.height);
-        ro = new ResizeObserver(([e]) => world.resize(e.contentRect.width, e.contentRect.height));
-        ro.observe(stage);
-        io = new IntersectionObserver(([e]) => world.setActive(e.isIntersecting && document.visibilityState === "visible"));
-        io.observe(stage);
-        document.addEventListener("visibilitychange", onVis);
-        setLoaded(true);
-      } catch {
-        if (!disposed) setView("list");
-      }
-    })();
-    return () => {
-      disposed = true;
-      ro?.disconnect();
-      io?.disconnect();
-      document.removeEventListener("visibilitychange", onVis);
-      worldRef.current?.dispose();
-      worldRef.current = null;
-      setLoaded(false);
-    };
-  }, [ready, view, reduced]);
-
-  useEffect(() => worldRef.current?.setSeason(shown), [shown, loaded]);
-  const N = GERS.length;
-  const cur = nextGer ? GERS.indexOf(nextGer) : N - 1; // first unfinished ger (or the last one when all are done)
-  const reach = guest ? N - 1 : cur; // demo: every ger is open, so Next always goes straight on
-  const here = stop ?? cur;
-  /* restore the stop from saved progress; if a pack was finished since the last visit, glide to the next ger */
-  useEffect(() => {
-    if (!ready || stop !== null) return;
-    let from = cur;
-    try {
-      const s = Number(sessionStorage.getItem("yarii_stop"));
-      const d = sessionStorage.getItem("yarii_der");
-      if (sessionStorage.getItem("yarii_stop") !== null && s >= 0 && s < N) from = s;
-      glide.current = d !== null && cur > Number(d);
-    } catch {}
-    setStop(from);
-  }, [ready, stop, cur, N]);
-  useEffect(() => {
-    if (stop === null || !loaded) return;
-    worldRef.current?.setRoute(stop, first.current);
-    const snap = first.current;
-    first.current = false;
-    try {
-      sessionStorage.setItem("yarii_stop", String(stop));
-      sessionStorage.setItem("yarii_der", String(cur));
-    } catch {}
-    setArrived(false);
-    const t = setTimeout(() => setArrived(true), reduced ? 0 : snap ? 400 : 1700); // the Start button appears only after arrival
-    let g: ReturnType<typeof setTimeout> | undefined;
-    if (snap && glide.current && stop !== cur) g = setTimeout(() => goTo(cur), 900);
-    glide.current = false;
-    return () => {
-      clearTimeout(t);
-      clearTimeout(g);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stop, loaded]);
-  /* a long scrollable roadmap: scrolling picks the nearest reached stop (the camera still stops at each ger) */
-  useEffect(() => {
-    if (view !== "3d" || stop === null) return;
-    const max = () => Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    const top = (i: number) => (i / (N - 1)) * max();
-    if (Math.abs(window.scrollY - top(stop)) > max() / (N - 1) / 2) window.scrollTo({ top: top(stop), behavior: "auto" });
-    let raf = 0;
-    const onScroll = () =>
-      (raf ||= requestAnimationFrame(() => {
-        raf = 0;
-        const i = Math.round((window.scrollY / max()) * (N - 1));
-        if (i > reach) window.scrollTo({ top: top(reach), behavior: "auto" });
-        else if (i !== stop) goTo(i);
-      }));
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(raf);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, stop, reach, N]);
-  useEffect(() => worldRef.current?.setHover(arrived && view === "3d" ? GERS[here].id : null), [arrived, here, view, loaded]);
-  const goTo = (i: number) => {
-    setStop(Math.max(0, Math.min(N - 1, i)));
-    setHidden(false);
-  };
-  useEffect(() => {
-    if (reduced) setView("list");
-  }, [reduced]);
-
-  const open = (id: string) => {
-    const i = GERS.findIndex((g) => g.id === id);
-    if (view === "3d") goTo(i);
-    else router.push(`/learn/${id}-1`);
-  };
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (guide) setGuide(false);
-      else setHidden(true);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [guide]);
-
-  if (!ready || !progress) return <Loading />;
-
-  const sel = view === "3d" && arrived && !hidden ? GERS[here] : null;
-  const season = SEASONS[shown];
-  const nextName = reached < 3 ? SEASONS[reached + 1].en : "free exploration";
-  const inSeason = free ? PER_SEASON : done - reached * PER_SEASON;
+  const conversationCurrent = nextStop("conversation", progress.completed);
+  const [index, setIndex] = useState(() => initialStop(conversationCurrent, searchParams.get("path"), searchParams.get("stop"), progress.completed));
+  const [seasonChoice, setSeasonChoice] = useState<number | null>(null);
+  const [showWorld, setShowWorld] = useState(true);
+  const [time, setTime] = useState<"auto" | "day" | "night">("auto");
+  const heroRef = useRef<HTMLElement>(null);
+  const navigationRef = useRef({ index, last: 0, delta: 0 });
+  useEffect(() => { navigationRef.current.index = index; }, [index]);
+  const guideRef = useRef<HTMLDialogElement>(null);
+  const seasonRef = useRef<HTMLDialogElement>(null);
+  const selected = STOPS[index];
+  const activePath = selected.path;
+  const path = LEARNING_PATHS[activePath];
+  const indices = stopIndices(activePath);
+  const localIndex = indices.indexOf(index);
+  const current = nextStop(activePath, progress.completed);
+  const pathLessons = indices.flatMap(i => STOPS[i].units);
+  const pathDone = pathLessons.filter(lesson => progress.completed.includes(lesson.id)).length;
+  const allDone = pathDone === pathLessons.length;
+  const chapter = CHAPTERS[selected.cluster];
+  const seasonIndex = guest || free ? seasonChoice ?? chapter.season : reached;
+  const season = SEASONS[seasonIndex];
   const reviews = dueReviews(progress);
+  const newSeason = reached > progress.seasonSeen;
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("yarii_stop", String(index));
+      sessionStorage.setItem(`yarii_path_${activePath}`, String(index));
+      sessionStorage.setItem("yarii_der", String(conversationCurrent));
+      const url = new URL(window.location.href);
+      url.searchParams.set("path", activePath);
+      url.searchParams.set("stop", selected.units[0].ger ?? selected.units[0].id);
+      window.history.replaceState(null, "", url);
+    } catch {}
+  }, [index, conversationCurrent, activePath, selected]);
+
+  useEffect(() => {
+    const dialog = seasonRef.current;
+    if (newSeason) dialog?.showModal();
+    else dialog?.close();
+  }, [newSeason]);
+
+  function goTo(stop: number) {
+    stop = Math.max(0, Math.min(STOPS.length - 1, stop));
+    setIndex(stop);
+    if (STOPS[stop].cluster !== selected.cluster) setSeasonChoice(null);
+  }
+
+  function choosePath(target: LearningPathId) {
+    if (target === activePath) return;
+    let stop = nextStop(target, progress.completed);
+    try {
+      const saved = sessionStorage.getItem(`yarii_path_${target}`);
+      if (saved !== null && STOPS[Number(saved)]?.path === target) stop = Number(saved);
+    } catch {}
+    goTo(stop);
+  }
+
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+    const nav = navigationRef.current;
+    let touchY = 0;
+    const move = (direction: number) => {
+      if (performance.now() - nav.last < 950) return;
+      nav.last = performance.now(); nav.delta = 0;
+      setSeasonChoice(null);
+      const route = stopIndices(STOPS[nav.index].path);
+      const local = route.indexOf(nav.index);
+      setIndex(route[Math.max(0, Math.min(route.length - 1, local + direction))]);
+    };
+    const wheel = (event: WheelEvent) => {
+      if (event.ctrlKey || event.target instanceof Element && event.target.closest("dialog, select")) return;
+      event.preventDefault();
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? innerHeight : 1);
+      if (Math.sign(delta) !== Math.sign(nav.delta)) nav.delta = 0;
+      nav.delta += delta;
+      if (Math.abs(nav.delta) >= 45) move(Math.sign(nav.delta));
+    };
+    const key = (event: KeyboardEvent) => {
+      if (event.target instanceof Element && event.target.closest("input, textarea, select, dialog")) return;
+      if (["ArrowDown", "ArrowRight", "PageDown", "ArrowUp", "ArrowLeft", "PageUp"].includes(event.key)) {
+        event.preventDefault(); move(["ArrowDown", "ArrowRight", "PageDown"].includes(event.key) ? 1 : -1);
+      }
+    };
+    const touchStart = (event: TouchEvent) => { touchY = event.touches[0].clientY; };
+    const touchEnd = (event: TouchEvent) => {
+      const delta = touchY - event.changedTouches[0].clientY;
+      if (Math.abs(delta) > 55) move(Math.sign(delta));
+    };
+    hero.addEventListener("wheel", wheel, { passive: false });
+    hero.addEventListener("touchstart", touchStart, { passive: true });
+    hero.addEventListener("touchend", touchEnd, { passive: true });
+    window.addEventListener("keydown", key);
+    return () => {
+      hero.removeEventListener("wheel", wheel); hero.removeEventListener("touchstart", touchStart);
+      hero.removeEventListener("touchend", touchEnd); window.removeEventListener("keydown", key);
+    };
+  }, []);
 
   return (
-    <>
-    <div className="fixed inset-0 overflow-hidden bg-[#0e1318]" style={{ "--ac": PAL[shown].ac, "--bg": PAL[shown].bg } as React.CSSProperties}>
-      {/* stage */}
-      <div
-        ref={stageRef}
-        className="absolute inset-0"
-        role="region"
-        aria-label="Ger-town trail. Scroll down, or use the arrow keys or Page Down, to move forward along the trail. "
-      >
-        {view === "3d" && <canvas ref={canvasRef} className="h-full w-full" aria-hidden />}
-        {view === "3d" && !loaded && <p className={`${GLASS} absolute left-1/2 top-1/2 -translate-x-1/2 rounded-full px-5 py-3`}>Loading the camp…</p>}
-      </div>
-
-      {/* compact toolbar */}
-      <header className={`${GLASS} absolute inset-x-2 top-2 z-30 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl p-1.5 pl-3`}>
-        <div className="min-w-0 flex-1 basis-44" aria-live="polite">
-          <p className="truncate font-semibold leading-tight">{season.en} · {season.mn}</p>
-          <p className="truncate text-xs text-[#f3eadf]/80">{free ? "All 48 lessons done: free exploration" : `${inSeason}/${PER_SEASON} to ${nextName}`}</p>
-          <div className="mt-1 h-1 w-full max-w-40 overflow-hidden rounded-full bg-white/15" role="progressbar" aria-valuemin={0} aria-valuemax={TOTAL_CURRICULUM} aria-valuenow={done} aria-label="Lessons finished">
-            <div className="h-full rounded-full bg-[var(--ac)]" style={{ width: `${(done / TOTAL_CURRICULUM) * 100}%` }} />
+    <div className={styles.shell} style={{ "--accent": chapter.color } as React.CSSProperties}>
+      <main>
+        <section ref={heroRef} className={styles.hero} id="selected-stop" aria-labelledby="journey-title">
+          <div className={styles.worldPane}>
+            {showWorld && <TownScene stop={index} season={seasonIndex} reduced={reduced} onSelect={goTo} time={time} />}
+            <div className={styles.worldShade} />
           </div>
-        </div>
-        {view === "3d" && (
-          <div className="flex items-center gap-1" role="group" aria-label="Move forward along the trail">
-                        <button type="button" aria-label="Previous ger" disabled={here <= 0} className={`${IBTN} hover:bg-white/10 disabled:opacity-40`} onClick={() => goTo(here - 1)}><ChevronLeft size={20} aria-hidden /></button>
-            <span className="px-1 text-sm font-semibold" aria-live="polite">{here + 1}/{N}</span>
-            <button type="button" aria-label="Next ger" disabled={here >= reach} className={`${IBTN} hover:bg-white/10 disabled:opacity-40`} onClick={() => goTo(here + 1)}><ChevronRight size={20} aria-hidden /></button>
-            {here !== cur && (
-              <button type="button" className="min-h-11 rounded-full bg-[#8fd16a] px-3 text-sm font-semibold text-[#10161b]" onClick={() => goTo(cur)}>
-                Current: {SHORT[GERS[cur].id]}
-              </button>
-            )}
-          </div>
-        )}
-        <div className="flex items-center gap-0.5">
-          {QUICK.map((id) => (
-            <button key={id} type="button" aria-label={`${GERS.find((g) => g.id === id)!.name} lessons`} title={GERS.find((g) => g.id === id)!.name} className={`${IBTN} ${id === "emergency" ? "bg-[#b4452f]" : "hover:bg-white/10"}`} onClick={() => open(id)}>
-              {GERS.find((g) => g.id === id)!.emoji}
-            </button>
-          ))}
-          <button type="button" aria-label="Guide" title="Guide" className={`${IBTN} hover:bg-white/10`} onClick={() => setGuide(true)}><BookOpen size={18} aria-hidden /></button>
-          <button type="button" aria-label={view === "3d" ? "Switch to list view" : "Switch to town view"} title={view === "3d" ? "List view" : "Town view"} className={`${IBTN} hover:bg-white/10`} onClick={() => setView(view === "3d" ? "list" : "3d")}><List size={18} aria-hidden /></button>
-          <Link href="/learn/tools" aria-label={`Alphabet and tools${reviews.length ? `, ${reviews.length} reviews due` : ""}`} title="Alphabet & tools" className={`${IBTN} relative hover:bg-white/10`}>
-            <Wrench size={18} aria-hidden />
-            {reviews.length > 0 && <span className="absolute -right-0.5 -top-0.5 rounded-full bg-[var(--ac)] px-1.5 text-[10px] font-bold text-[#10161b]">{reviews.length}</span>}
-          </Link>
-          <button type="button" aria-label={guest ? "Exit demo" : "Log out"} title={guest ? "Exit demo" : "Log out"} className={`${IBTN} hover:bg-white/10`} onClick={() => { if (guest) { endGuest(); router.push("/login"); } else signOut(); }}><LogOut size={18} aria-hidden /></button>
-        </div>
-        {free && (
-          <div className="flex w-full gap-1" role="group" aria-label="Visit a season">
-            {SEASONS.map((x, i) => (
-              <button key={x.id} type="button" aria-pressed={shown === i} className={`${BTN} min-h-9 flex-1 text-sm ${shown === i ? "bg-[var(--ac)] text-[#10161b]" : "bg-white/10"}`} onClick={() => setViewSeason(i)}>{x.en}</button>
-            ))}
-          </div>
-        )}
-      </header>
+          <header className={styles.siteHeader}>
+            <div className={styles.headerInner}>
+              <Logo />
+              <div className={styles.overall}>
+                <span><strong>{pathDone}</strong> / {pathLessons.length} lessons complete</span>
+                <progress max={pathLessons.length} value={pathDone} aria-label="Lessons complete" />
+              </div>
+              <div className={styles.headerActions}>
+                <TextSizeControl />
+                <button type="button" className={styles.iconButton} onClick={() => guideRef.current?.showModal()} aria-label="Journey guide"><BookOpen size={19} /></button>
+                <Link href="/learn/tools" className={styles.iconButton} aria-label={`Learning tools${reviews.length ? `, ${reviews.length} reviews due` : ""}`}><Wrench size={19} />{reviews.length > 0 && <span className={styles.toolDot} />}</Link>
+                <button type="button" className={styles.iconButton} aria-label={guest ? "Exit demo" : "Log out"} onClick={() => {
+                  if (guest) {
+                    endGuest();
+                    router.push("/login");
+                  } else {
+                    void signOut();
+                  }
+                }}><LogOut size={19} /></button>
+              </div>
+            </div>
+          </header>
 
-      {/* roadmap rail: 24 stops in 4 chapters; only reached stops can be opened */}
-      {view === "3d" && (
-        <nav aria-label="Roadmap" className="absolute left-2 top-28 z-30 hidden max-h-[calc(100dvh-8rem)] flex-col gap-0.5 overflow-y-auto rounded-full p-1 sm:flex bg-[color-mix(in_srgb,var(--bg)_70%,transparent)]">
-          {GERS.map((g, i) => (
-            <button key={g.id} type="button" disabled={i > reach} aria-label={`Stop ${i + 1}: ${g.name}`} aria-current={i === here} title={`${i + 1}. ${g.name}`} onClick={() => goTo(i)} className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold ${i === here ? "bg-[var(--ac)] text-[#10161b]" : i < cur ? "bg-white/40 text-[#10161b]" : i === cur ? "ring-2 ring-[var(--ac)] text-white" : "bg-white/10 text-white/50"} ${i % 6 === 5 ? "mb-1" : ""}`}>
-              {i + 1}
-            </button>
-          ))}
-        </nav>
-      )}
+          <div className={styles.journeyMain}>
+            <div className={styles.intro}>
+              <p className={styles.eyebrow}><Compass size={16} /> {guest ? "Demo journey" : "Your journey"}</p>
+              <h1 id="journey-title">Explore ger town</h1>
+              <nav className={styles.pathChoices} aria-label="Choose a learning path">
+                {(["conversation", "vocabulary"] as const).map(id => {
+                  const entry = LEARNING_PATHS[id];
+                  const count = stopIndices(id).length;
+                  const Icon = id === "conversation" ? ArrowLeft : ArrowRight;
+                  return <button type="button" key={id} aria-pressed={activePath === id} onClick={() => choosePath(id)}>
+                    <Icon size={19} aria-hidden /><span><strong>{entry.title}</strong><small>{count} gers · <span lang="mn">{entry.mn}</span></small></span>
+                  </button>;
+                })}
+              </nav>
+              {activePath === "conversation" && <nav className={styles.chapters} aria-label="Journey chapters">
+                {CLUSTERS.map((entry, i) => {
+                  const Icon = CHAPTER_ICONS[i];
+                  const active = selected.cluster === entry.id;
+                  return <button type="button" key={entry.id} aria-pressed={active} onClick={() => {
+                    const chapterStops = STOPS.filter((stop) => stop.path === "conversation" && stop.cluster === entry.id);
+                    const unfinished = chapterStops.find((stop) => stop.units.some((lesson) => !progress.completed.includes(lesson.id)));
+                    goTo(STOPS.indexOf(unfinished ?? chapterStops[0]));
+                  }}><Icon size={19} aria-hidden /><span>{CHAPTERS[entry.id].title}</span></button>;
+                })}
+              </nav>}
+              {activePath === "vocabulary" && <p className={styles.pathHint}>{path.description} · Lessons 7–11 from Your path</p>}
+            </div>
+            <div className={styles.feature}>
+              <div className={styles.worldControls}>
+                <button type="button" className={styles.worldTag} onClick={() => setShowWorld((visible) => !visible)}>{showWorld ? "Hide 3D" : "Show 3D"}</button>
+                <div className={styles.worldBottom}>
+                  <div aria-live="polite">
+                    <p><Mountain size={16} aria-hidden /> {season.en} camp</p>
+                    <span>Ger {localIndex + 1} / {indices.length} · Scroll to travel</span>
+                  </div>
+                  <label className={styles.timeControl}>Light<select aria-label="Time of day" value={time} onChange={e => setTime(e.target.value as typeof time)}><option value="auto">Day cycle</option><option value="day">Day</option><option value="night">Night</option></select></label>
+                  <div className={styles.arrows} role="group" aria-label="Move between stops">
+                    <button type="button" aria-label="Previous stop" disabled={localIndex === 0} onClick={() => goTo(indices[localIndex - 1])}><ArrowLeft size={20} /></button>
+                    <button type="button" aria-label="Next stop" disabled={localIndex === indices.length - 1} onClick={() => goTo(indices[localIndex + 1])}><ArrowRight size={20} /></button>
+                  </div>
+                </div>
+              </div>
 
-      {/* lightweight list (no WebGL, or by choice) */}
-      {view === "list" && (
-        <main className="absolute inset-0 z-20 overflow-y-auto bg-paper px-4 pb-10 pt-28 sm:px-8">
-          <div className="mx-auto max-w-4xl space-y-8">
-            <p className="text-lg text-ink-soft">The same 24 gers as a simple list. Every ger has two short lessons.</p>
-            {CLUSTERS.map((c) => (
-              <section key={c.id} aria-labelledby={`c-${c.id}`}>
-                <h2 id={`c-${c.id}`} className="text-2xl font-bold">
-                  {c.name} <span className="text-ink-soft">{c.mn}</span>
-                </h2>
-                <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-                  {GERS.filter((g) => g.cluster === c.id).map((g) => (
-                    <li key={g.id} className="rounded-2xl bg-white p-4 ring-1 ring-line">
-                      <p className="font-bold">
-                        {g.emoji} {g.name} <span className="font-normal text-ink-soft">{g.mn}</span>
-                      </p>
-                      <ul className="mt-2 space-y-1">
-                        {lessonsOf(g).map((l) => (
-                          <li key={l.id}>
-                            <Link href={`/learn/${l.id}`} className="flex min-h-11 items-center justify-between gap-3 rounded-xl px-2 text-cobalt hover:bg-paper">
-                              <span>{l.title}</span>
-                              <span className="flex items-center gap-1 text-ink-soft">{progress.completed.includes(l.id) ? <><Check size={16} aria-hidden /> Done</> : "Start"}</span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
-                  ))}
+              <section className={styles.stopPanel} aria-labelledby="stop-heading" key={selected.id}>
+                <p className={styles.eyebrow}>{activePath === "vocabulary" ? "WORD GER" : "GER"} {localIndex + 1} <span aria-hidden> · </span><span lang="mn">{selected.mn}</span></p>
+                <h2 id="stop-heading">{selected.name}</h2>
+                <p className={styles.stopDescription}>{MISSIONS[selected.units[0].id].scene}</p>
+                <ul className={styles.units}>
+                  {selected.units.map((lesson) => {
+                    const complete = progress.completed.includes(lesson.id);
+                    return <li key={lesson.id}>
+                      <Link href={`/learn/${lesson.id}`}>
+                        <span className={styles.lessonIcon} aria-hidden>{complete ? <Check size={18} /> : <BookOpen size={18} />}</span>
+                        <span><strong>{lesson.title}</strong><small>{MISSIONS[lesson.id].goal}</small></span>
+                        <ArrowUpRight className={styles.unitArrow} size={19} aria-hidden />
+                      </Link>
+                    </li>;
+                  })}
                 </ul>
+                {index !== current && !allDone && <button type="button" className={styles.inlineButton} onClick={() => goTo(current)}>Go to my next stop <ArrowRight size={15} /></button>}
+                {free && <label className={styles.seasonPicker}>Camp season
+                  <select value={seasonIndex} onChange={(event) => setSeasonChoice(Number(event.target.value))}>
+                    {SEASONS.map((entry, i) => <option key={entry.id} value={i}>{entry.en}</option>)}
+                  </select>
+                </label>}
               </section>
-            ))}
-          </div>
-        </main>
-      )}
-
-      {/* ger preview */}
-      {sel && (
-        <aside role="dialog" aria-modal="false" aria-labelledby="ger-title" className={`${GLASS} absolute inset-x-3 bottom-3 z-40 max-h-[55dvh] overflow-y-auto rounded-3xl p-5 sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-20 sm:w-[26rem] sm:max-h-[calc(100dvh-6rem)]`}>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 id="ger-title" tabIndex={-1} ref={(el) => el?.focus()} className="text-2xl font-bold outline-none">
-                {sel.emoji} {sel.name}
-              </h2>
-              <p className="text-[#f3eadf]/80">{sel.mn} · {gerDone(sel)} of 2 lessons done</p>
             </div>
-            <button type="button" onClick={() => setHidden(true)} aria-label="Hide lessons" className="grid h-11 w-11 shrink-0 place-items-center rounded-full ring-1 ring-white/30 hover:bg-white/10">
-              <X size={20} aria-hidden />
-            </button>
+
           </div>
-          <ul className="mt-4 space-y-3">
-            {lessonsOf(sel).map((l) => {
-              const isDone = progress.completed.includes(l.id);
-              const firstOpen = lessonsOf(sel).find((x) => !progress.completed.includes(x.id))?.id === l.id;
-              const label = isDone ? "Review" : firstOpen && gerDone(sel) > 0 ? "Continue" : "Start";
-              return (
-                <li key={l.id} className="rounded-2xl bg-white/10 p-4">
-                  <p className="flex items-center justify-between gap-2 font-bold">
-                    {l.title}
-                    {isDone && <span className="flex items-center gap-1 text-sm text-[#b9d58a]"><Check size={16} aria-hidden /> Done</span>}
-                  </p>
-                  <p className="text-sm text-[#f3eadf]/70">{l.items.length} phrases · dialogue · quiz</p>
-                  <ul className="mt-2 space-y-1 text-sm">
-                    {l.items.map((it) => (
-                      <li key={it.id}>
-                        <span className="font-semibold">{it.show}</span> <span className="text-[#f3eadf]/70">({say(it.show)})</span> {it.meaning}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href={`/learn/${l.id}`} className={`${BTN} mt-3 bg-[var(--ac)] text-[#10161b]`}>
-                    <Play size={16} fill="currentColor" aria-hidden /> {isDone ? "Review lesson" : `${label} lesson`}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </aside>
-      )}
+        </section>
+      </main>
 
-      {/* guide */}
-      {guide && (
-        <div className="absolute inset-0 z-50 grid place-items-end bg-black/40 sm:place-items-center" onClick={() => setGuide(false)}>
-          <section role="dialog" aria-modal="true" aria-labelledby="guide-title" onClick={(e) => e.stopPropagation()} className={`${GLASS} max-h-[88dvh] w-full max-w-2xl overflow-y-auto rounded-t-3xl p-6 sm:rounded-3xl`}>
-            <div className="flex items-start justify-between gap-3">
-              <h2 id="guide-title" className="text-2xl font-bold">Guide</h2>
-              <button type="button" onClick={() => setGuide(false)} aria-label="Close guide" className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-white/30 hover:bg-white/10" autoFocus>
-                <X size={20} aria-hidden />
-              </button>
-            </div>
-            <ul className="mt-3 list-disc space-y-2 pl-5">
-              <li><strong>Move:</strong> follow the straight trail forward: scroll down, use the arrow keys or Page Down, or the &gt; button (the camera never goes back). Numbers 1 to 4 jump to a chapter, the green button goes to your next lesson. Tab moves between gers; hover or focus shows the full name.</li>
-              <li><strong>Learn:</strong> click a ger to open its two micro-lessons (phrases, a short dialogue, then a quiz). Past lessons stay open, and the 🚨 🩺 💊 buttons jump straight to emergency, doctor and pharmacy.</li>
-              <li><strong>Seasons:</strong> every {PER_SEASON} different new lessons you finish moves the camp on: summer, autumn, winter, spring. Replays and reviews never count. After all {TOTAL_CURRICULUM} lessons you can visit any season.</li>
-            </ul>
-            <h3 className="mt-5 text-lg font-bold">Season notes</h3>
-            <p className="text-sm text-[#f3eadf]/70">Regional examples, not rules for every herder. Seasons here follow your learning, not the calendar.</p>
-            <ul className="mt-2 space-y-3">
-              {SEASONS.slice(0, free ? 4 : reached + 1).map((s) => (
-                <li key={s.id} className="rounded-2xl bg-white/10 p-4">
-                  <p className="font-bold">{s.en} · {s.mn}</p>
-                  <p className="mt-1">{s.note}</p>
-                  <p className="mt-1">Useful phrase: <strong>{s.phrase.mn}</strong> ({say(s.phrase.mn)}), “{s.phrase.en}”</p>
-                  <p className="mt-1 text-sm text-[#f3eadf]/70">Source: {s.source}.</p>
-                </li>
-              ))}
-            </ul>
-            {reviews.length > 0 && (
-              <p className="mt-4">
-                Reviews due:{" "}
-                {reviews.map((id) => (
-                  <Link key={id} href={`/learn/${id}`} className="mr-3 font-semibold text-[var(--ac)] underline underline-offset-4">
-                    {LESSONS.find((l) => l.id === id)?.title ?? id}
-                  </Link>
-                ))}
-              </p>
-            )}
-            <p className="mt-4">
-              <Link href="/learn/tools" className="font-semibold text-[var(--ac)] underline underline-offset-4">Alphabet, flashcards, conversations and translator</Link>
-            </p>
-          </section>
-        </div>
-      )}
+      <dialog className={styles.dialog} ref={guideRef} aria-labelledby="guide-heading">
+        <div className={styles.dialogHeader}><h2 id="guide-heading">Journey guide</h2><button type="button" className={styles.inlineButton} onClick={() => guideRef.current?.close()}>Close</button></div>
+        <p>Click a ger to visit it. Scroll down for the next ger, or up for the previous one. You can also use the arrow keys, swipe, or choose a chapter. Each ger has its own lesson card.</p>
+        <p>Choose Conversation road for the original 24 gers, or Words &amp; numbers for five gers along the opposite road. Scrolling stays on your chosen path. The word road shares progress with lessons 7–11 in Learning tools.</p>
+        <p>Finish {PER_SEASON} different lessons to reach the next camp season. After all {TOTAL_CURRICULUM}, you can choose any season. In the demo each chapter previews a season.</p>
+        <ul>{SEASONS.slice(0, guest || free ? SEASONS.length : reached + 1).map((entry) => <li key={entry.id}><strong>{entry.en} · <span lang="mn">{entry.mn}</span></strong><p>{entry.note}</p><p><span lang="mn">{entry.phrase.mn}</span> · {entry.phrase.en}</p><small>{entry.source}</small></li>)}</ul>
+        {reviews.length > 0 && <><h3>Reviews due</h3><ul>{reviews.map((id) => <li key={id}><Link href={`/learn/${id}`}>{LESSONS.find((lesson) => lesson.id === id)?.title ?? id}</Link></li>)}</ul></>}
+        <Link href="/learn/tools" className={styles.inlineButton}>See learning tools <ArrowUpRight size={15} /></Link>
+      </dialog>
 
-      {/* season change note (shown once; remembered) */}
-      {newNote && (
-        <div className="absolute inset-0 z-[60] grid place-items-center bg-black/50 p-4">
-          <section role="dialog" aria-modal="true" aria-labelledby="season-title" className={`${GLASS} w-full max-w-lg rounded-3xl p-6`}>
-            <p className="text-[var(--ac)]">New season</p>
-            <h2 id="season-title" className="mt-1 text-3xl font-bold">{newNote.en} · {newNote.mn}</h2>
-            <p className="mt-3 text-lg">{newNote.note}</p>
-            <p className="mt-3 rounded-2xl bg-white/10 p-4">
-              Useful phrase: <strong className="font-display text-xl">{newNote.phrase.mn}</strong>
-              <br />
-              <span className="text-[#f3eadf]/80">({say(newNote.phrase.mn)}) {newNote.phrase.en}</span>
-            </p>
-            <p className="mt-2 text-sm text-[#f3eadf]/70">Source: {newNote.source}. You can read this again in the Guide.</p>
-            <button type="button" autoFocus className={`${BTN} mt-5 bg-[var(--ac)] text-[#10161b]`} onClick={() => update({ ...progress, seasonSeen: reached })}>
-              Continue
-            </button>
-          </section>
-        </div>
-      )}
+      <dialog className={styles.dialog} ref={seasonRef} aria-labelledby="season-heading" onCancel={() => void update({ ...progress, seasonSeen: reached })}>
+        <p className={styles.eyebrow}>New camp season</p>
+        <h2 id="season-heading">{SEASONS[reached].en} · {SEASONS[reached].mn}</h2>
+        <p>{SEASONS[reached].note}</p>
+        <p><strong lang="mn">{SEASONS[reached].phrase.mn}</strong> ({say(SEASONS[reached].phrase.mn)})<br />{SEASONS[reached].phrase.en}</p>
+        <small>{SEASONS[reached].source}</small>
+        <button type="button" className={styles.inlineButton} onClick={() => void update({ ...progress, seasonSeen: reached })}>Continue <ArrowDown size={15} /></button>
+      </dialog>
     </div>
-    {view === "3d" && <div aria-hidden style={{ height: `${(N - 1) * 45 + 100}vh` }} />}
-    </>
   );
+}
+
+function TownScene({ stop, season, reduced, onSelect, time }: { stop: number; season: number; reduced: boolean; onSelect: (index: number) => void; time: "auto" | "day" | "night" }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const worldRef = useRef<TownWorld | null>(null);
+  const seasonRef = useRef(season);
+  const [state, setState] = useState<"loading" | "ready" | "unavailable">("loading");
+
+  useEffect(() => {
+    seasonRef.current = season;
+  }, [season]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    let disposed = false;
+    let visible = true;
+    let resize: ResizeObserver | undefined;
+    let intersection: IntersectionObserver | undefined;
+    const syncActivity = () => worldRef.current?.setActive(visible && !document.hidden);
+    const unavailable = () => {
+      worldRef.current?.setActive(false);
+      setState("unavailable");
+    };
+
+    async function load(target: HTMLCanvasElement) {
+      try {
+        const { createTown } = await import("./world/createTown");
+        if (disposed) return;
+        const low = matchMedia("(max-width: 767px)").matches || navigator.hardwareConcurrency <= 4;
+        const world = await createTown(target, { low, reduced, season: seasonRef.current });
+        if (disposed) return world.dispose();
+        worldRef.current = world;
+        resize = new ResizeObserver(([entry]) => world.resize(entry.contentRect.width, entry.contentRect.height));
+        resize.observe(target);
+        intersection = new IntersectionObserver(([entry]) => {
+          visible = entry.isIntersecting;
+          syncActivity();
+        });
+        intersection.observe(target);
+        document.addEventListener("visibilitychange", syncActivity);
+        target.addEventListener("webglcontextlost", unavailable);
+        const bounds = target.getBoundingClientRect();
+        world.resize(bounds.width, bounds.height);
+        setState("ready");
+      } catch {
+        if (!disposed) unavailable();
+      }
+    }
+    void load(canvas);
+    return () => {
+      disposed = true;
+      resize?.disconnect();
+      intersection?.disconnect();
+      document.removeEventListener("visibilitychange", syncActivity);
+      canvas.removeEventListener("webglcontextlost", unavailable);
+      worldRef.current?.dispose();
+      worldRef.current = null;
+    };
+  }, [reduced]);
+
+  const placedSeason = useRef<number | null>(null);
+  useEffect(() => {
+    if (state !== "ready" || !worldRef.current) return;
+    worldRef.current.setSeason(season);
+    worldRef.current.setRoute(stop, reduced || placedSeason.current === null);
+    worldRef.current.setHover(STOPS[stop].id);
+    placedSeason.current = season;
+  }, [state, stop, season, reduced]);
+
+  useEffect(() => {
+    worldRef.current?.setTime(time === "auto" ? null : time === "night");
+  }, [time, state]);
+
+  return <>
+    <canvas ref={canvasRef} className={styles.canvas} onPointerMove={(event) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const hit = worldRef.current?.pick((event.clientX - rect.left) / rect.width * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
+      event.currentTarget.style.cursor = hit != null ? "pointer" : "grab";
+    }} onClick={(event) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const hit = worldRef.current?.pick((event.clientX - rect.left) / rect.width * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
+      if (hit != null) onSelect(hit);
+    }} style={{ visibility: state === "ready" ? "visible" : "hidden" }} aria-hidden />
+    {state !== "ready" && <p className={styles.worldStatus} role="status">{state === "unavailable" ? "Still preview · live 3D unavailable" : "Loading 3D camp…"}</p>}
+  </>;
 }

@@ -12,6 +12,7 @@ import { BASE_LESSONS as LESSONS, LESSONS as ALL, TOTAL_LETTERS, lettersLearned 
 import { buildDeck, badges } from "@/lib/deck";
 import { cardsToStudy, dueReviews, endGuest, todayCount } from "@/lib/progress";
 import { Loading } from "@/components/Loading";
+import { vocabularyGerForLesson, vocabularyRoadHref } from "@/lib/learningPaths";
 
 const GOALS = [10, 20, 30];
 
@@ -40,7 +41,7 @@ export default function LearnTools() {
     dueCards > 0 && done < goal
       ? { href: "/learn/cards", label: `Review ${Math.min(dueCards, goal - done)} cards`, sub: "About 2 minutes. Keeps words in your memory.", icon: Layers }
       : nextLesson
-        ? { href: `/learn/${nextLesson.id}`, label: nextLesson.title, sub: `Lesson ${nextIndex + 1} of ${LESSONS.length}, about 3 minutes`, icon: Play }
+        ? { href: vocabularyGerForLesson(nextLesson.id) ? vocabularyRoadHref(nextLesson.id) : `/learn/${nextLesson.id}`, label: nextLesson.title, sub: `Lesson ${nextIndex + 1} of ${LESSONS.length}, about 3 minutes`, icon: Play }
         : { href: "/learn", label: "Explore the ger-town", sub: "48 lessons in 24 gers", icon: MessageSquare };
   const TodayIcon = today.icon;
 
@@ -184,12 +185,17 @@ export default function LearnTools() {
 
         {/* Lesson path */}
         <h2 className="mt-14 text-2xl font-bold sm:text-3xl">Your path</h2>
+        <Link href={vocabularyRoadHref()} className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-sage bg-sage-mist p-4 text-ink transition hover:bg-gold-soft">
+          <span><strong className="block">Explore the Words &amp; numbers road</strong><span className="block text-sm text-ink-soft">Lessons 7–11 now have five gers on the other side of town. Your progress is shared.</span></span>
+          <Play size={20} aria-hidden className="shrink-0" />
+        </Link>
         <ol className="relative mt-6">
           <span className="absolute bottom-6 left-7 top-6 w-[3px] rounded-full bg-line" aria-hidden />
           {LESSONS.map((l, i) => {
             const isDone = progress.completed.includes(l.id);
             const isNext = nextLesson?.id === l.id;
-            const locked = !isDone && !isNext;
+            const wordGer = vocabularyGerForLesson(l.id);
+            const locked = !wordGer && !isDone && !isNext;
             const inner = (
               <>
                 <span
@@ -204,7 +210,7 @@ export default function LearnTools() {
                   <span className={`block text-xl font-bold ${locked ? "text-ink-soft" : ""}`}>
                     {i + 1}. {l.title}
                   </span>
-                  <span className="block text-ink-soft">{isDone ? "Done. Tap to practise again." : locked ? `Opens after lesson ${i}` : l.subtitle}</span>
+                  <span className="block text-ink-soft">{isDone ? "Done. Tap to practise again." : wordGer ? `Visit ${wordGer.name} on the Words & numbers road.` : locked ? `Opens after lesson ${i}` : l.subtitle}</span>
                 </span>
               </>
             );
@@ -213,7 +219,7 @@ export default function LearnTools() {
                 {locked ? (
                   <div className="flex items-center gap-5 rounded-2xl p-3">{inner}</div>
                 ) : (
-                  <Link href={`/learn/${l.id}`} className="flex items-center gap-5 rounded-2xl p-3 transition hover:bg-white">
+                  <Link href={wordGer ? vocabularyRoadHref(l.id) : `/learn/${l.id}`} className="flex items-center gap-5 rounded-2xl p-3 transition hover:bg-white">
                     {inner}
                   </Link>
                 )}

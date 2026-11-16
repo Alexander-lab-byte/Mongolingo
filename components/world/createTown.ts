@@ -1,14 +1,12 @@
 import type { MeshStandardMaterial, SpriteMaterial, Vector3 } from "three";
 import { createWorld, type World } from "./createWorld";
 import { groundHeight } from "./terrain";
+import { createVillageLife, platformHeight } from "./villageLife";
 import { SITES, TOWN, trailZ } from "@/lib/journey";
+import { CHAPTERS } from "@/lib/fieldLessons";
+import { CLUSTERS } from "@/lib/curriculum";
 
-/*
-  /learn uses the landing page's real world (createWorld). The camera rides a straight trail forward (-z), low,
-  with the gers on both sides. Seasons move the trail to another site, retint the land (World.setSeason) and
-  swap the scenery here: leafy / golden / bare trees, snow on roofs and trail, thawing snow patches.
-*/
-
+// The learning map reuses the landing world with a curated camera stop at each ger.
 const TOD_STILL = [0.04, 0.3, 0.42, 0.14]; // fixed light for reduced motion
 const FLOOR = [0, 0.1, 0.2, 0.04]; // lowest sun of the day: high in summer, low in winter
 const PHASE = [0.05, 0.12, 0.2, 0.09]; // where in the day each season starts
@@ -21,37 +19,53 @@ const ENV: Env[] = [
   { canopy: "#8a7a6a", cs: 0, trail: "#e4ebf0", cap: () => 1, patch: 0 },
   { canopy: "#b5d27a", cs: 0.3, trail: "#7a6650", cap: (i) => (i % 3 === 0 ? 0.9 : 0), patch: 1 },
 ];
-export type TownLabel = { id: string; x: number; y: number; v: boolean };
 export type Town = {
   setRoute: (t: number, snap?: boolean) => void;
+  pick: (x: number, y: number) => number | null;
+  setTime: (night: boolean | null) => void;
   setSeason: (i: number) => void;
   setHover: (id: string | null) => void;
-  setNext: (id: string | null) => void;
   resize: (w: number, h: number) => void;
   setActive: (on: boolean) => void;
   dispose: () => void;
 };
 
 function layoutFor(season: number, low: boolean) {
-  const S = SITES[season];
+  const S = SITES[0];
   const gers = TOWN.map((d) => ({ id: d.id, x: S.x + d.x, z: S.z + d.z, rot: d.rot, scale: 1 }));
-  // each stop: the whole ger seen from the front (door toward us), slightly elevated, 24 units away, sky behind it
-  // camera on the road 20 units before each ger, looking ahead at it: forward travel, never through a ger
-  const shots = gers.map((g) => {
-    const px = g.x + 20, pz = S.z + trailZ(px - S.x);
-    return { name: g.id, pos: [px, groundHeight(px, pz) + 7, pz] as [number, number, number], look: [g.x, groundHeight(g.x, g.z) + 2.2, g.z] as [number, number, number], tod: TOD_STILL[season] };
+  const shots = TOWN.map((stop, i) => {
+    const g = gers[i];
+    const px = S.x + stop.cameraX;
+    const pz = S.z + stop.cameraZ;
+    return {
+      name: g.id,
+      pos: [px, Math.max(groundHeight(px, pz) + stop.cameraHeight, platformHeight(g.x, g.z) + 5.3), pz] as [number, number, number],
+      look: [g.x, platformHeight(g.x, g.z) + 2.4, g.z] as [number, number, number],
+      tod: TOD_STILL[season],
+    };
   });
   return { gers, shots, signs: [], settings: { bloom: low ? 0.5 : 1, lights: 1, snow: 1, letters: false } };
 }
 
-export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean; reduced: boolean; season: number; onLabels: (l: TownLabel[]) => void }): Promise<Town> {
+export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean; reduced: boolean; season: number }): Promise<Town> {
   let season = Math.max(0, Math.min(3, opts.season | 0));
   const world: World = await createWorld(canvas, { mobile: opts.low, layout: layoutFor(season, opts.low) });
   const st = world.studio;
   const { THREE, camera, scene } = st;
   world.setSeason(season);
 
-  /* rings: hovered/selected ger (gold), next lesson (green) */
+  const life = createVillageLife(scene, opts.low, opts.reduced);
+  st.pickables().forEach((g, i) => { g.position.y = life.foundations[i].top; });
+  st.setFreeCamera(true);
+  const shotList = layoutFor(season, opts.low).shots;
+  const fromPosition = new THREE.Vector3(), fromLook = new THREE.Vector3();
+  const toPosition = new THREE.Vector3(), toLook = new THREE.Vector3();
+  const liveLook = new THREE.Vector3();
+  let travel = 1, duration = 1.6, initialized = false;
+  let timeOverride: number | null = null;
+  const raycaster = new THREE.Raycaster();
+
+  /* A narrow brass rim sits on the level platform, above the terrain. */
   const mkRing = (a: number, b: number, color: string) => {
     const r = new THREE.Mesh(new THREE.RingGeometry(a, b, 48), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false, side: THREE.DoubleSide }));
     r.rotation.x = -Math.PI / 2;
@@ -59,32 +73,59 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     scene.add(r);
     return r;
   };
-  const hoverRing = mkRing(5.6, 6.5, "#f2c46d");
-  const nextRing = mkRing(6.8, 7.5, "#8fd16a");
+  const hoverRing = mkRing(6.02, 6.23, "#e8be72");
   const at = (id: string) => {
     const d = TOWN.find((x) => x.id === id)!;
-    const S = SITES[season];
-    return new THREE.Vector3(S.x + d.x, groundHeight(S.x + d.x, S.z + d.z), S.z + d.z);
+    const S = SITES[0];
+    return new THREE.Vector3(S.x + d.x, platformHeight(S.x + d.x, S.z + d.z), S.z + d.z);
   };
   let hoverId: string | null = null;
-  let nextId: string | null = null;
   const place = (ring: typeof hoverRing, id: string | null) => {
     ring.visible = !!id;
     if (id) ring.position.copy(at(id)).setY(at(id).y + 0.2);
   };
 
   /* scenery: trail ribbon, trees, roof snow, thawing patches (shared geometry, instanced) */
-  const TR = 120;
+  const TR = 160;
   const trGeo = new THREE.BufferGeometry();
   const trPos = new Float32Array(TR * 6);
   const trIdx: number[] = [];
-  for (let i = 0; i < TR - 1; i++) trIdx.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
+  for (let i = 0; i < TR - 1; i++) trIdx.push(i * 2, i * 2 + 2, i * 2 + 1, i * 2 + 1, i * 2 + 2, i * 2 + 3);
   trGeo.setAttribute("position", new THREE.BufferAttribute(trPos, 3));
   trGeo.setIndex(trIdx);
   const trMat = new THREE.MeshStandardMaterial({ roughness: 1, polygonOffset: true, polygonOffsetFactor: -2 });
   const trail = new THREE.Mesh(trGeo, trMat);
   trail.frustumCulled = false;
-  const treeN = opts.low ? 8 : 14;
+  // A short approach joins the west and east roads at a visible Y junction.
+  const forkSegments = 24;
+  const forkGeo = new THREE.BufferGeometry();
+  const forkPos = new Float32Array(forkSegments * 6);
+  const forkIdx: number[] = [];
+  for (let i = 0; i < forkSegments - 1; i++) forkIdx.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
+  forkGeo.setAttribute("position", new THREE.BufferAttribute(forkPos, 3));
+  forkGeo.setIndex(forkIdx);
+  const approach = new THREE.Mesh(forkGeo, trMat);
+  approach.frustumCulled = false;
+  scene.add(approach);
+  const junctionX = SITES[0].x + 22, junctionZ = SITES[0].z + trailZ(22) + 3;
+  const signY = groundHeight(junctionX, junctionZ);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(.12, .16, 3.4, 8), new THREE.MeshStandardMaterial({ color: "#695039", roughness: 1 }));
+  post.position.set(junctionX, signY + 1.7, junctionZ);
+  scene.add(post);
+  const pathSigns = (["conversation", "vocabulary"] as const).map((path, i) => {
+    const cv = document.createElement("canvas"); cv.width = 640; cv.height = 128;
+    const ctx = cv.getContext("2d")!;
+    ctx.fillStyle = path === "conversation" ? "#735037" : "#315b48";
+    ctx.beginPath(); ctx.roundRect(4, 4, 632, 120, 12); ctx.fill();
+    ctx.strokeStyle = "#dfbd7a"; ctx.lineWidth = 4; ctx.stroke();
+    ctx.fillStyle = "#fff1cd"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "700 43px sans-serif";
+    ctx.fillText(i === 0 ? "← Conversation road" : "Words & numbers →", 320, 66, 600);
+    const board = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), toneMapped: false }));
+    board.position.set(junctionX, signY + 3.2 - i * .85, junctionZ);
+    board.scale.set(5.2, 1.04, 1); board.userData.path = path; scene.add(board);
+    return board;
+  });
+  const treeN = opts.low ? 10 : 18;
   const std = (c: string) => new THREE.MeshStandardMaterial({ color: c, roughness: 1, flatShading: true });
   const trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.3, 0.45, 3.2, 6), std("#5a3a22"), treeN);
   const boughs = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.16, 2.2, 5), std("#5a3a22"), treeN * 3);
@@ -99,7 +140,7 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     const c = document.createElement("canvas");
     c.width = c.height = 128;
     const x = c.getContext("2d")!;
-    x.fillStyle = "#f6ece0";
+    x.fillStyle = d.path === "vocabulary" ? "#a9c7aa" : CHAPTERS[CLUSTERS[Math.floor(d.i / 6)].id].color;
     x.beginPath();
     x.roundRect(4, 4, 120, 120, 24);
     x.fill();
@@ -107,9 +148,9 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     x.font = "800 72px 'Montserrat Variable', sans-serif";
     x.textAlign = "center";
     x.textBaseline = "middle";
-    x.fillText(String(d.i + 1), 64, 70);
+    x.fillText(String(d.number), 64, 70);
     const m = new THREE.Mesh(plateGeo, new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), toneMapped: false, transparent: true }));
-    m.rotation.set(-1.19, d.rot, 0, "YXZ"); // tilted to the roof slope
+    m.rotation.set(0, d.rot, 0); // upright marker clears even the winter snow cap
     scene.add(m);
     return m;
   });
@@ -123,16 +164,27 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
   let anim = true;
 
   function build() {
-    const S = SITES[season];
+    const S = SITES[0];
     for (let i = 0; i < TR; i++) {
-      const x = S.x + 10 - (i / (TR - 1)) * 530, z = S.z + trailZ(x - S.x); // the road
+      const x = S.x + 166 - (i / (TR - 1)) * 670, z = S.z + trailZ(x - S.x); // both roads meet at the junction
       for (const sg of [-1, 1]) trPos.set([x, groundHeight(x, z + sg * 1.4) + 0.12, z + sg * 1.4], i * 6 + (sg < 0 ? 0 : 3));
     }
     trGeo.attributes.position.needsUpdate = true;
     trGeo.computeVertexNormals();
+    for (let i = 0; i < forkSegments; i++) {
+      const t = i / (forkSegments - 1);
+      const localX = 22 + Math.sin(t * Math.PI) * 3;
+      const z = S.z + trailZ(22) + (1 - t) * 19;
+      for (const sg of [-1, 1]) {
+        const x = S.x + localX + sg * 1.4;
+        forkPos.set([x, groundHeight(x, z) + .125, z], i * 6 + (sg < 0 ? 0 : 3));
+      }
+    }
+    forkGeo.attributes.position.needsUpdate = true;
+    forkGeo.computeVertexNormals();
     treeAt.length = 0;
     for (let i = 0; i < treeN; i++) {
-      const x = S.x - 10 - i * (520 / treeN), z = S.z + trailZ(x - S.x) - 24 - (i % 3) * 5; // trees behind the row
+      const x = S.x + 154 - i * (655 / treeN), z = S.z + trailZ(x - S.x) - 29 - (i % 3) * 5;
       treeAt.push(new THREE.Vector3(x, groundHeight(x, z), z));
       trunks.setMatrixAt(i, M.makeTranslation(x, treeAt[i].y + 1.6, z));
       for (let b = 0; b < 3; b++) {
@@ -143,10 +195,10 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     patchAt.length = 0;
     for (let i = 0; i < patchN; i++) {
       const a = Math.sin(i * 12.9898) * 43758.5453, b = Math.sin(i * 78.233) * 12345.678;
-      const z = S.z + ((a % 1) - 0.5) * 70, x = S.x - Math.abs(b % 1) * 520;
+      const z = S.z + ((a % 1) - 0.5) * 70, x = S.x + 154 - Math.abs(b % 1) * 655;
       patchAt.push({ p: new THREE.Vector3(x, groundHeight(x, z) + 0.2, z), s: 1.5 + Math.abs((a * b) % 1) * 3.5 });
     }
-    TOWN.forEach((d, i) => plates[i].position.copy(at(d.id)).add(new THREE.Vector3(Math.sin(d.rot) * 2.5, 3.47, Math.cos(d.rot) * 2.5)));
+    TOWN.forEach((d, i) => plates[i].position.copy(at(d.id)).add(new THREE.Vector3(Math.sin(d.rot) * 1.6, 5.5, Math.cos(d.rot) * 1.6)));
     trunks.instanceMatrix.needsUpdate = boughs.instanceMatrix.needsUpdate = true;
     anim = true;
   }
@@ -160,7 +212,7 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     });
     TOWN.forEach((d, i) => {
       const p = at(d.id), s = Math.max(0.001, cur.caps[i]);
-      caps.setMatrixAt(i, M.compose(new THREE.Vector3(p.x, p.y + 3.55, p.z), Q.identity(), new THREE.Vector3(s, s, s)));
+      caps.setMatrixAt(i, M.compose(new THREE.Vector3(p.x, p.y + 3.65, p.z), Q.identity(), new THREE.Vector3(s, s, s)));
     });
     patchAt.forEach((q, i) => {
       const s = Math.max(0.001, q.s * cur.patch);
@@ -216,6 +268,11 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
   let tod = TOD_STILL[season];
   let cover = CLOUDS[season];
   const dayStep = (dt: number) => {
+    if (timeOverride !== null) {
+      tod += (timeOverride - tod) * (1 - Math.exp(-dt * 2));
+      st.setTodOverride(tod);
+      return;
+    }
     if (opts.reduced) {
       st.setTodOverride(TOD_STILL[season]);
       tod = TOD_STILL[season];
@@ -242,63 +299,63 @@ export async function createTown(canvas: HTMLCanvasElement, opts: { low: boolean
     }
   };
 
-  /* labels: project each ger, keep nearby on-screen ones, nearest first, drop any that would overlap */
-  const labels: TownLabel[] = TOWN.map((d) => ({ id: d.id, x: 0, y: 0, v: false }));
-  let W = 1, H = 1;
-  const v = new THREE.Vector3();
   st.onFrame((dt) => {
     ease(dt);
     dayStep(dt);
     cloudStep(dt);
-    camera.updateMatrixWorld();
-    const cand: { L: TownLabel; d: number }[] = [];
-    for (const L of labels) {
-      const p = at(L.id);
-      const d = p.distanceTo(camera.position);
-      v.copy(p).setY(p.y + 5.2).project(camera);
-      L.x = (v.x * 0.5 + 0.5) * W;
-      L.y = (-v.y * 0.5 + 0.5) * H;
-      L.v = false;
-      if (v.z < 1 && Math.abs(v.x) < 0.95 && Math.abs(v.y) < 0.95 && d < 80) cand.push({ L, d: L.id === hoverId ? -1 : d });
+    life.update(dt, tod, camera);
+    if (travel < 1) {
+      travel = Math.min(1, travel + dt / duration);
+      const k = travel * travel * travel * (travel * (travel * 6 - 15) + 10);
+      camera.position.lerpVectors(fromPosition, toPosition, k);
+      // Long chapter jumps arc over the village, instead of cutting through roofs.
+      camera.position.y += Math.sin(k * Math.PI) * Math.min(20, fromPosition.distanceTo(toPosition) * .08);
+      liveLook.lerpVectors(fromLook, toLook, k);
+      camera.lookAt(liveLook);
     }
-    const kept: TownLabel[] = [];
-    for (const { L } of cand.sort((a, b) => a.d - b.d)) {
-      if (kept.every((k) => Math.abs(k.x - L.x) > 150 || Math.abs(k.y - L.y) > 38)) {
-        L.v = true;
-        kept.push(L);
-      }
-    }
-    opts.onLabels(labels);
+    for (const p of plates) p.quaternion.copy(camera.quaternion);
   });
   paint();
 
   return {
-    setRoute: (t, snap) => world.setTarget(t, snap),
+    setRoute: (t, snap) => {
+      const shot = shotList[Math.max(0, Math.min(shotList.length - 1, Math.round(t)))];
+      if (!initialized || snap) {
+        camera.position.fromArray(shot.pos); liveLook.fromArray(shot.look); camera.lookAt(liveLook); travel = 1; initialized = true;
+      } else {
+        fromPosition.copy(camera.position); fromLook.copy(liveLook);
+        toPosition.fromArray(shot.pos); toLook.fromArray(shot.look);
+        duration = Math.min(3.2, 1.35 + fromPosition.distanceTo(toPosition) / 180); travel = 0;
+      }
+    },
+    pick: (x, y) => {
+      raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+      const hits = raycaster.intersectObjects([...st.pickables(), ...plates, ...pathSigns], true);
+      if (!hits.length) return null;
+      let obj = hits[0].object;
+      if (obj.userData.path) return TOWN.findIndex(stop => stop.path === obj.userData.path);
+      const plate = plates.indexOf(obj as typeof plates[number]);
+      if (plate >= 0) return plate;
+      while (obj.parent && !obj.userData.id) obj = obj.parent;
+      const index = TOWN.findIndex(d => d.id === obj.userData.id);
+      return index < 0 ? null : index;
+    },
+    setTime: (night) => { timeOverride = night === null ? null : night ? .8 : .06; },
     setSeason: (i) => {
       const n = Math.max(0, Math.min(3, i | 0));
       if (n === season) return;
-      for (const d of TOWN) st.remove(d.id);
       season = n;
-      const lay = layoutFor(n, opts.low);
-      lay.gers.forEach((g) => st.addGer(g));
-      st.setShots(lay.shots);
       world.setSeason(n);
-      build();
+      anim = true;
       place(hoverRing, hoverId);
-      place(nextRing, nextId);
     },
     setHover: (id) => {
       hoverId = id;
       place(hoverRing, id);
     },
-    setNext: (id) => {
-      nextId = id;
-      place(nextRing, id);
-    },
     resize: (w, h) => {
-      W = w;
-      H = h;
       world.resize(w, h);
+      camera.setViewOffset(w, h, -w * (w < 850 ? .23 : .15), h * .04, w, h);
     },
     setActive: world.setActive,
     dispose: world.dispose,
